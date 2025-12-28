@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+    --color-background: #0B0F0E;
+    --color-foreground: #FFFFFF;
+
+    --color-card: #121816;
+    --color-card-foreground: #FFFFFF;
+
+    --color-popover: #121816;
+    --color-popover-foreground: #FFFFFF;
+
+    --color-primary: #7CFFB2;
+    --color-primary-foreground: #0B0F0E;
+
+    --color-secondary: #5ED49C;
+    --color-secondary-foreground: #0B0F0E;
+
+    --color-muted: #1A2220;
+    --color-muted-foreground: #9AA5A1;
+
+    --color-accent: #1A2220;
+    --color-accent-foreground: #7CFFB2;
+
+    --color-destructive: #FF6B6B;
+    --color-destructive-foreground: #FFFFFF;
+
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-input: rgba(255, 255, 255, 0.06);
+    --color-ring: #7CFFB2;
+
+    /* Explicitly setting the font family to ensure Urbanist is applied */
+    --font-sans: var(--font-urbanist), ui-sans-serif, system-ui, sans-serif;
+
+    --radius: 1.5rem;
+}
+
+@layer base {
+    body {
+        background-color: var(--color-background);
+        color: var(--color-foreground);
+        line-height: inherit;
+        font-family: var(--font-urbanist), sans-serif !important;
+    }
+}
+
+/* Custom Utilities for Glass Effect */
+@utility glass {
+    background: rgba(18, 24, 22, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+@utility glass-card {
+    background: linear-gradient(145deg, rgba(18, 24, 22, 0.95) 0%, rgba(18, 24, 22, 0.7) 100%);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes radar-scan {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes ripple-pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+@utility animate-radar {
+    animation: radar-scan 4s linear infinite;
+}
+
+@utility animate-ripple {
+    animation: ripple-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
