@@ -47,7 +47,7 @@ export function IntroSplash({ onComplete }: { onComplete: () => void }) {
                     transition={{ delay: 0.3, duration: 0.5 }}
                     className="text-center"
                 >
-                    <h1 className="text-3xl font-bold tracking-tight text-white mb-1">Sentinel</h1>
+                    <h1 className="text-3xl font-bold tracking-tight text-white mb-1">sentinel</h1>
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: "100%" }}

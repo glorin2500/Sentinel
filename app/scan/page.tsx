@@ -83,29 +83,38 @@ export default function ScanPage() {
         }, 3000);
     };
 
+    const [scannedUpi, setScannedUpi] = useState("");
+
     const handleProceedToPay = () => {
         setIsProcessingPayment(true);
         // Simulate "Neural Link" processing
         setTimeout(() => {
             setIsProcessingPayment(false);
-            const upiUrl = `upi://pay?pa=sentinel@merchant&pn=SentinelVerified&am=0&cu=INR`;
+            const upiUrl = `upi://pay?pa=${scannedUpi || manualUpi || "sentinel@merchant"}&pn=SentinelVerified&am=0&cu=INR`;
             window.location.href = upiUrl;
-            // Also show a success alert in case the URI doesn't trigger a visible popup in current browser
-            alert("Redirecting to your UPI app for secure payment...");
             router.push('/');
         }, 2000);
     };
 
     const handleScanResult = (data: string) => {
+        // Extract UPI ID if it's a URI
+        let cleanId = data;
+        try {
+            if (data.includes('pa=')) {
+                cleanId = new URLSearchParams(data.split('?')[1]).get('pa') || data;
+            }
+        } catch (e) { }
+
+        setScannedUpi(cleanId);
         const isRisky = Math.random() > 0.8; // 20% thrill for demo
         const status = isRisky ? 'risky' : 'safe';
 
         setResult(status);
         addScan({
-            upiId: data || "merchant@upi",
+            upiId: cleanId || "merchant@upi",
             status: status,
-            merchantName: isRisky ? "Shadow_Protocol_X" : "Authorized_Retail_Node",
-            threatType: isRisky ? "High Entropy Anomaly" : undefined
+            merchantName: isRisky ? "SHADOW_PROTOCOL_X" : "AUTHORIZED_NODE_07",
+            threatType: isRisky ? "Cryptographic Multi-Signature Anomaly" : "RSA-4096 Verified"
         });
     };
 
@@ -264,11 +273,28 @@ export default function ScanPage() {
                                     <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.4em]">
                                         {result === 'safe' ? 'Node Trust Absolute' : 'Neural Anomaly Detected'}
                                     </p>
-                                    <div className="h-px w-20 bg-white/10 mx-auto my-6" />
-                                    <p className="text-zinc-400 text-sm font-bold leading-relaxed max-w-[260px] mx-auto uppercase tracking-wide">
+
+                                    <div className="flex flex-col gap-2 p-6 rounded-3xl bg-white/5 border border-white/5 mt-6 text-left">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Target Node</span>
+                                            <span className="text-[10px] font-bold text-white uppercase">{scannedUpi || manualUpi}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Protocol</span>
+                                            <span className="text-[10px] font-bold text-primary uppercase">SHA-512_SECURE</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Risk Factor</span>
+                                            <span className={`text-[10px] font-bold uppercase ${result === 'safe' ? 'text-primary' : 'text-destructive'}`}>
+                                                {result === 'safe' ? '0.002%' : '89.4%'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <p className="text-zinc-400 text-[11px] font-bold leading-relaxed max-w-[280px] mx-auto uppercase tracking-wide mt-4">
                                         {result === 'safe'
                                             ? 'Target identity verified via neural consensus. Transaction path is secure.'
-                                            : 'Warning: Cryptographic mismatch in merchant signature. Abandon transaction immediately.'}
+                                            : 'Warning: Cryptographic mismatch in merchant signature. Remote node is blacklisted.'}
                                     </p>
                                 </div>
 

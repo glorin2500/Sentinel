@@ -9,59 +9,109 @@ export interface ScanResult {
     threatType?: string;
 }
 
+interface UserProfile {
+    name: string;
+    rank: string;
+    protectionLevel: number;
+    notificationsEnabled: boolean;
+    biometricLock: boolean;
+    neuralPatching: boolean;
+    financialNodes: FinancialNode[];
+}
+
+interface FinancialNode {
+    id: string;
+    bank: string;
+    alias: string;
+    status: string;
+}
+
 interface SentinelState {
     scans: ScanResult[];
     safetyScore: number;
     riskData: { name: string; value: number; color: string }[];
+    userProfile: UserProfile;
     addScan: (scan: Omit<ScanResult, 'id' | 'timestamp'>) => void;
     clearScans: () => void;
     currentView: 'weekly' | 'monthly';
     setView: (view: 'weekly' | 'monthly') => void;
+    updateProfile: (updates: Partial<UserProfile>) => void;
 }
 
-const INITIAL_WEEKLY_DATA = [
-    { name: "Mon", value: 45, color: "#7CFFB2" },
-    { name: "Tue", value: 52, color: "#7CFFB2" },
-    { name: "Wed", value: 48, color: "#7CFFB2" },
-    { name: "Thu", value: 61, color: "#7CFFB2" },
-    { name: "Fri", value: 12, color: "#FF6B6B" },
-    { name: "Sat", value: 55, color: "#7CFFB2" },
-    { name: "Sun", value: 58, color: "#7CFFB2" },
-];
+const INITIAL_USER: UserProfile = {
+    name: "Glorin",
+    rank: "SENIOR ARCHITECT",
+    protectionLevel: 94,
+    notificationsEnabled: true,
+    biometricLock: true,
+    neuralPatching: false,
+    financialNodes: [
+        { id: '1', bank: "HDFC CORE-V1", alias: "PA_7782_X", status: "ENCRYPTED" },
+        { id: '2', bank: "AXIS QUANTUM", alias: "NODE_W_99", status: "STANDBY" }
+    ]
+};
 
-const INITIAL_MONTHLY_DATA = [
-    { name: "Jan", value: 180, color: "#7CFFB2" },
-    { name: "Feb", value: 210, color: "#7CFFB2" },
-    { name: "Mar", value: 45, color: "#FF6B6B" },
-    { name: "Apr", value: 230, color: "#7CFFB2" },
-];
+const getRiskData = (scans: ScanResult[], view: 'weekly' | 'monthly') => {
+    // Generate semi-dynamic data based on actual scans + noise for a "live" feel
+    if (view === 'weekly') {
+        const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        return days.map(day => {
+            const hasRisky = scans.some(s => s.status === 'risky' && new Date(s.timestamp).getDay() === days.indexOf(day));
+            return {
+                name: day,
+                value: 40 + Math.floor(Math.random() * 30),
+                color: hasRisky ? "#FF6B6B" : "#7CFFB2"
+            };
+        });
+    } else {
+        const months = ["Jan", "Feb", "Mar", "Apr"];
+        return months.map(month => {
+            const riskyCount = scans.filter(s => s.status === 'risky').length;
+            return {
+                name: month,
+                value: 150 + Math.floor(Math.random() * 100),
+                color: riskyCount > 2 ? "#FF6B6B" : "#7CFFB2"
+            };
+        });
+    }
+};
 
-export const useSentinelStore = create<SentinelState>((set) => ({
+export const useSentinelStore = create<SentinelState>((set, get) => ({
     scans: [],
-    safetyScore: 98.4,
+    safetyScore: 100,
     currentView: 'weekly',
-    riskData: INITIAL_WEEKLY_DATA,
-    addScan: (scan) => set((state) => {
-        const newScan = {
+    riskData: getRiskData([], 'weekly'),
+    userProfile: INITIAL_USER,
+    addScan: (scan) => {
+        const newScan: ScanResult = {
             ...scan,
             id: Math.random().toString(36).substr(2, 9),
             timestamp: Date.now()
         };
-        const updatedScans = [newScan, ...state.scans];
 
-        // Slightly fluctuate safety score based on scan result
-        let newScore = state.safetyScore;
-        if (scan.status === 'risky') newScore = Math.max(0, newScore - 5);
-        if (scan.status === 'safe') newScore = Math.min(100, newScore + 0.1);
+        const updatedScans = [newScan, ...get().scans];
 
-        return {
+        // Calculate safety score based on proportion of safe scans
+        const total = updatedScans.length;
+        const risky = updatedScans.filter(s => s.status === 'risky').length;
+        const newScore = total === 0 ? 100 : ((total - risky) / total) * 100;
+
+        set({
             scans: updatedScans,
-            safetyScore: parseFloat(newScore.toFixed(1))
-        };
-    }),
+            safetyScore: parseFloat(newScore.toFixed(1)),
+            riskData: getRiskData(updatedScans, get().currentView)
+        });
+    },
     setView: (view) => set({
         currentView: view,
-        riskData: view === 'weekly' ? INITIAL_WEEKLY_DATA : INITIAL_MONTHLY_DATA
+        riskData: getRiskData(get().scans, view)
     }),
-    clearScans: () => set({ scans: [] }),
+    clearScans: () => set({
+        scans: [],
+        safetyScore: 100,
+        riskData: getRiskData([], get().currentView)
+    }),
+    updateProfile: (updates) => set((state) => ({
+        userProfile: { ...state.userProfile, ...updates }
+    })),
 }));

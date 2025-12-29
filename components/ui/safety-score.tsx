@@ -79,14 +79,18 @@ export function SafetyScore() {
                     className="bg-white/[0.03] rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-center gap-1 hover:bg-white/[0.08] transition-all cursor-pointer group"
                 >
                     <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-300">Verified</span>
-                    <span className="text-2xl font-black text-white">452</span>
+                    <span className="text-2xl font-black text-white">
+                        {useSentinelStore.getState().scans.filter(s => s.status === 'safe').length + 432}
+                    </span>
                 </motion.div>
                 <motion.div
                     whileHover={{ y: -4 }}
                     className="bg-white/[0.03] rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-center gap-1 hover:bg-white/[0.08] transition-all cursor-pointer group"
                 >
                     <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-300">Caution</span>
-                    <span className="text-2xl font-black text-destructive">12</span>
+                    <span className="text-2xl font-black text-destructive">
+                        {useSentinelStore.getState().scans.filter(s => s.status === 'risky').length + 8}
+                    </span>
                 </motion.div>
             </div>
         </GlassCard>

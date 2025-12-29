@@ -39,7 +39,7 @@ export default function RootLayout({
                     <header className="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex justify-between items-center bg-background/80 backdrop-blur-md border-b border-white/5">
                         <div className="flex items-center gap-3">
                             <div className="h-8 px-3 rounded-full bg-primary flex items-center justify-center">
-                                <span className="text-background font-black text-[10px] tracking-tighter uppercase">Sentinel</span>
+                                <span className="text-background font-black text-[10px] tracking-tighter">sentinel</span>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
@@ -111,7 +111,7 @@ export default function RootLayout({
 
                                         <div className="absolute bottom-12 left-8 right-8">
                                             <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10">
-                                                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">Sentinel v8.0</p>
+                                                <p className="text-[10px] font-black text-primary tracking-widest mb-2">sentinel v9.5</p>
                                                 <p className="text-xs font-medium text-zinc-500 leading-relaxed">System is running in optimized state. All neural links active.</p>
                                             </div>
                                         </div>

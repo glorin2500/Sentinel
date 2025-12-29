@@ -20,7 +20,8 @@ export default function AnalyticsPage() {
         });
 
     const riskyCount = scans.filter(s => s.status === 'risky').length;
-    const efficiency = scans.length > 0 ? (scans.filter(s => s.status === 'safe').length / scans.length * 100).toFixed(1) : 100;
+    const safeCount = scans.filter(s => s.status === 'safe').length;
+    const efficiency = scans.length > 0 ? (safeCount / scans.length * 100).toFixed(1) : 100;
 
     const cycleSort = () => {
         const modes: (typeof sortMode)[] = ['TIME', 'ID', 'STATUS'];
@@ -76,8 +77,8 @@ export default function AnalyticsPage() {
                     <button
                         onClick={() => setRiskyOnly(!riskyOnly)}
                         className={`h-12 px-8 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 border-2 ${riskyOnly
-                                ? 'bg-destructive/20 text-destructive border-destructive/40'
-                                : 'bg-white/5 text-zinc-500 border-white/5 hover:text-white'
+                            ? 'bg-destructive/20 text-destructive border-destructive/40'
+                            : 'bg-white/5 text-zinc-500 border-white/5 hover:text-white'
                             }`}
                     >
                         <Filter size={16} />
@@ -120,8 +121,8 @@ export default function AnalyticsPage() {
                                 <GlassCard className="flex-row items-center justify-between p-8 !bg-black/30 hover:!bg-black/50 border-white/5 hover:border-primary/20 transition-all">
                                     <div className="flex items-center gap-6">
                                         <div className={`h-14 w-14 rounded-2xl flex items-center justify-center border ${scan.status === 'safe'
-                                                ? 'text-primary bg-primary/10 border-primary/20'
-                                                : 'text-destructive bg-destructive/10 border-destructive/20'
+                                            ? 'text-primary bg-primary/10 border-primary/20'
+                                            : 'text-destructive bg-destructive/10 border-destructive/20'
                                             }`}>
                                             {scan.status === 'safe' ? <ShieldCheck size={28} /> : <AlertTriangle size={28} />}
                                         </div>
