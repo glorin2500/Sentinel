@@ -500,20 +500,20 @@ export default function ScanPage() {
                                         transition={{ delay: 0.3 }}
                                         className="space-y-4 mb-8"
                                     >
-                                        <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
-                                            <div className="flex items-center justify-between pb-3 border-b border-white/5">
-                                                <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">UPI ID</span>
-                                                <span className="text-sm font-bold text-white">{scannedUpi || manualUpi}</span>
+                                        <div className="p-4 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-3 sm:space-y-4">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-white/5 gap-1 sm:gap-0">
+                                                <span className="text-[10px] sm:text-xs font-black text-zinc-500 uppercase tracking-widest">UPI ID</span>
+                                                <span className="text-sm font-bold text-white truncate">{scannedUpi || manualUpi}</span>
                                             </div>
-                                            <div className="flex items-center justify-between pb-3 border-b border-white/5">
-                                                <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">Risk Level</span>
-                                                <span className={`text-sm font-black ${result === 'safe' ? 'text-primary' : 'text-destructive'
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-white/5 gap-1 sm:gap-0">
+                                                <span className="text-[10px] sm:text-xs font-black text-zinc-500 uppercase tracking-widest">Risk Level</span>
+                                                <span className={`text-base sm:text-sm font-black ${result === 'safe' ? 'text-primary' : 'text-destructive'
                                                     }`}>
                                                     {threatDetails ? `${threatDetails.riskScore}%` : (result === 'safe' ? '0.2%' : '94.7%')}
                                                 </span>
                                             </div>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">Protocol</span>
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
+                                                <span className="text-[10px] sm:text-xs font-black text-zinc-500 uppercase tracking-widest">Protocol</span>
                                                 <span className="text-sm font-bold text-primary">SHA-512</span>
                                             </div>
                                         </div>
@@ -521,11 +521,11 @@ export default function ScanPage() {
 
                                         {/* Threat Details - Real Analysis */}
                                         {threatDetails && threatDetails.reasons && threatDetails.reasons.length > 0 && (
-                                            <div className={`p-5 rounded-2xl ${result === 'safe'
+                                            <div className={`p-4 sm:p-5 rounded-2xl ${result === 'safe'
                                                 ? 'bg-primary/5 border border-primary/20'
                                                 : 'bg-destructive/5 border border-destructive/20'
                                                 }`}>
-                                                <p className="text-[9px] font-black text-zinc-600 uppercase tracking-widest mb-3">
+                                                <p className="text-[9px] sm:text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-3">
                                                     {result === 'safe' ? '✓ Security Analysis' : '⚠ Threat Indicators'}
                                                 </p>
                                                 <div className="space-y-2">
@@ -533,7 +533,7 @@ export default function ScanPage() {
                                                         <div key={i} className="flex items-start gap-2">
                                                             <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${result === 'safe' ? 'bg-primary' : 'bg-destructive'
                                                                 }`} />
-                                                            <p className="text-[11px] font-bold text-zinc-300 leading-relaxed">
+                                                            <p className="text-[10px] sm:text-[11px] font-bold text-zinc-300 leading-relaxed">
                                                                 {reason}
                                                             </p>
                                                         </div>
