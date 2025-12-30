@@ -1,149 +1,208 @@
 "use client";
 
 import { useState } from "react";
-import { GlassCard } from "@/components/ui/glass-card";
+import { motion } from "framer-motion";
 import { useSentinelStore } from "@/lib/store";
-import { motion, AnimatePresence } from "framer-motion";
-import { Filter, SortAsc, AlertTriangle, TrendingUp, ShieldCheck, ArrowUpDown } from "lucide-react";
+import { CalendarHeatmap } from "@/components/analytics/calendar-heatmap";
+import { SpendingChart } from "@/components/analytics/spending-chart";
+import { SafetyTrend } from "@/components/analytics/safety-trend";
+import { BarChart3, Calendar, TrendingUp, FileText, Shield, Zap } from "lucide-react";
 
 export default function AnalyticsPage() {
-    const { scans } = useSentinelStore();
-    const [riskyOnly, setRiskyOnly] = useState(false);
-    const [sortMode, setSortMode] = useState<'ID' | 'TIME' | 'STATUS'>('TIME');
+    const { scans, safetyScore } = useSentinelStore();
+    const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'insights'>('overview');
 
-    const filteredScans = scans
-        .filter(s => riskyOnly ? s.status === 'risky' : true)
-        .sort((a, b) => {
-            if (sortMode === 'STATUS') return a.status.localeCompare(b.status);
-            if (sortMode === 'ID') return a.upiId.localeCompare(b.upiId);
-            return b.timestamp - a.timestamp;
-        });
+    // Calculate stats
+    const totalScans = scans.length;
+    const safeScans = scans.filter(s => s.status === 'safe').length;
+    const riskyScans = scans.filter(s => s.status === 'risky').length;
+    const scansWithAmount = scans.filter(s => s.amount && s.amount > 0).length;
 
-    const riskyCount = scans.filter(s => s.status === 'risky').length;
-    const safeCount = scans.filter(s => s.status === 'safe').length;
-    const efficiency = scans.length > 0 ? (safeCount / scans.length * 100).toFixed(1) : 100;
-
-    const cycleSort = () => {
-        const modes: (typeof sortMode)[] = ['TIME', 'ID', 'STATUS'];
-        const next = modes[(modes.indexOf(sortMode) + 1) % modes.length];
-        setSortMode(next);
-    };
+    const tabs = [
+        { id: 'overview' as const, label: 'Overview', icon: BarChart3 },
+        { id: 'calendar' as const, label: 'Calendar', icon: Calendar },
+        { id: 'insights' as const, label: 'Insights', icon: TrendingUp },
+    ];
 
     return (
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="max-w-4xl mx-auto space-y-6 pt-8 pb-32 px-4"
+            className="max-w-6xl mx-auto space-y-6 pt-8 pb-32 px-4"
         >
+            {/* Header */}
             <div className="flex flex-col gap-1">
-                <h1 className="text-3xl font-black text-white tracking-tight">Operations</h1>
-                <p className="text-zinc-500 font-bold uppercase text-[9px] tracking-[0.25em]">Traffic Analysis</p>
+                <div className="flex items-center gap-2">
+                    <div className="h-10 w-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
+                        <BarChart3 size={20} className="text-primary" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-black text-white tracking-tight">Analytics</h1>
+                        <p className="text-zinc-500 font-bold uppercase text-[9px] tracking-[0.25em]">
+                            Data & Insights Dashboard
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <GlassCard className="flex-row items-center gap-4 p-6 !bg-primary/5 border-primary/20 group hover:!bg-primary/10 transition-all">
-                    <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                        <TrendingUp size={24} />
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Zap size={14} className="text-primary" />
+                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider">
+                            Total Scans
+                        </span>
                     </div>
-                    <div>
-                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Efficiency</p>
-                        <p className="text-2xl font-black text-white">{efficiency}%</p>
-                    </div>
-                </GlassCard>
-                <GlassCard className="flex-row items-center gap-4 p-6 !bg-destructive/5 border-destructive/20 group hover:!bg-destructive/10 transition-all">
-                    <div className="h-12 w-12 rounded-xl bg-destructive/20 flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
-                        <AlertTriangle size={24} />
-                    </div>
-                    <div>
-                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Blocked</p>
-                        <p className="text-2xl font-black text-white">{riskyCount}</p>
-                    </div>
-                </GlassCard>
-                <GlassCard className="flex-row items-center gap-4 p-6 !bg-white/5 border-white/10 group hover:!bg-white/10 transition-all">
-                    <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center text-zinc-400 group-hover:scale-110 transition-transform">
-                        <ShieldCheck size={24} />
-                    </div>
-                    <div>
-                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Status</p>
-                        <p className="text-lg font-black text-primary">ACTIVE</p>
-                    </div>
-                </GlassCard>
-            </div>
-
-            {/* Controls */}
-            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center bg-white/5 p-3 sm:p-4 rounded-[20px] sm:rounded-[24px] border border-white/10 gap-3">
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <button
-                        onClick={() => setRiskyOnly(!riskyOnly)}
-                        className={`h-9 sm:h-10 px-4 sm:px-6 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border-2 hover:scale-105 active:scale-95 ${riskyOnly
-                            ? 'bg-destructive/20 text-destructive border-destructive/40 shadow-[0_0_20px_rgba(255,107,107,0.3)]'
-                            : 'bg-white/5 text-zinc-500 border-white/5 hover:text-white hover:border-white/10'
-                            }`}
-                    >
-                        <Filter size={14} className={riskyOnly ? 'animate-pulse' : ''} />
-                        <span className="hidden xs:inline">{riskyOnly ? 'Risky' : 'All'}</span>
-                        <span className="xs:hidden">{riskyOnly ? 'R' : 'A'}</span>
-                    </button>
-                    <button
-                        onClick={cycleSort}
-                        className="h-9 sm:h-10 px-4 sm:px-6 rounded-xl bg-primary/10 border-2 border-primary/20 text-[9px] font-black text-primary uppercase tracking-widest hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(124,255,178,0.2)]"
-                    >
-                        <ArrowUpDown size={14} />
-                        {sortMode}
-                    </button>
+                    <p className="text-2xl font-black text-white">{totalScans}</p>
                 </div>
-                <div className="px-3 sm:px-4 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[9px] font-black text-zinc-600 uppercase tracking-widest text-center sm:text-left">
-                    {filteredScans.length} {filteredScans.length === 1 ? 'Node' : 'Nodes'}
+
+                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
+                    <div className="flex items-center gap-2 mb-2">
+                        <Shield size={14} className="text-primary" />
+                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider">
+                            Safe Scans
+                        </span>
+                    </div>
+                    <p className="text-2xl font-black text-primary">{safeScans}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-destructive/5 border border-destructive/20">
+                    <div className="flex items-center gap-2 mb-2">
+                        <FileText size={14} className="text-destructive" />
+                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider">
+                            Risky Scans
+                        </span>
+                    </div>
+                    <p className="text-2xl font-black text-destructive">{riskyScans}</p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                    <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp size={14} className="text-zinc-400" />
+                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider">
+                            With Amount
+                        </span>
+                    </div>
+                    <p className="text-2xl font-black text-white">{scansWithAmount}</p>
                 </div>
             </div>
 
-            {/* Dynamic Content */}
-            <div className="space-y-3">
-                <AnimatePresence mode="popLayout">
-                    {filteredScans.length === 0 ? (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="p-16 text-center rounded-[32px] bg-white/[0.02] border border-dashed border-white/5"
+            {/* Tab Navigation */}
+            <div className="flex gap-2 p-2 rounded-2xl bg-white/5 border border-white/10">
+                {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`flex-1 h-10 rounded-xl font-black uppercase text-[10px] tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === tab.id
+                                    ? 'bg-primary text-background shadow-[0_0_20px_rgba(124,255,178,0.3)]'
+                                    : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                                }`}
                         >
-                            <p className="text-zinc-600 font-black uppercase text-[10px] tracking-widest">No logs found</p>
-                            <p className="text-zinc-700 text-[9px] mt-2">Try scanning a QR code first</p>
-                        </motion.div>
-                    ) : (
-                        filteredScans.map((scan, i) => (
-                            <motion.div
-                                key={scan.id}
-                                layout
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.98 }}
-                                className="group"
-                            >
-                                <GlassCard className="flex-row items-center justify-between p-4 sm:p-6 !bg-black/30 hover:!bg-black/50 border-white/5 hover:border-primary/20 transition-all gap-3">
-                                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
-                                        <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center border flex-shrink-0 ${scan.status === 'safe'
-                                            ? 'text-primary bg-primary/10 border-primary/20'
-                                            : 'text-destructive bg-destructive/10 border-destructive/20'
-                                            }`}>
-                                            {scan.status === 'safe' ? <ShieldCheck size={20} className="sm:w-6 sm:h-6" /> : <AlertTriangle size={20} className="sm:w-6 sm:h-6" />}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
-                                            <p className="text-sm sm:text-base font-black text-white group-hover:text-primary transition-colors truncate">{scan.upiId}</p>
-                                            <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider mt-0.5 truncate">
-                                                {scan.threatType || "Verified"}
-                                            </p>
+                            <Icon size={14} />
+                            {tab.label}
+                        </button>
+                    );
+                })}
+            </div>
+
+            {/* Tab Content */}
+            <div className="space-y-6">
+                {activeTab === 'overview' && (
+                    <motion.div
+                        key="overview"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-6"
+                    >
+                        <SafetyTrend scans={scans} currentScore={safetyScore} />
+                        <SpendingChart scans={scans} />
+                    </motion.div>
+                )}
+
+                {activeTab === 'calendar' && (
+                    <motion.div
+                        key="calendar"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <CalendarHeatmap
+                            scans={scans}
+                            onDayClick={(date, dayScans) => {
+                                console.log('Clicked date:', date, 'Scans:', dayScans);
+                            }}
+                        />
+                    </motion.div>
+                )}
+
+                {activeTab === 'insights' && (
+                    <motion.div
+                        key="insights"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="space-y-6"
+                    >
+                        {/* AI-Generated Insights */}
+                        <div className="p-6 rounded-3xl border border-white/10 bg-white/[0.02]">
+                            <h3 className="text-lg font-black text-white mb-2">AI Insights</h3>
+                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-6">
+                                Personalized Analysis
+                            </p>
+
+                            <div className="space-y-4">
+                                {safetyScore >= 90 && (
+                                    <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
+                                        <div className="flex items-start gap-3">
+                                            <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                                <Shield size={16} className="text-primary" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-black text-white mb-1">
+                                                    Excellent Safety Record! 🎉
+                                                </h4>
+                                                <p className="text-xs text-zinc-400 leading-relaxed">
+                                                    Your safety score of {safetyScore.toFixed(1)}% is outstanding!
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="text-right flex-shrink-0">
-                                        <p className="text-xs sm:text-sm font-bold text-white">{new Date(scan.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                        <p className="text-[8px] font-black text-zinc-600 uppercase mt-0.5 tracking-wider">{new Date(scan.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}</p>
+                                )}
+
+                                {safetyScore < 70 && riskyScans > 0 && (
+                                    <div className="p-4 rounded-2xl bg-destructive/5 border border-destructive/20">
+                                        <div className="flex items-start gap-3">
+                                            <div className="h-8 w-8 rounded-lg bg-destructive/20 flex items-center justify-center flex-shrink-0">
+                                                <FileText size={16} className="text-destructive" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-black text-white mb-1">
+                                                    Security Alert ⚠️
+                                                </h4>
+                                                <p className="text-xs text-zinc-400 leading-relaxed">
+                                                    You've encountered {riskyScans} risky scan{riskyScans > 1 ? 's' : ''}.
+                                                </p>
+                                            </div>
+                                        </div>
                                     </div>
-                                </GlassCard>
-                            </motion.div>
-                        ))
-                    )}
-                </AnimatePresence>
+                                )}
+
+                                {totalScans < 5 && (
+                                    <div className="p-8 text-center">
+                                        <TrendingUp size={48} className="text-zinc-700 mx-auto mb-4" />
+                                        <p className="text-sm font-bold text-zinc-500 mb-2">
+                                            Not enough data for insights yet
+                                        </p>
+                                        <p className="text-xs text-zinc-600">
+                                            Complete more scans to unlock personalized insights
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
             </div>
         </motion.div>
     );

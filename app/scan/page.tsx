@@ -2,21 +2,29 @@
 
 import { useState, useEffect, useRef } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { ShieldCheck, Scan, AlertTriangle, CheckCircle2, ArrowRight, ShieldAlert, X, Zap, Camera, Grid3X3, Upload, Image as ImageIcon } from "lucide-react";
+import { ShieldCheck, Scan, AlertTriangle, CheckCircle2, ArrowRight, ShieldAlert, X, Zap, Camera, Grid3X3, Upload, Image as ImageIcon, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSentinelStore } from "@/lib/store";
 import { parseUPIString, analyzeUPIRisk } from "@/lib/upi-analyzer";
 import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
+import { ShareButton } from "@/components/ui/share-button";
+import { predictFraud, AIPrediction } from "@/lib/ai/fraud-predictor";
+import { getSmartSuggestions, SmartSuggestion } from "@/lib/smart-suggestions";
+import { SmartSuggestionCard } from "@/components/ui/smart-suggestion-card";
+import { sendRiskyScanAlert, requestNotificationPermission } from "@/lib/notifications/alert-service";
 
 export default function ScanPage() {
     const [isScanning, setIsScanning] = useState(false);
     const [result, setResult] = useState<'safe' | 'risky' | null>(null);
     const [manualUpi, setManualUpi] = useState("");
+    const [amount, setAmount] = useState(""); // Transaction amount
     const [cameraActive, setCameraActive] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [showSuccessToast, setShowSuccessToast] = useState(false);
-    const { addScan, reportFraud } = useSentinelStore();
+    const [aiPrediction, setAiPrediction] = useState<AIPrediction | null>(null);
+    const [smartSuggestions, setSmartSuggestions] = useState<SmartSuggestion[]>([]);
+    const { addScan, reportFraud, addFavorite, removeFavorite, isFavorite, scans, merchantScanCount, favorites, preferences } = useSentinelStore();
     const router = useRouter();
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -162,20 +170,68 @@ export default function ScanPage() {
             // Determine status based on risk level
             const status = analysis.level === 'risky' ? 'risky' : 'safe';
 
+            // AI Fraud Prediction
+            const amountValue = amount ? parseFloat(amount) : undefined;
+            const prediction = predictFraud(
+                {
+                    upiId,
+                    merchantName: parsedData?.payeeName,
+                    amount: amountValue
+                },
+                scans,
+                merchantScanCount
+            );
+            setAiPrediction(prediction);
+
             // Store threat details for display
             setThreatDetails({
                 riskScore: analysis.score,
                 reasons: analysis.reasons,
-                type: analysis.level === 'risky' ? 'Potential Fraud' : 'Verified Node'
+                type: analysis.level === 'risky' ? 'Potential Fraud' : 'Verified Node',
+                merchantName: parsedData?.payeeName,
+                threatType: analysis.level === 'risky' ? "Suspicious Pattern" : undefined
             });
 
             setResult(status);
+
+            // Add scan with AI prediction and amount
             addScan({
                 upiId: upiId,
                 status: status,
                 merchantName: parsedData?.payeeName || "Unknown Merchant",
-                threatType: analysis.level === 'risky' ? "Suspicious Pattern" : undefined
+                threatType: analysis.level === 'risky' ? "Suspicious Pattern" : undefined,
+                amount: amountValue,
+                aiPrediction: {
+                    confidence: prediction.confidence,
+                    factors: prediction.factors,
+                    recommendation: prediction.recommendation
+                }
             });
+
+            // Generate smart suggestions
+            const suggestions = getSmartSuggestions(
+                {
+                    upiId,
+                    merchantName: parsedData?.payeeName,
+                    amount: amountValue,
+                    status
+                },
+                scans,
+                merchantScanCount,
+                favorites,
+                preferences
+            );
+            setSmartSuggestions(suggestions);
+
+            // Send alert for risky scans
+            if (status === 'risky' && preferences.enableRiskyAlerts) {
+                sendRiskyScanAlert(
+                    parsedData?.payeeName || upiId,
+                    upiId,
+                    analysis.level === 'risky' ? "Suspicious Pattern" : "Unknown",
+                    preferences.notificationSound
+                );
+            }
         } else {
             // Invalid Format - only set if explicitly triggered by scan or enter
             if (!manualUpi || manualUpi === data) {
@@ -244,6 +300,11 @@ export default function ScanPage() {
     };
 
     useEffect(() => {
+        // Request notification permission if alerts are enabled
+        if (preferences.enableRiskyAlerts) {
+            requestNotificationPermission();
+        }
+
         return () => {
             if (scannerRef.current) {
                 stopCamera();
@@ -383,6 +444,20 @@ export default function ScanPage() {
                             className="w-full bg-white/[0.03] border-2 border-white/5 rounded-[20px] py-4 px-6 text-white text-sm font-bold focus:outline-none focus:border-primary/40 transition-all placeholder:text-zinc-700"
                         />
                         <Grid3X3 className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-primary transition-colors" size={18} />
+                    </div>
+
+                    {/* Amount Input (Optional) */}
+                    <div className="relative group">
+                        <input
+                            type="number"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                            placeholder="Amount (optional)"
+                            className="w-full bg-white/[0.03] border-2 border-white/5 rounded-[20px] py-4 px-6 pl-10 text-white text-sm font-bold focus:outline-none focus:border-primary/40 transition-all placeholder:text-zinc-700"
+                        />
+                        <span className="absolute left-5 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-primary transition-colors text-sm font-bold">
+                            ₹
+                        </span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
@@ -587,6 +662,138 @@ export default function ScanPage() {
                                                 </div>
                                             </div>
                                         )}
+
+                                        {/* AI Prediction Display */}
+                                        {aiPrediction && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.3 }}
+                                                className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10"
+                                            >
+                                                <div className="flex items-center justify-between mb-3">
+                                                    <p className="text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-widest">
+                                                        🤖 AI Fraud Analysis
+                                                    </p>
+                                                    <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider ${aiPrediction.confidence >= 70 ? 'bg-destructive/20 text-destructive' :
+                                                            aiPrediction.confidence >= 50 ? 'bg-yellow-500/20 text-yellow-500' :
+                                                                aiPrediction.confidence >= 30 ? 'bg-blue-500/20 text-blue-500' :
+                                                                    'bg-primary/20 text-primary'
+                                                        }`}>
+                                                        {aiPrediction.riskLevel} Risk
+                                                    </span>
+                                                </div>
+
+                                                {/* Confidence Bar */}
+                                                <div className="mb-3">
+                                                    <div className="flex justify-between items-center mb-1">
+                                                        <span className="text-[10px] font-bold text-zinc-400">Confidence</span>
+                                                        <span className="text-xs font-black text-white">{aiPrediction.confidence.toFixed(0)}%</span>
+                                                    </div>
+                                                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${aiPrediction.confidence}%` }}
+                                                            transition={{ duration: 0.8, delay: 0.4 }}
+                                                            className={`h-full rounded-full ${aiPrediction.confidence >= 70 ? 'bg-destructive' :
+                                                                    aiPrediction.confidence >= 50 ? 'bg-yellow-500' :
+                                                                        aiPrediction.confidence >= 30 ? 'bg-blue-500' :
+                                                                            'bg-primary'
+                                                                }`}
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                {/* AI Factors */}
+                                                {aiPrediction.factors.length > 0 && (
+                                                    <div className="space-y-1.5 mb-3">
+                                                        {aiPrediction.factors.slice(0, 3).map((factor, i) => (
+                                                            <div key={i} className="flex items-start gap-2">
+                                                                <div className="w-1 h-1 rounded-full bg-zinc-600 mt-1.5 flex-shrink-0" />
+                                                                <p className="text-[10px] font-medium text-zinc-400 leading-relaxed">
+                                                                    {factor}
+                                                                </p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Recommendation */}
+                                                <div className="pt-3 border-t border-white/5">
+                                                    <p className="text-[10px] font-bold text-zinc-300 leading-relaxed">
+                                                        💡 {aiPrediction.recommendation}
+                                                    </p>
+                                                </div>
+                                            </motion.div>
+                                        )}
+
+                                        {/* Smart Suggestions */}
+                                        {smartSuggestions.length > 0 && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.35 }}
+                                                className="space-y-3"
+                                            >
+                                                {smartSuggestions.slice(0, 2).map((suggestion) => (
+                                                    <SmartSuggestionCard
+                                                        key={suggestion.id}
+                                                        suggestion={{
+                                                            ...suggestion,
+                                                            action: suggestion.type === 'add_to_favorites' ? {
+                                                                label: 'Add to Favorites',
+                                                                handler: () => addFavorite(scannedUpi || manualUpi)
+                                                            } : suggestion.action
+                                                        }}
+                                                        onDismiss={(id) => setSmartSuggestions(prev => prev.filter(s => s.id !== id))}
+                                                    />
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </motion.div>
+
+                                    {/* Share and Favorite Buttons */}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.35 }}
+                                        className="flex gap-3"
+                                    >
+                                        {/* Share Button */}
+                                        <div className="flex-1">
+                                            <ShareButton
+                                                scan={{
+                                                    id: Math.random().toString(36).substr(2, 9),
+                                                    upiId: scannedUpi || manualUpi,
+                                                    merchantName: parseUPIString(scannedUpi || manualUpi)?.payeeName || "Unknown Merchant",
+                                                    status: result as 'safe' | 'risky',
+                                                    timestamp: Date.now(),
+                                                    threatType: threatDetails?.threatType
+                                                }}
+                                                className="w-full"
+                                            />
+                                        </div>
+
+                                        {/* Favorite Button */}
+                                        <button
+                                            onClick={() => {
+                                                const upiId = scannedUpi || manualUpi;
+                                                if (isFavorite(upiId)) {
+                                                    removeFavorite(upiId);
+                                                } else {
+                                                    addFavorite(upiId);
+                                                }
+                                            }}
+                                            className={`h-10 px-4 rounded-xl border flex items-center gap-2 transition-all ${isFavorite(scannedUpi || manualUpi)
+                                                ? 'bg-primary/10 border-primary/20 text-primary'
+                                                : 'bg-white/5 border-white/10 text-zinc-400 hover:border-primary/20'
+                                                }`}
+                                        >
+                                            <Star
+                                                size={16}
+                                                className={isFavorite(scannedUpi || manualUpi) ? 'fill-primary' : ''}
+                                            />
+                                        </button>
                                     </motion.div>
 
                                     {/* Action Buttons */}

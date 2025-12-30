@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Home, History, Bell, User, ScanLine } from "lucide-react";
+import { Home, History, BarChart3, User, ScanLine } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,7 @@ export function FloatingDock() {
         { icon: History, label: "History", href: "/history" },
         // Center spacing for QR button
         { icon: null, label: "Scan", href: "/scan", isCenter: true },
-        { icon: Bell, label: "Analytics", href: "/analytics" },
+        { icon: BarChart3, label: "Analytics", href: "/analytics" },
         { icon: User, label: "Profile", href: "/profile" },
     ];
 

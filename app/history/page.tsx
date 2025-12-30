@@ -4,12 +4,14 @@ import { useState } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { useSentinelStore } from "@/lib/store";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, ShieldAlert, Clock, Search, MapPin, CreditCard, ChevronRight, Hash, Filter, ArrowUpDown, TrendingUp, AlertTriangle, ShieldCheck, X } from "lucide-react";
+import { CheckCircle2, ShieldAlert, Clock, Search, MapPin, CreditCard, ChevronRight, Hash, Filter, ArrowUpDown, TrendingUp, AlertTriangle, ShieldCheck, X, Star } from "lucide-react";
+import { ExportMenu } from "@/components/ui/export-menu";
 
 export default function HistoryPage() {
-    const { scans } = useSentinelStore();
+    const { scans, favorites, isFavorite } = useSentinelStore();
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<'all' | 'safe' | 'risky'>('all');
+    const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
     const [sortMode, setSortMode] = useState<'TIME' | 'UPI' | 'STATUS'>('TIME');
 
     // Filter and sort scans
@@ -18,7 +20,8 @@ export default function HistoryPage() {
             const matchesSearch = scan.upiId.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 scan.merchantName?.toLowerCase().includes(searchQuery.toLowerCase());
             const matchesStatus = statusFilter === 'all' || scan.status === statusFilter;
-            return matchesSearch && matchesStatus;
+            const matchesFavorites = !showFavoritesOnly || isFavorite(scan.upiId);
+            return matchesSearch && matchesStatus && matchesFavorites;
         })
         .sort((a, b) => {
             if (sortMode === 'STATUS') return a.status.localeCompare(b.status);
@@ -105,7 +108,7 @@ export default function HistoryPage() {
                 </div>
 
                 {/* Filter Buttons */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                     <button
                         onClick={() => setStatusFilter('all')}
                         className={`h-10 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border-2 hover:scale-105 active:scale-95 ${statusFilter === 'all'
@@ -134,12 +137,23 @@ export default function HistoryPage() {
                         Risky
                     </button>
                     <button
+                        onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                        className={`h-10 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border-2 hover:scale-105 active:scale-95 flex items-center gap-2 ${showFavoritesOnly
+                            ? 'bg-primary/20 text-primary border-primary/40 shadow-[0_0_15px_rgba(124,255,178,0.2)]'
+                            : 'bg-white/5 text-zinc-500 border-white/5 hover:text-primary'
+                            }`}
+                    >
+                        <Star size={14} className={showFavoritesOnly ? 'fill-primary' : ''} />
+                        Favorites
+                    </button>
+                    <button
                         onClick={cycleSort}
                         className="h-10 px-4 rounded-xl bg-primary/10 border-2 border-primary/20 text-[9px] font-black text-primary uppercase tracking-widest hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
                     >
                         <ArrowUpDown size={14} />
                         {sortMode}
                     </button>
+                    <ExportMenu />
                 </div>
             </div>
 

@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { MerchantCategory } from './analytics/advanced-analytics';
 
 export interface ScanResult {
     id: string;
@@ -7,6 +8,58 @@ export interface ScanResult {
     timestamp: number;
     merchantName?: string;
     threatType?: string;
+    location?: {
+        city?: string;
+        region?: string;
+    };
+    amount?: number;
+    notes?: string;
+    aiPrediction?: {
+        confidence: number;
+        factors: string[];
+        recommendation: string;
+    };
+    category?: MerchantCategory;
+    tags?: string[];
+}
+
+interface UserPreferences {
+    enableSmartSuggestions: boolean;
+    enableRiskyAlerts: boolean;
+    enableLocationAlerts: boolean;
+    notificationSound: boolean;
+    autoAddFrequentToFavorites: number;
+    soundEffectsEnabled: boolean;
+    hapticFeedbackEnabled: boolean;
+    celebrationAnimations: boolean;
+}
+
+interface SecuritySettings {
+    pinEnabled: boolean;
+    pinHash?: string;
+    autoLockEnabled: boolean;
+    autoLockTimeout: number;
+    biometricForExport: boolean;
+    biometricForSettings: boolean;
+    lastActivity: number;
+}
+
+interface GamificationState {
+    xp: number;
+    level: number;
+    currentStreak: number;
+    longestStreak: number;
+    lastScanDate: string | null;
+    unlockedThemes: string[];
+    unlockedFeatures: string[];
+    completedChallenges: string[];
+}
+
+export interface Tag {
+    id: string;
+    name: string;
+    color: string;
+    icon?: string;
 }
 
 interface UserProfile {
@@ -31,18 +84,50 @@ interface SentinelState {
     safetyScore: number;
     riskData: { name: string; value: number; color: string }[];
     userProfile: UserProfile;
+    preferences: UserPreferences;
     theme: 'light' | 'dark';
     reportedFrauds: string[];
+    favorites: string[];
+    merchantScanCount: Record<string, number>;
+
+    // Gamification
+    gamification: GamificationState;
+    addXP: (amount: number) => void;
+    completeChallenge: (challengeId: string) => void;
+    unlockReward: (rewardId: string, type: 'theme' | 'feature') => void;
+
+    // Security
+    security: SecuritySettings;
+    isLocked: boolean;
+    updateSecurity: (updates: Partial<SecuritySettings>) => void;
+    lock: () => void;
+    unlock: () => void;
+
+    // Tags
+    tags: Tag[];
+    scanTags: Record<string, string[]>;
+    addTag: (tag: Tag) => void;
+    removeTag: (tagId: string) => void;
+    tagScan: (scanId: string, tagId: string) => void;
+    untagScan: (scanId: string, tagId: string) => void;
+
+    // Existing actions
     reportFraud: (upiId: string) => void;
     addScan: (scan: Omit<ScanResult, 'id' | 'timestamp'>) => void;
     clearScans: () => void;
     currentView: 'weekly' | 'monthly';
     setView: (view: 'weekly' | 'monthly') => void;
     updateProfile: (updates: Partial<UserProfile>) => void;
+    updatePreferences: (updates: Partial<UserPreferences>) => void;
     toggleTheme: () => void;
     setTheme: (theme: 'light' | 'dark') => void;
     isAuthenticated: boolean;
     setAuthenticated: (val: boolean) => void;
+    addFavorite: (upiId: string) => void;
+    removeFavorite: (upiId: string) => void;
+    isFavorite: (upiId: string) => boolean;
+    incrementMerchantCount: (upiId: string) => void;
+    getMerchantScanCount: (upiId: string) => number;
 }
 
 const INITIAL_USER: UserProfile = {
@@ -86,11 +171,54 @@ const getRiskData = (scans: ScanResult[], view: 'weekly' | 'monthly') => {
 export const useSentinelStore = create<SentinelState>((set, get) => ({
     scans: [],
     reportedFrauds: [],
+    favorites: [],
+    merchantScanCount: {},
     safetyScore: 100,
     currentView: 'weekly',
     riskData: getRiskData([], 'weekly'),
     userProfile: INITIAL_USER,
+    preferences: {
+        enableSmartSuggestions: true,
+        enableRiskyAlerts: true,
+        enableLocationAlerts: false,
+        notificationSound: true,
+        autoAddFrequentToFavorites: 5,
+        soundEffectsEnabled: true,
+        hapticFeedbackEnabled: true,
+        celebrationAnimations: true
+    },
     theme: (typeof window !== 'undefined' && localStorage.getItem('sentinel-theme') as 'light' | 'dark') || 'dark',
+
+    // Gamification state
+    gamification: {
+        xp: 0,
+        level: 1,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastScanDate: null,
+        unlockedThemes: [],
+        unlockedFeatures: [],
+        completedChallenges: []
+    },
+
+    // Security state
+    security: {
+        pinEnabled: false,
+        autoLockEnabled: false,
+        autoLockTimeout: 5,
+        biometricForExport: false,
+        biometricForSettings: false,
+        lastActivity: Date.now()
+    },
+    isLocked: false,
+
+    // Tags state
+    tags: [
+        { id: 'trusted', name: 'Trusted', color: '#7CFFB2', icon: '✓' },
+        { id: 'suspicious', name: 'Suspicious', color: '#FF6B6B', icon: '⚠' },
+        { id: 'frequent', name: 'Frequent', color: '#4ECDC4', icon: '🔄' }
+    ],
+    scanTags: {},
     reportFraud: (upiId) => {
         const { reportedFrauds, addScan } = get();
         if (!reportedFrauds.includes(upiId)) {
@@ -118,10 +246,18 @@ export const useSentinelStore = create<SentinelState>((set, get) => ({
         const risky = updatedScans.filter(s => s.status === 'risky').length;
         const newScore = total === 0 ? 100 : ((total - risky) / total) * 100;
 
+        // Increment merchant scan count
+        const { merchantScanCount } = get();
+        const upiId = scan.upiId;
+
         set({
             scans: updatedScans,
             safetyScore: parseFloat(newScore.toFixed(1)),
-            riskData: getRiskData(updatedScans, get().currentView)
+            riskData: getRiskData(updatedScans, get().currentView),
+            merchantScanCount: {
+                ...merchantScanCount,
+                [upiId]: (merchantScanCount[upiId] || 0) + 1
+            }
         });
     },
     setView: (view) => set({
@@ -153,4 +289,115 @@ export const useSentinelStore = create<SentinelState>((set, get) => ({
     },
     isAuthenticated: false,
     setAuthenticated: (val) => set({ isAuthenticated: val }),
+    addFavorite: (upiId) => {
+        const { favorites } = get();
+        if (!favorites.includes(upiId)) {
+            set({ favorites: [...favorites, upiId] });
+        }
+    },
+    removeFavorite: (upiId) => {
+        set({ favorites: get().favorites.filter(id => id !== upiId) });
+    },
+    isFavorite: (upiId) => {
+        return get().favorites.includes(upiId);
+    },
+    updatePreferences: (updates) => set((state) => ({
+        preferences: { ...state.preferences, ...updates }
+    })),
+    incrementMerchantCount: (upiId) => {
+        const { merchantScanCount } = get();
+        set({
+            merchantScanCount: {
+                ...merchantScanCount,
+                [upiId]: (merchantScanCount[upiId] || 0) + 1
+            }
+        });
+    },
+    getMerchantScanCount: (upiId) => {
+        return get().merchantScanCount[upiId] || 0;
+    },
+
+    // Gamification actions
+    addXP: (amount) => {
+        const { gamification } = get();
+        const newXP = gamification.xp + amount;
+        const newLevel = Math.floor(1 + Math.log(newXP / 100) / Math.log(1.5));
+
+        set({
+            gamification: {
+                ...gamification,
+                xp: newXP,
+                level: Math.max(newLevel, 1)
+            }
+        });
+    },
+
+    completeChallenge: (challengeId) => {
+        const { gamification } = get();
+        if (!gamification.completedChallenges.includes(challengeId)) {
+            set({
+                gamification: {
+                    ...gamification,
+                    completedChallenges: [...gamification.completedChallenges, challengeId]
+                }
+            });
+        }
+    },
+
+    unlockReward: (rewardId, type) => {
+        const { gamification } = get();
+        const key = type === 'theme' ? 'unlockedThemes' : 'unlockedFeatures';
+        if (!gamification[key].includes(rewardId)) {
+            set({
+                gamification: {
+                    ...gamification,
+                    [key]: [...gamification[key], rewardId]
+                }
+            });
+        }
+    },
+
+    // Security actions
+    updateSecurity: (updates) => set((state) => ({
+        security: { ...state.security, ...updates }
+    })),
+
+    lock: () => set({ isLocked: true }),
+    unlock: () => set({ isLocked: false }),
+
+    // Tag actions
+    addTag: (tag) => {
+        const { tags } = get();
+        if (!tags.find(t => t.id === tag.id)) {
+            set({ tags: [...tags, tag] });
+        }
+    },
+
+    removeTag: (tagId) => {
+        set({ tags: get().tags.filter(t => t.id !== tagId) });
+    },
+
+    tagScan: (scanId, tagId) => {
+        const { scanTags } = get();
+        const existing = scanTags[scanId] || [];
+        if (!existing.includes(tagId)) {
+            set({
+                scanTags: {
+                    ...scanTags,
+                    [scanId]: [...existing, tagId]
+                }
+            });
+        }
+    },
+
+    untagScan: (scanId, tagId) => {
+        const { scanTags } = get();
+        const existing = scanTags[scanId] || [];
+        set({
+            scanTags: {
+                ...scanTags,
+                [scanId]: existing.filter(id => id !== tagId)
+            }
+        });
+    },
 }));
