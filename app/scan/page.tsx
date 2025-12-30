@@ -5,6 +5,7 @@ import { GlassCard } from "@/components/ui/glass-card";
 import { ShieldCheck, Scan, AlertTriangle, CheckCircle2, ArrowRight, ShieldAlert, X, Zap, Camera, Grid3X3, Upload, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSentinelStore } from "@/lib/store";
+import { parseUPIString, analyzeUPIRisk } from "@/lib/upi-analyzer";
 import { useRouter } from "next/navigation";
 import { Html5Qrcode } from "html5-qrcode";
 
