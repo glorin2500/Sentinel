@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
-import { ShieldCheck, Scan, AlertTriangle, CheckCircle2, ArrowRight, ShieldAlert, X, Zap, Camera, Grid3X3 } from "lucide-react";
+import { ShieldCheck, Scan, AlertTriangle, CheckCircle2, ArrowRight, ShieldAlert, X, Zap, Camera, Grid3X3, Upload, Image as ImageIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSentinelStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
@@ -13,9 +13,11 @@ export default function ScanPage() {
     const [result, setResult] = useState<'safe' | 'risky' | null>(null);
     const [manualUpi, setManualUpi] = useState("");
     const [cameraActive, setCameraActive] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
     const { addScan } = useSentinelStore();
     const router = useRouter();
     const scannerRef = useRef<Html5Qrcode | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const stopCamera = async () => {
         try {
@@ -118,6 +120,60 @@ export default function ScanPage() {
         });
     };
 
+    const handleFileUpload = async (file: File) => {
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload an image file');
+            return;
+        }
+
+        setIsScanning(true);
+        setResult(null);
+
+        try {
+            const html5QrCode = new Html5Qrcode("reader");
+            scannerRef.current = html5QrCode;
+
+            const result = await html5QrCode.scanFile(file, true);
+            handleScanResult(result);
+        } catch (err) {
+            console.error("Error scanning file:", err);
+            alert("Could not detect QR code in image. Please try another image.");
+        } finally {
+            setIsScanning(false);
+            if (scannerRef.current) {
+                scannerRef.current.clear();
+                scannerRef.current = null;
+            }
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        const files = e.dataTransfer.files;
+        if (files && files[0]) {
+            handleFileUpload(files[0]);
+        }
+    };
+
+    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (files && files[0]) {
+            handleFileUpload(files[0]);
+        }
+    };
+
     useEffect(() => {
         return () => {
             if (scannerRef.current) {
@@ -125,6 +181,7 @@ export default function ScanPage() {
             }
         };
     }, []);
+
 
     return (
         <motion.div
@@ -227,21 +284,101 @@ export default function ScanPage() {
                         type="text"
                         value={manualUpi}
                         onChange={(e) => setManualUpi(e.target.value)}
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter' && manualUpi.trim()) {
+                                handleScanResult(manualUpi.trim());
+                            }
+                        }}
                         placeholder="Enter UPI ID"
                         className="w-full bg-white/[0.03] border-2 border-white/5 rounded-[20px] py-4 px-6 text-white text-sm font-bold focus:outline-none focus:border-primary/40 transition-all placeholder:text-zinc-700"
                     />
                     <Grid3X3 className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-primary transition-colors" size={18} />
                 </div>
 
-                <button
-                    disabled={isScanning}
-                    onClick={startCamera}
-                    className="w-full h-16 rounded-[24px] bg-primary text-background font-black uppercase tracking-[0.2em] text-xs hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all flex items-center justify-center gap-3 shadow-[0_20px_60px_rgba(124,255,178,0.15)] group overflow-hidden relative"
-                >
-                    <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 skew-x-12" />
-                    <Camera size={20} className="group-hover:rotate-12 transition-transform" />
-                    {isScanning ? 'Analyzing...' : 'Start Scan'}
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                    <button
+                        disabled={isScanning}
+                        onClick={startCamera}
+                        className="h-14 rounded-[20px] bg-primary text-background font-black uppercase tracking-[0.15em] text-[10px] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all flex items-center justify-center gap-2 shadow-[0_15px_40px_rgba(124,255,178,0.15)] group overflow-hidden relative"
+                    >
+                        <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 skew-x-12" />
+                        <Camera size={18} className="group-hover:rotate-12 transition-transform" />
+                        {isScanning ? 'Scanning...' : 'QR Scan'}
+                    </button>
+
+                    <button
+                        disabled={!manualUpi.trim() || isScanning}
+                        onClick={() => handleScanResult(manualUpi.trim())}
+                        className="h-14 rounded-[20px] bg-white/10 border-2 border-white/20 text-white font-black uppercase tracking-[0.15em] text-[10px] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-30 transition-all flex items-center justify-center gap-2 hover:bg-white/15 hover:border-primary/40"
+                    >
+                        <ShieldCheck size={18} />
+                        Check UPI
+                    </button>
+                </div>
+
+                {/* File Upload / Drag & Drop Area */}
+                <div className="mt-4">
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileInputChange}
+                        className="hidden"
+                    />
+
+                    <motion.div
+                        onDragOver={handleDragOver}
+                        onDragLeave={handleDragLeave}
+                        onDrop={handleDrop}
+                        onClick={() => fileInputRef.current?.click()}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        className={`relative p-6 rounded-[24px] border-2 border-dashed transition-all cursor-pointer group ${isDragging
+                                ? 'border-primary bg-primary/10 shadow-[0_0_30px_rgba(124,255,178,0.2)]'
+                                : 'border-white/20 bg-white/[0.02] hover:border-primary/40 hover:bg-white/[0.04]'
+                            }`}
+                    >
+                        <div className="flex flex-col items-center gap-3">
+                            <motion.div
+                                animate={{
+                                    y: isDragging ? -5 : 0,
+                                    scale: isDragging ? 1.1 : 1,
+                                }}
+                                className={`p-4 rounded-2xl transition-colors ${isDragging ? 'bg-primary/20' : 'bg-white/5 group-hover:bg-white/10'
+                                    }`}
+                            >
+                                {isDragging ? (
+                                    <Upload size={32} className="text-primary" strokeWidth={2} />
+                                ) : (
+                                    <ImageIcon size={32} className="text-zinc-500 group-hover:text-primary transition-colors" strokeWidth={2} />
+                                )}
+                            </motion.div>
+
+                            <div className="text-center">
+                                <p className={`text-sm font-black uppercase tracking-wider transition-colors ${isDragging ? 'text-primary' : 'text-white group-hover:text-primary'
+                                    }`}>
+                                    {isDragging ? 'Drop QR Image Here' : 'Upload QR Code'}
+                                </p>
+                                <p className="text-[10px] font-bold text-zinc-500 mt-1 uppercase tracking-widest">
+                                    {isDragging ? 'Release to scan' : 'Click or drag & drop'}
+                                </p>
+                            </div>
+
+                            {!isDragging && (
+                                <div className="flex items-center gap-2 mt-1">
+                                    <div className="h-px w-8 bg-white/10" />
+                                    <span className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest">PNG, JPG, WEBP</span>
+                                    <div className="h-px w-8 bg-white/10" />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Animated border glow on hover */}
+                        <div className="absolute inset-0 rounded-[24px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            <div className="absolute inset-0 rounded-[24px] bg-gradient-to-r from-primary/0 via-primary/20 to-primary/0 blur-xl" />
+                        </div>
+                    </motion.div>
+                </div>
             </div>
 
             {/* Result Modal - Redesigned for Maximum Impact */}
