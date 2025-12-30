@@ -19,9 +19,9 @@ export default function ProfilePage() {
     const addFinancialNode = () => {
         const newNode = {
             id: Math.random().toString(36).substr(2, 9),
-            bank: "NEW NODE",
-            alias: "UNASSIGNED",
-            status: "STANDBY"
+            bank: "New Bank Account",
+            alias: "Not Set",
+            status: "Inactive"
         };
         updateProfile({ financialNodes: [...userProfile.financialNodes, newNode] });
     };
@@ -177,31 +177,34 @@ export default function ProfilePage() {
                     </div>
                     <div className="space-y-4">
                         {userProfile.financialNodes.map((account: any) => (
-                            <GlassCard key={account.id} className="group flex flex-col sm:flex-row sm:items-center border-white/5 hover:border-primary/20 transition-all p-5 sm:p-8 !bg-white/[0.01] gap-4 sm:gap-0">
-                                <div className="flex items-center gap-4 sm:gap-0 w-full sm:w-auto">
-                                    <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-white/5 flex items-center justify-center text-zinc-500 flex-shrink-0">
-                                        <Zap size={20} className="sm:w-6 sm:h-6" />
+                            <GlassCard key={account.id} className="group flex flex-col sm:flex-row sm:items-center justify-between border-white/5 hover:border-primary/20 transition-all p-5 sm:p-6 !bg-white/[0.02] gap-4">
+                                <div className="flex items-center gap-4 flex-1 min-w-0">
+                                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center flex-shrink-0 ${account.status === 'Active'
+                                            ? 'bg-primary/10 text-primary border border-primary/20'
+                                            : 'bg-white/5 text-zinc-500 border border-white/5'
+                                        }`}>
+                                        <CreditCard size={20} />
                                     </div>
-                                    <div className="ml-4 sm:ml-6 flex-1 min-w-0 sm:hidden">
-                                        <p className="text-lg font-black text-white truncate">{account.bank}</p>
-                                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.2em] mt-1 truncate">{account.alias}</p>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-base font-black text-white truncate">{account.bank}</p>
+                                        <p className="text-xs font-mono text-zinc-500 mt-0.5 truncate">{account.alias}</p>
                                     </div>
                                 </div>
-                                <div className="ml-0 sm:ml-6 flex-1 hidden sm:block">
-                                    <p className="text-lg font-black text-white">{account.bank}</p>
-                                    <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.2em] mt-1">{account.alias}</p>
-                                </div>
-                                <div className="flex items-center justify-between sm:justify-start gap-4 w-full sm:w-auto border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0 mt-2 sm:mt-0">
-                                    <div className="text-left sm:text-right">
-                                        <div className="inline-block px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                                            <p className="text-[8px] font-black text-primary uppercase tracking-widest">{account.status}</p>
-                                        </div>
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className={`px-3 py-1.5 rounded-lg border ${account.status === 'Active'
+                                            ? 'bg-primary/10 border-primary/20'
+                                            : 'bg-white/5 border-white/10'
+                                        }`}>
+                                        <p className={`text-[10px] font-black uppercase tracking-wider ${account.status === 'Active' ? 'text-primary' : 'text-zinc-500'
+                                            }`}>
+                                            {account.status}
+                                        </p>
                                     </div>
                                     <button
                                         onClick={() => removeFinancialNode(account.id)}
-                                        className="h-10 w-10 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 flex items-center justify-center sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive hover:text-white"
+                                        className="h-9 w-9 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 flex items-center justify-center sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive hover:text-white"
                                     >
-                                        <Trash2 size={16} />
+                                        <Trash2 size={14} />
                                     </button>
                                 </div>
                             </GlassCard>

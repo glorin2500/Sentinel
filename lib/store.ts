@@ -53,8 +53,8 @@ const INITIAL_USER: UserProfile = {
     biometricLock: true,
     neuralPatching: false,
     financialNodes: [
-        { id: '1', bank: "HDFC CORE-V1", alias: "PA_7782_X", status: "ENCRYPTED" },
-        { id: '2', bank: "AXIS QUANTUM", alias: "NODE_W_99", status: "STANDBY" }
+        { id: '1', bank: "HDFC Bank", alias: "••7782", status: "Active" },
+        { id: '2', bank: "Axis Bank", alias: "••4099", status: "Active" }
     ]
 };
 
