@@ -41,6 +41,8 @@ interface SentinelState {
     updateProfile: (updates: Partial<UserProfile>) => void;
     toggleTheme: () => void;
     setTheme: (theme: 'light' | 'dark') => void;
+    isAuthenticated: boolean;
+    setAuthenticated: (val: boolean) => void;
 }
 
 const INITIAL_USER: UserProfile = {
@@ -149,4 +151,6 @@ export const useSentinelStore = create<SentinelState>((set, get) => ({
             document.documentElement.classList.toggle('light', theme === 'light');
         }
     },
+    isAuthenticated: false,
+    setAuthenticated: (val) => set({ isAuthenticated: val }),
 }));
