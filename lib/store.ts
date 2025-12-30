@@ -32,6 +32,8 @@ interface SentinelState {
     riskData: { name: string; value: number; color: string }[];
     userProfile: UserProfile;
     theme: 'light' | 'dark';
+    reportedFrauds: string[];
+    reportFraud: (upiId: string) => void;
     addScan: (scan: Omit<ScanResult, 'id' | 'timestamp'>) => void;
     clearScans: () => void;
     currentView: 'weekly' | 'monthly';
@@ -81,11 +83,25 @@ const getRiskData = (scans: ScanResult[], view: 'weekly' | 'monthly') => {
 
 export const useSentinelStore = create<SentinelState>((set, get) => ({
     scans: [],
+    reportedFrauds: [],
     safetyScore: 100,
     currentView: 'weekly',
     riskData: getRiskData([], 'weekly'),
     userProfile: INITIAL_USER,
     theme: (typeof window !== 'undefined' && localStorage.getItem('sentinel-theme') as 'light' | 'dark') || 'dark',
+    reportFraud: (upiId) => {
+        const { reportedFrauds, addScan } = get();
+        if (!reportedFrauds.includes(upiId)) {
+            set({ reportedFrauds: [...reportedFrauds, upiId] });
+            // Also log it as a risky scan if not already
+            addScan({
+                upiId,
+                status: 'risky',
+                merchantName: 'USER REPORTED',
+                threatType: 'Manual Fraud Report'
+            });
+        }
+    },
     addScan: (scan) => {
         const newScan: ScanResult = {
             ...scan,

@@ -16,7 +16,7 @@ export default function ScanPage() {
     const [cameraActive, setCameraActive] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [showSuccessToast, setShowSuccessToast] = useState(false);
-    const { addScan } = useSentinelStore();
+    const { addScan, reportFraud } = useSentinelStore();
     const router = useRouter();
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -92,11 +92,19 @@ export default function ScanPage() {
 
     const handleProceedToPay = () => {
         setIsProcessingPayment(true);
-        // Simulate "Neural Link" processing
+
         setTimeout(() => {
-            // Open UPI app
-            const upiUrl = `upi://pay?pa=${scannedUpi || manualUpi || "sentinel@merchant"}&pn=SentinelVerified&am=0&cu=INR`;
-            window.location.href = upiUrl;
+            const target = scannedUpi || manualUpi;
+            if (target) {
+                // Determine if it is already a URL or just a VPA
+                let upiUrl = target;
+                if (!target.startsWith('upi://')) {
+                    upiUrl = `upi://pay?pa=${target}&pn=SentinelVerified&cu=INR`;
+                }
+
+                // Open standard UPI intent
+                window.location.href = upiUrl;
+            }
 
             // Reset state and stay on scan page for next scan
             setTimeout(() => {
@@ -109,43 +117,76 @@ export default function ScanPage() {
                 if (!cameraError && scannerRef.current) {
                     startCamera();
                 }
-            }, 500);
-        }, 2000);
+            }, 1000);
+        }, 1500);
     };
 
+    // Real UPI Analysis Logic
+    useEffect(() => {
+        if (manualUpi && !isScanning && !result) {
+            const timeoutId = setTimeout(() => {
+                handleScanResult(manualUpi);
+            }, 800);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [manualUpi]);
+
     const handleScanResult = (data: string) => {
+        const cleanData = data.trim();
+        if (!cleanData) return;
+
         // Extract UPI ID if it's a URI
-        let cleanId = data;
-        try {
-            if (data.includes('pa=')) {
-                cleanId = new URLSearchParams(data.split('?')[1]).get('pa') || data;
+        let parsedData = parseUPIString(cleanData);
+
+        // Fallback: If input is just a VPA (e.g. "user@ybl") and not a full URL
+        if (!parsedData) {
+            // Check if it looks like a VPA
+            if (cleanData.includes('@')) {
+                parsedData = {
+                    vpa: cleanData,
+                    payeeName: 'Unknown',
+                    originalString: cleanData
+                };
             }
-        } catch (e) { }
+        }
 
-        setScannedUpi(cleanId);
-
-        // REAL THREAT DETECTION - Import the analyzer
-        const { analyzeUPI, getRiskDescription, getRecommendedAction } = require('@/lib/threat-detection/risk-analyzer');
+        const upiId = parsedData?.vpa || cleanData;
+        setScannedUpi(upiId);
 
         // Analyze the UPI ID for real threats
-        const analysis = analyzeUPI(cleanId);
+        if (parsedData || upiId.includes('@')) {
+            // Create a temporary data object if we only have the ID
+            const analysisData = parsedData || { vpa: upiId, payeeName: 'Unknown', originalString: upiId };
+            const analysis = analyzeUPIRisk(analysisData);
 
-        // Determine status based on risk level
-        const status = analysis.isRisky ? 'risky' : 'safe';
+            // Determine status based on risk level
+            const status = analysis.level === 'risky' ? 'risky' : 'safe';
 
-        // Store threat details for display
-        setThreatDetails(analysis);
+            // Store threat details for display
+            setThreatDetails({
+                riskScore: analysis.score,
+                reasons: analysis.reasons,
+                type: analysis.level === 'risky' ? 'Potential Fraud' : 'Verified Node'
+            });
 
-        setResult(status);
-        addScan({
-            upiId: cleanId || "merchant@upi",
-            status: status,
-            merchantName: analysis.blacklistEntry?.reason ||
-                (analysis.isRisky ? `${analysis.riskLevel.toUpperCase()} RISK DETECTED` : "VERIFIED SECURE"),
-            threatType: analysis.fraudType ?
-                getRiskDescription(analysis) :
-                (analysis.isRisky ? `Risk Score: ${analysis.riskScore}%` : "SHA-512 Verified")
-        });
+            setResult(status);
+            addScan({
+                upiId: upiId,
+                status: status,
+                merchantName: parsedData?.payeeName || "Unknown Merchant",
+                threatType: analysis.level === 'risky' ? "Suspicious Pattern" : undefined
+            });
+        } else {
+            // Invalid Format - only set if explicitly triggered by scan or enter
+            if (!manualUpi || manualUpi === data) {
+                setResult('risky');
+                setThreatDetails({
+                    riskScore: 100,
+                    reasons: ["Invalid UPI Format", "Could not parse payment string"],
+                    type: 'Format Error'
+                });
+            }
+        }
     };
 
     const handleFileUpload = async (file: File) => {
@@ -456,24 +497,24 @@ export default function ScanPage() {
                                     }`} />
 
                                 {/* Content */}
-                                <div className="relative z-10 p-10">
+                                <div className="relative z-10 p-6 sm:p-10">
                                     {/* Status Icon */}
                                     <motion.div
                                         initial={{ scale: 0, rotate: -180 }}
                                         animate={{ scale: 1, rotate: 0 }}
                                         transition={{ delay: 0.1, type: "spring", damping: 15 }}
-                                        className="flex justify-center mb-8"
+                                        className="flex justify-center mb-6 sm:mb-8"
                                     >
-                                        <div className={`relative h-32 w-32 rounded-[32px] flex items-center justify-center ${result === 'safe'
+                                        <div className={`relative h-24 w-24 sm:h-32 sm:w-32 rounded-[24px] sm:rounded-[32px] flex items-center justify-center ${result === 'safe'
                                             ? 'bg-primary/20 border-2 border-primary/40'
                                             : 'bg-destructive/20 border-2 border-destructive/40'
                                             }`}>
-                                            <div className={`absolute inset-0 rounded-[32px] animate-pulse ${result === 'safe' ? 'bg-primary/10' : 'bg-destructive/10'
+                                            <div className={`absolute inset-0 rounded-[24px] sm:rounded-[32px] animate-pulse ${result === 'safe' ? 'bg-primary/10' : 'bg-destructive/10'
                                                 }`} />
                                             {result === 'safe' ? (
-                                                <ShieldCheck size={64} className="text-primary relative z-10" strokeWidth={2} />
+                                                <ShieldCheck size={48} className="text-primary relative z-10 sm:w-[64px] sm:h-[64px]" strokeWidth={2} />
                                             ) : (
-                                                <ShieldAlert size={64} className="text-destructive relative z-10" strokeWidth={2} />
+                                                <ShieldAlert size={48} className="text-destructive relative z-10 sm:w-[64px] sm:h-[64px]" strokeWidth={2} />
                                             )}
                                         </div>
                                     </motion.div>
@@ -483,13 +524,13 @@ export default function ScanPage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.2 }}
-                                        className="text-center mb-8"
+                                        className="text-center mb-6 sm:mb-8"
                                     >
-                                        <h2 className={`text-7xl font-black mb-3 ${result === 'safe' ? 'text-primary' : 'text-destructive'
+                                        <h2 className={`text-4xl sm:text-7xl font-black mb-2 sm:mb-3 ${result === 'safe' ? 'text-primary' : 'text-destructive'
                                             }`}>
                                             {result === 'safe' ? 'SECURE' : 'THREAT'}
                                         </h2>
-                                        <p className="text-zinc-400 text-sm font-bold uppercase tracking-[0.3em]">
+                                        <p className="text-zinc-400 text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">
                                             {result === 'safe' ? 'Transaction Verified' : 'High Risk Detected'}
                                         </p>
                                     </motion.div>
@@ -583,6 +624,19 @@ export default function ScanPage() {
                                             className="w-full py-4 rounded-2xl text-zinc-500 font-bold uppercase text-xs tracking-[0.3em] hover:text-white hover:bg-white/5 transition-all"
                                         >
                                             Close
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                if (scannedUpi || manualUpi) {
+                                                    reportFraud(scannedUpi || manualUpi);
+                                                    alert("Report submitted! This ID has been flagged and logged as a threat.");
+                                                }
+                                                setResult(null);
+                                            }}
+                                            className="w-full py-2 rounded-2xl text-destructive font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-destructive/10 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <AlertTriangle size={12} />
+                                            Report as Fraud
                                         </button>
                                     </motion.div>
                                 </div>

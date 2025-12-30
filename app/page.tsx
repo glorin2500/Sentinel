@@ -52,13 +52,12 @@ export default function Home() {
             </div>
 
             {/* Mini History Preview */}
-            {/* Mini History Preview */}
-            <div className="p-6 rounded-3xl border border-white/5 bg-white/[0.02]">
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-black text-white uppercase tracking-[0.2em] text-xs">Live Internal Alerts</h3>
+            <div className="p-4 sm:p-6 rounded-3xl border border-white/5 bg-white/[0.02]">
+                <div className="flex justify-between items-center mb-4 sm:mb-6">
+                    <h3 className="font-black text-white uppercase tracking-[0.2em] text-[10px] sm:text-xs">Live Internal Alerts</h3>
                     <button
                         onClick={() => router.push('/history')}
-                        className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest"
+                        className="text-[9px] sm:text-[10px] font-black text-primary hover:underline uppercase tracking-widest"
                     >
                         View Full History
                     </button>
