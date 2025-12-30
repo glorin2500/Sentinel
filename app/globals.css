@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme {
+    /* Dark Mode Colors (Default) */
     --color-background: #0B0F0E;
     --color-foreground: #FFFFFF;
 
@@ -36,26 +37,77 @@
 }
 
 @layer base {
+    * {
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+
     body {
         background-color: var(--color-background);
         color: var(--color-foreground);
         line-height: inherit;
         font-family: var(--font-urbanist), sans-serif !important;
     }
+
+    /* Light Mode - High Contrast Professional Theme */
+    :root.light {
+        --color-background: #F5F7FA;
+        --color-foreground: #0D1117;
+
+        --color-card: #FFFFFF;
+        --color-card-foreground: #0D1117;
+
+        --color-popover: #FFFFFF;
+        --color-popover-foreground: #0D1117;
+
+        --color-primary: #10B981;
+        --color-primary-foreground: #FFFFFF;
+
+        --color-secondary: #14B8A6;
+        --color-secondary-foreground: #FFFFFF;
+
+        --color-muted: #E5E7EB;
+        --color-muted-foreground: #6B7280;
+
+        --color-accent: #F3F4F6;
+        --color-accent-foreground: #10B981;
+
+        --color-destructive: #EF4444;
+        --color-destructive-foreground: #FFFFFF;
+
+        --color-border: rgba(0, 0, 0, 0.1);
+        --color-input: rgba(0, 0, 0, 0.05);
+        --color-ring: #10B981;
+    }
 }
 
-/* Custom Utilities for Glass Effect */
-@utility glass {
-    background: rgba(18, 24, 22, 0.6);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-}
+/* Custom Glass Effect Classes */
+@layer components {
+    .glass {
+        background: rgba(18, 24, 22, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
 
-@utility glass-card {
-    background: linear-gradient(145deg, rgba(18, 24, 22, 0.95) 0%, rgba(18, 24, 22, 0.7) 100%);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    :root.light .glass {
+        background: #FFFFFF;
+        backdrop-filter: none;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .glass-card {
+        background: linear-gradient(145deg, rgba(18, 24, 22, 0.95) 0%, rgba(18, 24, 22, 0.7) 100%);
+        backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    :root.light .glass-card {
+        background: #FFFFFF;
+        backdrop-filter: none;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
 }
 
 @keyframes radar-scan {
@@ -80,10 +132,33 @@
     }
 }
 
-@utility animate-radar {
-    animation: radar-scan 4s linear infinite;
-}
+@layer utilities {
+    .animate-radar {
+        animation: radar-scan 4s linear infinite;
+    }
 
-@utility animate-ripple {
-    animation: ripple-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    .animate-ripple {
+        animation: ripple-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+    }
 }
+    /* Theme-aware color overrides */
+    .text-white {
+        color: var(--color-foreground) !important;
+    }
+
+    .text-zinc-400,
+    .text-zinc-500,
+    .text-zinc-600 {
+        color: var(--color-muted-foreground) !important;
+    }
+
+    .bg-white\/5,
+    .bg-white\/10 {
+        background-color: var(--color-accent) !important;
+    }
+
+    .border-white\/5,
+    .border-white\/10,
+    .border-white\/20 {
+        border-color: var(--color-border) !important;
+    }

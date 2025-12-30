@@ -31,11 +31,14 @@ interface SentinelState {
     safetyScore: number;
     riskData: { name: string; value: number; color: string }[];
     userProfile: UserProfile;
+    theme: 'light' | 'dark';
     addScan: (scan: Omit<ScanResult, 'id' | 'timestamp'>) => void;
     clearScans: () => void;
     currentView: 'weekly' | 'monthly';
     setView: (view: 'weekly' | 'monthly') => void;
     updateProfile: (updates: Partial<UserProfile>) => void;
+    toggleTheme: () => void;
+    setTheme: (theme: 'light' | 'dark') => void;
 }
 
 const INITIAL_USER: UserProfile = {
@@ -82,6 +85,7 @@ export const useSentinelStore = create<SentinelState>((set, get) => ({
     currentView: 'weekly',
     riskData: getRiskData([], 'weekly'),
     userProfile: INITIAL_USER,
+    theme: (typeof window !== 'undefined' && localStorage.getItem('sentinel-theme') as 'light' | 'dark') || 'dark',
     addScan: (scan) => {
         const newScan: ScanResult = {
             ...scan,
@@ -114,4 +118,19 @@ export const useSentinelStore = create<SentinelState>((set, get) => ({
     updateProfile: (updates) => set((state) => ({
         userProfile: { ...state.userProfile, ...updates }
     })),
+    toggleTheme: () => {
+        const newTheme = get().theme === 'dark' ? 'light' : 'dark';
+        set({ theme: newTheme });
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('sentinel-theme', newTheme);
+            document.documentElement.classList.toggle('light', newTheme === 'light');
+        }
+    },
+    setTheme: (theme) => {
+        set({ theme });
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('sentinel-theme', theme);
+            document.documentElement.classList.toggle('light', theme === 'light');
+        }
+    },
 }));

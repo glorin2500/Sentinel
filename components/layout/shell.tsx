@@ -5,7 +5,7 @@ import { IntroSplash } from "@/components/ui/intro-splash";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { X, User, Shield, Bell, LogOut, Lock, Key, Smartphone, Wifi, Eye, EyeOff, Check } from "lucide-react";
+import { X, User, Shield, Bell, LogOut, Lock, Key, Smartphone, Wifi, Eye, EyeOff, Check, Sun, Moon } from "lucide-react";
 import { useSentinelStore } from "@/lib/store";
 
 export default function RootLayout({
@@ -73,6 +73,20 @@ export default function RootLayout({
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
+                            {/* Theme Toggle */}
+                            <button
+                                onClick={() => useSentinelStore.getState().toggleTheme()}
+                                className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all group"
+                                aria-label="Toggle theme"
+                            >
+                                {useSentinelStore.getState().theme === 'dark' ? (
+                                    <Sun size={18} className="text-zinc-400 group-hover:text-primary transition-colors" />
+                                ) : (
+                                    <Moon size={18} className="text-zinc-600 group-hover:text-primary transition-colors" />
+                                )}
+                            </button>
+
+                            {/* Account Avatar */}
                             <button
                                 onClick={() => (window as any).toggleAccountPanel?.()}
                                 className="h-10 w-10 rounded-full bg-primary/20 text-primary border-2 border-primary/40 flex items-center justify-center text-sm font-black hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(124,255,178,0.2)]"

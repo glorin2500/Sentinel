@@ -72,27 +72,28 @@ export default function AnalyticsPage() {
             </div>
 
             {/* Controls */}
-            <div className="flex justify-between items-center bg-white/5 p-4 rounded-[24px] border border-white/10 flex-wrap gap-4">
-                <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center bg-white/5 p-3 sm:p-4 rounded-[20px] sm:rounded-[24px] border border-white/10 gap-3">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                     <button
                         onClick={() => setRiskyOnly(!riskyOnly)}
-                        className={`h-10 px-6 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border-2 hover:scale-105 active:scale-95 ${riskyOnly
+                        className={`h-9 sm:h-10 px-4 sm:px-6 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border-2 hover:scale-105 active:scale-95 ${riskyOnly
                             ? 'bg-destructive/20 text-destructive border-destructive/40 shadow-[0_0_20px_rgba(255,107,107,0.3)]'
                             : 'bg-white/5 text-zinc-500 border-white/5 hover:text-white hover:border-white/10'
                             }`}
                     >
                         <Filter size={14} className={riskyOnly ? 'animate-pulse' : ''} />
-                        {riskyOnly ? 'Risky' : 'All'}
+                        <span className="hidden xs:inline">{riskyOnly ? 'Risky' : 'All'}</span>
+                        <span className="xs:hidden">{riskyOnly ? 'R' : 'A'}</span>
                     </button>
                     <button
                         onClick={cycleSort}
-                        className="h-10 px-6 rounded-xl bg-primary/10 border-2 border-primary/20 text-[9px] font-black text-primary uppercase tracking-widest hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(124,255,178,0.2)]"
+                        className="h-9 sm:h-10 px-4 sm:px-6 rounded-xl bg-primary/10 border-2 border-primary/20 text-[9px] font-black text-primary uppercase tracking-widest hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(124,255,178,0.2)]"
                     >
                         <ArrowUpDown size={14} />
                         {sortMode}
                     </button>
                 </div>
-                <div className="px-4 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[9px] font-black text-zinc-600 uppercase tracking-widest">
+                <div className="px-3 sm:px-4 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[9px] font-black text-zinc-600 uppercase tracking-widest text-center sm:text-left">
                     {filteredScans.length} {filteredScans.length === 1 ? 'Node' : 'Nodes'}
                 </div>
             </div>
@@ -119,23 +120,23 @@ export default function AnalyticsPage() {
                                 exit={{ opacity: 0, scale: 0.98 }}
                                 className="group"
                             >
-                                <GlassCard className="flex-row items-center justify-between p-6 !bg-black/30 hover:!bg-black/50 border-white/5 hover:border-primary/20 transition-all">
-                                    <div className="flex items-center gap-4">
-                                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center border ${scan.status === 'safe'
+                                <GlassCard className="flex-row items-center justify-between p-4 sm:p-6 !bg-black/30 hover:!bg-black/50 border-white/5 hover:border-primary/20 transition-all gap-3">
+                                    <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                                        <div className={`h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center border flex-shrink-0 ${scan.status === 'safe'
                                             ? 'text-primary bg-primary/10 border-primary/20'
                                             : 'text-destructive bg-destructive/10 border-destructive/20'
                                             }`}>
-                                            {scan.status === 'safe' ? <ShieldCheck size={24} /> : <AlertTriangle size={24} />}
+                                            {scan.status === 'safe' ? <ShieldCheck size={20} className="sm:w-6 sm:h-6" /> : <AlertTriangle size={20} className="sm:w-6 sm:h-6" />}
                                         </div>
-                                        <div>
-                                            <p className="text-base font-black text-white group-hover:text-primary transition-colors">{scan.upiId}</p>
-                                            <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider mt-0.5">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-sm sm:text-base font-black text-white group-hover:text-primary transition-colors truncate">{scan.upiId}</p>
+                                            <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider mt-0.5 truncate">
                                                 {scan.threatType || "Verified"}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="text-sm font-bold text-white">{new Date(scan.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                    <div className="text-right flex-shrink-0">
+                                        <p className="text-xs sm:text-sm font-bold text-white">{new Date(scan.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                         <p className="text-[8px] font-black text-zinc-600 uppercase mt-0.5 tracking-wider">{new Date(scan.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}</p>
                                     </div>
                                 </GlassCard>
