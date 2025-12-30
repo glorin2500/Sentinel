@@ -41,46 +41,46 @@ export default function ProfilePage() {
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-primary/5 opacity-50 group-hover:opacity-80 transition-opacity duration-1000" />
                 <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/10 blur-[100px] rounded-full animate-pulse" />
 
-                <div className="relative z-10 p-10 flex flex-col md:flex-row items-center gap-10 bg-black/40 border border-white/10 backdrop-blur-xl rounded-inherit">
+                <div className="relative z-10 p-6 sm:p-10 flex flex-col md:flex-row items-center gap-6 sm:gap-10 bg-black/40 border border-white/10 backdrop-blur-xl rounded-inherit">
                     <div className="relative">
-                        <div className="h-32 w-32 rounded-[40px] bg-gradient-to-tr from-primary/30 to-primary/10 flex items-center justify-center text-primary border-2 border-primary/20 shadow-[0_0_50px_rgba(124,255,178,0.2)] rotate-6 group-hover:rotate-0 transition-transform duration-500">
-                            <User size={64} />
+                        <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-[40px] bg-gradient-to-tr from-primary/30 to-primary/10 flex items-center justify-center text-primary border-2 border-primary/20 shadow-[0_0_50px_rgba(124,255,178,0.2)] rotate-6 group-hover:rotate-0 transition-transform duration-500">
+                            <User size={48} className="sm:w-16 sm:h-16" />
                         </div>
-                        <div className="absolute -bottom-2 -right-2 h-10 w-10 rounded-2xl bg-black border-2 border-primary flex items-center justify-center text-primary shadow-xl">
-                            <Award size={20} />
+                        <div className="absolute -bottom-2 -right-2 h-8 w-8 sm:h-10 sm:w-10 rounded-2xl bg-black border-2 border-primary flex items-center justify-center text-primary shadow-xl">
+                            <Award size={16} className="sm:w-5 sm:h-5" />
                         </div>
                     </div>
 
-                    <div className="flex-1 text-center md:text-left space-y-4">
+                    <div className="flex-1 text-center md:text-left space-y-4 w-full">
                         {isEditing ? (
                             <div className="space-y-3">
                                 <input
                                     value={editForm.name}
                                     onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                                    className="text-4xl font-black bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white w-full outline-none focus:border-primary/50 transition-all uppercase"
+                                    className="text-2xl sm:text-4xl font-black bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white w-full outline-none focus:border-primary/50 transition-all uppercase"
                                     placeholder="Operator Name"
                                 />
                                 <input
                                     value={editForm.rank}
                                     onChange={e => setEditForm({ ...editForm, rank: e.target.value })}
-                                    className="text-xs font-black bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-primary w-full outline-none focus:border-primary/50 transition-all uppercase tracking-[0.4em]"
+                                    className="text-[10px] sm:text-xs font-black bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-primary w-full outline-none focus:border-primary/50 transition-all uppercase tracking-[0.4em]"
                                     placeholder="Designation"
                                 />
                             </div>
                         ) : (
                             <div>
-                                <h1 className="text-5xl font-black text-white tracking-tighter uppercase">{userProfile.name}</h1>
-                                <p className="text-xs font-black text-primary uppercase tracking-[0.4em] mt-1">{userProfile.rank}</p>
+                                <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tighter uppercase break-words">{userProfile.name}</h1>
+                                <p className="text-[10px] sm:text-xs font-black text-primary uppercase tracking-[0.4em] mt-1">{userProfile.rank}</p>
                             </div>
                         )}
-                        <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 flex items-center gap-2">
-                                <Target size={14} className="text-zinc-500" />
-                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Global Rank #1,402</span>
+                        <div className="flex flex-wrap justify-center md:justify-start gap-2 sm:gap-4">
+                            <div className="px-3 py-2 sm:px-4 sm:py-2 rounded-xl bg-white/5 border border-white/5 flex items-center gap-2">
+                                <Target size={12} className="text-zinc-500 sm:w-[14px] sm:h-[14px]" />
+                                <span className="text-[8px] sm:text-[10px] font-black text-zinc-400 uppercase tracking-widest">Global Rank #1,402</span>
                             </div>
-                            <div className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 flex items-center gap-2">
-                                <Unlock size={14} className="text-zinc-500" />
-                                <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">{userProfile.biometricLock ? "Biometric Encrypted" : "Standard Security"}</span>
+                            <div className="px-3 py-2 sm:px-4 sm:py-2 rounded-xl bg-white/5 border border-white/5 flex items-center gap-2">
+                                <Unlock size={12} className="text-zinc-500 sm:w-[14px] sm:h-[14px]" />
+                                <span className="text-[8px] sm:text-[10px] font-black text-zinc-400 uppercase tracking-widest text-left">{userProfile.biometricLock ? "Biometric Encrypted" : "Standard Security"}</span>
                             </div>
                         </div>
                     </div>
@@ -90,7 +90,7 @@ export default function ProfilePage() {
                             <>
                                 <button
                                     onClick={handleSaveProfile}
-                                    className="px-8 py-4 rounded-2xl bg-primary text-black font-black uppercase text-[10px] tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                                    className="w-full md:w-auto px-8 py-3 sm:py-4 rounded-2xl bg-primary text-black font-black uppercase text-[10px] tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                                 >
                                     <Check size={14} /> Save Node
                                 </button>
@@ -99,7 +99,7 @@ export default function ProfilePage() {
                                         setEditForm({ name: userProfile.name, rank: userProfile.rank });
                                         setIsEditing(false);
                                     }}
-                                    className="px-8 py-4 rounded-2xl bg-white/5 text-zinc-400 font-black uppercase text-[10px] tracking-widest border border-white/5 hover:text-white transition-all flex items-center justify-center gap-2"
+                                    className="w-full md:w-auto px-8 py-3 sm:py-4 rounded-2xl bg-white/5 text-zinc-400 font-black uppercase text-[10px] tracking-widest border border-white/5 hover:text-white transition-all flex items-center justify-center gap-2"
                                 >
                                     <CloseIcon size={14} /> Cancel
                                 </button>
@@ -108,11 +108,11 @@ export default function ProfilePage() {
                             <>
                                 <button
                                     onClick={() => setIsEditing(true)}
-                                    className="px-8 py-4 rounded-2xl bg-primary text-black font-black uppercase text-[10px] tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20"
+                                    className="w-full md:w-auto px-8 py-3 sm:py-4 rounded-2xl bg-primary text-black font-black uppercase text-[10px] tracking-widest hover:opacity-90 transition-all shadow-lg shadow-primary/20"
                                 >
                                     Edit Profile
                                 </button>
-                                <button className="px-8 py-4 rounded-2xl bg-white/5 text-zinc-400 font-black uppercase text-[10px] tracking-widest border border-white/5 hover:text-white transition-all">Export Logs</button>
+                                <button className="w-full md:w-auto px-8 py-3 sm:py-4 rounded-2xl bg-white/5 text-zinc-400 font-black uppercase text-[10px] tracking-widest border border-white/5 hover:text-white transition-all">Export Logs</button>
                             </>
                         )}
                     </div>
@@ -120,16 +120,16 @@ export default function ProfilePage() {
             </div>
 
             {/* Performance Matrix */}
-            <div className="grid sm:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
                 {[
                     { label: "Stability Index", value: `${safetyScore}%`, color: "text-primary", sub: "Network Trust" },
                     { label: "Operation Count", value: scans.length, color: "text-white", sub: "Total Scanned Nodes" },
                     { label: "Threats Blocked", value: scans.filter((s: any) => s.status === 'risky').length, color: "text-destructive", sub: "Neutralized Anomlies" },
                 ].map((stat, i) => (
-                    <GlassCard key={i} className="p-8 items-center text-center gap-3 border-white/5 hover:border-white/10 transition-all">
-                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-[0.3em]">{stat.label}</p>
-                        <p className={`text-4xl font-black ${stat.color}`}>{stat.value}</p>
-                        <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{stat.sub}</p>
+                    <GlassCard key={i} className="p-6 sm:p-8 items-center text-center gap-2 sm:gap-3 border-white/5 hover:border-white/10 transition-all">
+                        <p className="text-[8px] sm:text-[9px] font-black text-zinc-500 uppercase tracking-[0.3em]">{stat.label}</p>
+                        <p className={`text-3xl sm:text-4xl font-black ${stat.color}`}>{stat.value}</p>
+                        <p className="text-[9px] sm:text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{stat.sub}</p>
                     </GlassCard>
                 ))}
             </div>
@@ -149,14 +149,14 @@ export default function ProfilePage() {
                         <button
                             key={protocol.key}
                             onClick={() => updateProfile({ [protocol.key]: !userProfile[protocol.key as keyof typeof userProfile] })}
-                            className="w-full p-6 rounded-[32px] bg-white/[0.02] border border-white/5 flex items-center justify-between hover:bg-white/[0.05] transition-all text-left group"
+                            className="w-full p-4 sm:p-6 rounded-[32px] bg-white/[0.02] border border-white/5 flex items-center justify-between hover:bg-white/[0.05] transition-all text-left group gap-4"
                         >
-                            <div className="space-y-1">
-                                <p className="text-sm font-black text-white uppercase tracking-tight group-hover:text-primary transition-colors">{protocol.label}</p>
-                                <p className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">{protocol.desc}</p>
+                            <div className="space-y-1 min-w-0 flex-1">
+                                <p className="text-sm font-black text-white uppercase tracking-tight group-hover:text-primary transition-colors truncate">{protocol.label}</p>
+                                <p className="text-[9px] sm:text-[10px] font-bold text-zinc-600 uppercase tracking-widest break-words leading-relaxed">{protocol.desc}</p>
                             </div>
-                            <div className={`h-6 w-12 rounded-full border-2 transition-all relative ${userProfile[protocol.key as keyof typeof userProfile] ? 'bg-primary border-primary' : 'bg-transparent border-zinc-800'}`}>
-                                <div className={`absolute top-1 bottom-1 w-4 rounded-full transition-all ${userProfile[protocol.key as keyof typeof userProfile] ? 'right-1 bg-background' : 'left-1 bg-zinc-800'}`} />
+                            <div className={`h-6 w-11 sm:w-12 rounded-full border-2 transition-all relative flex-shrink-0 ${userProfile[protocol.key as keyof typeof userProfile] ? 'bg-primary border-primary' : 'bg-transparent border-zinc-800'}`}>
+                                <div className={`absolute top-1 bottom-1 w-3.5 sm:w-4 rounded-full transition-all ${userProfile[protocol.key as keyof typeof userProfile] ? 'right-1 bg-background' : 'left-1 bg-zinc-800'}`} />
                             </div>
                         </button>
                     ))}
@@ -177,23 +177,29 @@ export default function ProfilePage() {
                     </div>
                     <div className="space-y-4">
                         {userProfile.financialNodes.map((account: any) => (
-                            <GlassCard key={account.id} className="group flex-row items-center border-white/5 hover:border-primary/20 transition-all p-8 !bg-white/[0.01]">
-                                <div className="h-14 w-14 rounded-2xl bg-white/5 flex items-center justify-center text-zinc-500">
-                                    <Zap size={24} />
+                            <GlassCard key={account.id} className="group flex flex-col sm:flex-row sm:items-center border-white/5 hover:border-primary/20 transition-all p-5 sm:p-8 !bg-white/[0.01] gap-4 sm:gap-0">
+                                <div className="flex items-center gap-4 sm:gap-0 w-full sm:w-auto">
+                                    <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-white/5 flex items-center justify-center text-zinc-500 flex-shrink-0">
+                                        <Zap size={20} className="sm:w-6 sm:h-6" />
+                                    </div>
+                                    <div className="ml-4 sm:ml-6 flex-1 min-w-0 sm:hidden">
+                                        <p className="text-lg font-black text-white truncate">{account.bank}</p>
+                                        <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.2em] mt-1 truncate">{account.alias}</p>
+                                    </div>
                                 </div>
-                                <div className="ml-6 flex-1">
+                                <div className="ml-0 sm:ml-6 flex-1 hidden sm:block">
                                     <p className="text-lg font-black text-white">{account.bank}</p>
                                     <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-[0.2em] mt-1">{account.alias}</p>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="text-right">
+                                <div className="flex items-center justify-between sm:justify-start gap-4 w-full sm:w-auto border-t sm:border-t-0 border-white/5 pt-3 sm:pt-0 mt-2 sm:mt-0">
+                                    <div className="text-left sm:text-right">
                                         <div className="inline-block px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
                                             <p className="text-[8px] font-black text-primary uppercase tracking-widest">{account.status}</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => removeFinancialNode(account.id)}
-                                        className="h-10 w-10 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive hover:text-white"
+                                        className="h-10 w-10 rounded-xl bg-destructive/10 text-destructive border border-destructive/20 flex items-center justify-center sm:opacity-0 group-hover:opacity-100 transition-all hover:bg-destructive hover:text-white"
                                     >
                                         <Trash2 size={16} />
                                     </button>

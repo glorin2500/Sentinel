@@ -500,21 +500,25 @@ export default function ScanPage() {
                                         transition={{ delay: 0.3 }}
                                         className="space-y-4 mb-8"
                                     >
-                                        <div className="p-4 sm:p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-3 sm:space-y-4">
-                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-white/5 gap-1 sm:gap-0">
-                                                <span className="text-[10px] sm:text-xs font-black text-zinc-500 uppercase tracking-widest">UPI ID</span>
-                                                <span className="text-sm font-bold text-white truncate">{scannedUpi || manualUpi}</span>
-                                            </div>
-                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-3 border-b border-white/5 gap-1 sm:gap-0">
-                                                <span className="text-[10px] sm:text-xs font-black text-zinc-500 uppercase tracking-widest">Risk Level</span>
-                                                <span className={`text-base sm:text-sm font-black ${result === 'safe' ? 'text-primary' : 'text-destructive'
-                                                    }`}>
-                                                    {threatDetails ? `${threatDetails.riskScore}%` : (result === 'safe' ? '0.2%' : '94.7%')}
-                                                </span>
-                                            </div>
-                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-0">
-                                                <span className="text-[10px] sm:text-xs font-black text-zinc-500 uppercase tracking-widest">Protocol</span>
-                                                <span className="text-sm font-bold text-primary">SHA-512</span>
+                                        <div className="p-5 rounded-3xl bg-white/[0.03] border border-white/10">
+                                            <div className="grid grid-cols-1 gap-4">
+                                                <div className="pb-4 border-b border-white/5">
+                                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">UPI ID</span>
+                                                    <span className="text-sm font-bold text-white break-all">{scannedUpi || manualUpi}</span>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">Risk Level</span>
+                                                        <span className={`text-sm font-black ${result === 'safe' ? 'text-primary' : 'text-destructive'
+                                                            }`}>
+                                                            {threatDetails ? `${threatDetails.riskScore}%` : (result === 'safe' ? '0.2%' : '94.7%')}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">Protocol</span>
+                                                        <span className="text-sm font-bold text-primary">SHA-512</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 

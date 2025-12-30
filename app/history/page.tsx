@@ -109,8 +109,8 @@ export default function HistoryPage() {
                     <button
                         onClick={() => setStatusFilter('all')}
                         className={`h-10 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border-2 hover:scale-105 active:scale-95 ${statusFilter === 'all'
-                                ? 'bg-white/10 text-white border-white/20'
-                                : 'bg-white/5 text-zinc-500 border-white/5 hover:text-white'
+                            ? 'bg-white/10 text-white border-white/20'
+                            : 'bg-white/5 text-zinc-500 border-white/5 hover:text-white'
                             }`}
                     >
                         All
@@ -118,8 +118,8 @@ export default function HistoryPage() {
                     <button
                         onClick={() => setStatusFilter('safe')}
                         className={`h-10 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border-2 hover:scale-105 active:scale-95 ${statusFilter === 'safe'
-                                ? 'bg-primary/20 text-primary border-primary/40 shadow-[0_0_15px_rgba(124,255,178,0.2)]'
-                                : 'bg-white/5 text-zinc-500 border-white/5 hover:text-primary'
+                            ? 'bg-primary/20 text-primary border-primary/40 shadow-[0_0_15px_rgba(124,255,178,0.2)]'
+                            : 'bg-white/5 text-zinc-500 border-white/5 hover:text-primary'
                             }`}
                     >
                         Safe
@@ -127,8 +127,8 @@ export default function HistoryPage() {
                     <button
                         onClick={() => setStatusFilter('risky')}
                         className={`h-10 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all border-2 hover:scale-105 active:scale-95 ${statusFilter === 'risky'
-                                ? 'bg-destructive/20 text-destructive border-destructive/40 shadow-[0_0_15px_rgba(255,107,107,0.2)]'
-                                : 'bg-white/5 text-zinc-500 border-white/5 hover:text-destructive'
+                            ? 'bg-destructive/20 text-destructive border-destructive/40 shadow-[0_0_15px_rgba(255,107,107,0.2)]'
+                            : 'bg-white/5 text-zinc-500 border-white/5 hover:text-destructive'
                             }`}
                     >
                         Risky
@@ -197,37 +197,38 @@ export default function HistoryPage() {
                                         {/* Status Indicator */}
                                         <div className={`w-full md:w-1.5 h-1.5 md:h-auto shrink-0 ${scan.status === 'safe' ? 'bg-primary/40' : 'bg-destructive/40'}`} />
 
-                                        <div className="flex-1 p-6 flex flex-col md:flex-row gap-6">
+                                        <div className="flex-1 p-4 sm:p-6 flex flex-col md:flex-row gap-4 sm:gap-6 min-w-0">
                                             {/* Icon */}
-                                            <div className={`h-16 w-16 shrink-0 rounded-2xl flex items-center justify-center border-2 transition-all group-hover:scale-105 self-center md:self-start ${scan.status === 'safe'
-                                                    ? 'bg-primary/10 border-primary/20 text-primary shadow-[0_0_20px_rgba(124,255,178,0.1)]'
-                                                    : 'bg-destructive/10 border-destructive/20 text-destructive shadow-[0_0_20px_rgba(255,107,107,0.1)]'
+                                            <div className={`h-12 w-12 sm:h-16 sm:w-16 shrink-0 rounded-2xl flex items-center justify-center border-2 transition-all group-hover:scale-105 self-start ${scan.status === 'safe'
+                                                ? 'bg-primary/10 border-primary/20 text-primary shadow-[0_0_20px_rgba(124,255,178,0.1)]'
+                                                : 'bg-destructive/10 border-destructive/20 text-destructive shadow-[0_0_20px_rgba(255,107,107,0.1)]'
                                                 }`}>
-                                                {scan.status === 'safe' ? <CheckCircle2 size={32} strokeWidth={2.5} /> : <ShieldAlert size={32} strokeWidth={2.5} />}
+                                                {scan.status === 'safe' ? <CheckCircle2 size={24} className="sm:w-8 sm:h-8" strokeWidth={2.5} /> : <ShieldAlert size={24} className="sm:w-8 sm:h-8" strokeWidth={2.5} />}
                                             </div>
 
                                             {/* Content */}
-                                            <div className="flex-1 space-y-3">
-                                                <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
-                                                    <div className="text-center md:text-left">
-                                                        <h3 className="font-black text-white text-xl tracking-tight group-hover:text-primary transition-colors">{scan.upiId}</h3>
-                                                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-1">
-                                                            <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-1">
-                                                                <CreditCard size={10} />
-                                                                {scan.merchantName || "Unlabeled"}
-                                                            </span>
-                                                            <span className="w-1 h-1 rounded-full bg-zinc-800" />
-                                                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest flex items-center gap-1">
-                                                                <Clock size={10} />
-                                                                {new Date(scan.timestamp).toLocaleString()}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className={`text-[9px] font-black px-3 py-1.5 rounded-lg uppercase tracking-wider border self-center md:self-start ${scan.status === 'safe'
+                                            <div className="flex-1 space-y-3 min-w-0">
+                                                <div className="flex flex-col gap-2">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                        <h3 className="font-black text-white text-lg sm:text-xl tracking-tight group-hover:text-primary transition-colors break-all leading-tight">{scan.upiId}</h3>
+                                                        <div className={`text-[9px] font-black px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg uppercase tracking-wider border shrink-0 ${scan.status === 'safe'
                                                             ? 'bg-primary/20 border-primary/20 text-primary'
                                                             : 'bg-destructive/20 border-destructive/20 text-destructive'
-                                                        }`}>
-                                                        {scan.status === 'safe' ? 'SECURE' : 'THREAT'}
+                                                            }`}>
+                                                            {scan.status === 'safe' ? 'SECURE' : 'THREAT'}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest flex items-center gap-1">
+                                                            <CreditCard size={10} />
+                                                            {scan.merchantName || "Unlabeled"}
+                                                        </span>
+                                                        <span className="w-1 h-1 rounded-full bg-zinc-800 hidden sm:block" />
+                                                        <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest flex items-center gap-1">
+                                                            <Clock size={10} />
+                                                            {new Date(scan.timestamp).toLocaleString()}
+                                                        </span>
                                                     </div>
                                                 </div>
 
