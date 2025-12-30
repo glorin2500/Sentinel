@@ -33,80 +33,81 @@ export default function AnalyticsPage() {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="max-w-4xl mx-auto space-y-10 pt-12 pb-32 px-4"
+            className="max-w-4xl mx-auto space-y-6 pt-8 pb-32 px-4"
         >
-            <div className="flex flex-col gap-2">
-                <h1 className="text-5xl font-black text-white tracking-tighter uppercase">Operations</h1>
-                <p className="text-zinc-500 font-bold uppercase text-[10px] tracking-[0.3em]">Neural Traffic Analysis</p>
+            <div className="flex flex-col gap-1">
+                <h1 className="text-3xl font-black text-white tracking-tight">Operations</h1>
+                <p className="text-zinc-500 font-bold uppercase text-[9px] tracking-[0.25em]">Traffic Analysis</p>
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <GlassCard className="flex-row items-center gap-6 p-8 !bg-primary/5 border-primary/20 group hover:!bg-primary/10 transition-all">
-                    <div className="h-14 w-14 rounded-2xl bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                        <TrendingUp size={28} />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <GlassCard className="flex-row items-center gap-4 p-6 !bg-primary/5 border-primary/20 group hover:!bg-primary/10 transition-all">
+                    <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                        <TrendingUp size={24} />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Efficiency</p>
-                        <p className="text-3xl font-black text-white">{efficiency}%</p>
+                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Efficiency</p>
+                        <p className="text-2xl font-black text-white">{efficiency}%</p>
                     </div>
                 </GlassCard>
-                <GlassCard className="flex-row items-center gap-6 p-8 !bg-destructive/5 border-destructive/20 group hover:!bg-destructive/10 transition-all">
-                    <div className="h-14 w-14 rounded-2xl bg-destructive/20 flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
-                        <AlertTriangle size={28} />
+                <GlassCard className="flex-row items-center gap-4 p-6 !bg-destructive/5 border-destructive/20 group hover:!bg-destructive/10 transition-all">
+                    <div className="h-12 w-12 rounded-xl bg-destructive/20 flex items-center justify-center text-destructive group-hover:scale-110 transition-transform">
+                        <AlertTriangle size={24} />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Blocked</p>
-                        <p className="text-3xl font-black text-white">{riskyCount}</p>
+                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Blocked</p>
+                        <p className="text-2xl font-black text-white">{riskyCount}</p>
                     </div>
                 </GlassCard>
-                <GlassCard className="flex-row items-center gap-6 p-8 !bg-white/5 border-white/10 group hover:!bg-white/10 transition-all">
-                    <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center text-zinc-400 group-hover:scale-110 transition-transform">
-                        <ShieldCheck size={28} />
+                <GlassCard className="flex-row items-center gap-4 p-6 !bg-white/5 border-white/10 group hover:!bg-white/10 transition-all">
+                    <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center text-zinc-400 group-hover:scale-110 transition-transform">
+                        <ShieldCheck size={24} />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Health</p>
-                        <p className="text-3xl font-black text-white">NOMINAL</p>
+                        <p className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Status</p>
+                        <p className="text-lg font-black text-primary">ACTIVE</p>
                     </div>
                 </GlassCard>
             </div>
 
             {/* Controls */}
-            <div className="flex justify-between items-center bg-white/5 p-6 rounded-[32px] border border-white/10 flex-wrap gap-6">
-                <div className="flex items-center gap-4">
+            <div className="flex justify-between items-center bg-white/5 p-4 rounded-[24px] border border-white/10 flex-wrap gap-4">
+                <div className="flex items-center gap-3">
                     <button
                         onClick={() => setRiskyOnly(!riskyOnly)}
-                        className={`h-12 px-8 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-3 border-2 ${riskyOnly
-                            ? 'bg-destructive/20 text-destructive border-destructive/40'
-                            : 'bg-white/5 text-zinc-500 border-white/5 hover:text-white'
+                        className={`h-10 px-6 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border-2 hover:scale-105 active:scale-95 ${riskyOnly
+                            ? 'bg-destructive/20 text-destructive border-destructive/40 shadow-[0_0_20px_rgba(255,107,107,0.3)]'
+                            : 'bg-white/5 text-zinc-500 border-white/5 hover:text-white hover:border-white/10'
                             }`}
                     >
-                        <Filter size={16} />
-                        Risky Only
+                        <Filter size={14} className={riskyOnly ? 'animate-pulse' : ''} />
+                        {riskyOnly ? 'Risky' : 'All'}
                     </button>
                     <button
                         onClick={cycleSort}
-                        className="h-12 px-8 rounded-2xl bg-white/5 border-2 border-white/5 text-[10px] font-black text-zinc-500 uppercase tracking-widest hover:text-white transition-all flex items-center gap-3 hover:border-white/10"
+                        className="h-10 px-6 rounded-xl bg-primary/10 border-2 border-primary/20 text-[9px] font-black text-primary uppercase tracking-widest hover:bg-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(124,255,178,0.2)]"
                     >
-                        <ArrowUpDown size={16} />
-                        Sort: {sortMode}
+                        <ArrowUpDown size={14} />
+                        {sortMode}
                     </button>
                 </div>
-                <div className="px-6 py-2 rounded-xl bg-white/5 border border-white/5 text-[10px] font-black text-zinc-600 uppercase tracking-widest">
-                    Live Nodes: {filteredScans.length}
+                <div className="px-4 py-1.5 rounded-lg bg-white/5 border border-white/5 text-[9px] font-black text-zinc-600 uppercase tracking-widest">
+                    {filteredScans.length} {filteredScans.length === 1 ? 'Node' : 'Nodes'}
                 </div>
             </div>
 
             {/* Dynamic Content */}
-            <div className="space-y-4">
+            <div className="space-y-3">
                 <AnimatePresence mode="popLayout">
                     {filteredScans.length === 0 ? (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="p-20 text-center rounded-[40px] bg-white/[0.02] border border-dashed border-white/5"
+                            className="p-16 text-center rounded-[32px] bg-white/[0.02] border border-dashed border-white/5"
                         >
-                            <p className="text-zinc-600 font-black uppercase text-xs tracking-widest">No matching logs found</p>
+                            <p className="text-zinc-600 font-black uppercase text-[10px] tracking-widest">No logs found</p>
+                            <p className="text-zinc-700 text-[9px] mt-2">Try scanning a QR code first</p>
                         </motion.div>
                     ) : (
                         filteredScans.map((scan, i) => (
@@ -118,24 +119,24 @@ export default function AnalyticsPage() {
                                 exit={{ opacity: 0, scale: 0.98 }}
                                 className="group"
                             >
-                                <GlassCard className="flex-row items-center justify-between p-8 !bg-black/30 hover:!bg-black/50 border-white/5 hover:border-primary/20 transition-all">
-                                    <div className="flex items-center gap-6">
-                                        <div className={`h-14 w-14 rounded-2xl flex items-center justify-center border ${scan.status === 'safe'
+                                <GlassCard className="flex-row items-center justify-between p-6 !bg-black/30 hover:!bg-black/50 border-white/5 hover:border-primary/20 transition-all">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center border ${scan.status === 'safe'
                                             ? 'text-primary bg-primary/10 border-primary/20'
                                             : 'text-destructive bg-destructive/10 border-destructive/20'
                                             }`}>
-                                            {scan.status === 'safe' ? <ShieldCheck size={28} /> : <AlertTriangle size={28} />}
+                                            {scan.status === 'safe' ? <ShieldCheck size={24} /> : <AlertTriangle size={24} />}
                                         </div>
                                         <div>
-                                            <p className="text-lg font-black text-white group-hover:text-primary transition-colors">{scan.upiId}</p>
-                                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">
-                                                {scan.threatType || "ENCRYPTED_ID_VERIFIED"}
+                                            <p className="text-base font-black text-white group-hover:text-primary transition-colors">{scan.upiId}</p>
+                                            <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider mt-0.5">
+                                                {scan.threatType || "Verified"}
                                             </p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-black text-white">{new Date(scan.timestamp).toLocaleTimeString()}</p>
-                                        <p className="text-[9px] font-black text-zinc-600 uppercase mt-1 tracking-widest">{new Date(scan.timestamp).toLocaleDateString()}</p>
+                                        <p className="text-sm font-bold text-white">{new Date(scan.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                        <p className="text-[8px] font-black text-zinc-600 uppercase mt-0.5 tracking-wider">{new Date(scan.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}</p>
                                     </div>
                                 </GlassCard>
                             </motion.div>

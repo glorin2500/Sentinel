@@ -130,27 +130,27 @@ export default function ScanPage() {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="max-w-md mx-auto space-y-8 pt-12 pb-32 px-4"
+            className="max-w-md mx-auto space-y-6 pt-8 pb-32 px-4"
         >
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-1">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-2">
-                    <Zap size={12} className="text-primary" />
-                    <span className="text-[10px] font-black text-primary uppercase tracking-widest">Neural Link Active</span>
+                    <Zap size={10} className="text-primary" />
+                    <span className="text-[9px] font-black text-primary uppercase tracking-widest">Neural Link Active</span>
                 </div>
-                <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">Sentinel_Scan</h1>
-                <p className="text-zinc-500 font-bold uppercase text-[9px] tracking-[0.4em]">Zero Trust Verification Engine</p>
+                <h1 className="text-3xl font-black text-white tracking-tight">Scanner</h1>
+                <p className="text-zinc-500 font-bold uppercase text-[8px] tracking-[0.3em]">Zero Trust Verification</p>
             </div>
 
             {/* Viewfinder Container */}
-            <div className="relative aspect-square max-w-[340px] mx-auto group">
+            <div className="relative aspect-square max-w-[320px] mx-auto group">
                 <AnimatePresence>
                     {cameraError && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="absolute top-[-50px] left-0 right-0 py-2 bg-destructive/20 border border-destructive/40 rounded-xl text-center z-50 backdrop-blur-md"
+                            className="absolute top-[-40px] left-0 right-0 py-2 bg-destructive/20 border border-destructive/40 rounded-xl text-center z-50 backdrop-blur-md"
                         >
-                            <p className="text-[10px] font-black text-destructive uppercase tracking-widest px-4">
+                            <p className="text-[9px] font-black text-destructive uppercase tracking-widest px-4">
                                 Camera Blocked: {cameraError}
                             </p>
                         </motion.div>
@@ -159,13 +159,13 @@ export default function ScanPage() {
 
                 {/* Viewfinder Frame */}
                 <div className="absolute inset-0 z-20 pointer-events-none">
-                    <div className="absolute top-0 left-0 w-16 h-16 border-t-[6px] border-l-[6px] border-primary rounded-tl-[40px] mt-[-6px] ml-[-6px]" />
-                    <div className="absolute top-0 right-0 w-16 h-16 border-t-[6px] border-r-[6px] border-primary rounded-tr-[40px] mt-[-6px] mr-[-6px]" />
-                    <div className="absolute bottom-0 left-0 w-16 h-16 border-b-[6px] border-l-[6px] border-primary rounded-bl-[40px] mb-[-6px] ml-[-6px]" />
-                    <div className="absolute bottom-0 right-0 w-16 h-16 border-b-[6px] border-r-[6px] border-primary rounded-br-[40px] mb-[-6px] mr-[-6px]" />
+                    <div className="absolute top-0 left-0 w-12 h-12 border-t-[4px] border-l-[4px] border-primary rounded-tl-[32px] mt-[-4px] ml-[-4px]" />
+                    <div className="absolute top-0 right-0 w-12 h-12 border-t-[4px] border-r-[4px] border-primary rounded-tr-[32px] mt-[-4px] mr-[-4px]" />
+                    <div className="absolute bottom-0 left-0 w-12 h-12 border-b-[4px] border-l-[4px] border-primary rounded-bl-[32px] mb-[-4px] ml-[-4px]" />
+                    <div className="absolute bottom-0 right-0 w-12 h-12 border-b-[4px] border-r-[4px] border-primary rounded-br-[32px] mb-[-4px] mr-[-4px]" />
                 </div>
 
-                <div className="absolute inset-0 rounded-[48px] border border-white/10 glass-card overflow-hidden bg-black/60 flex items-center justify-center border-2 border-white/5">
+                <div className="absolute inset-0 rounded-[40px] border border-white/10 glass-card overflow-hidden bg-black/60 flex items-center justify-center border-2 border-white/5">
                     <div id="reader" className="w-full h-full" />
 
                     <AnimatePresence>
@@ -174,25 +174,25 @@ export default function ScanPage() {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="absolute inset-0 flex flex-col items-center justify-center gap-8 z-10"
+                                className="absolute inset-0 flex flex-col items-center justify-center gap-6 z-10"
                             >
-                                <div className="p-10 rounded-[40px] bg-white/[0.02] border border-white/5 group-hover:bg-primary/5 group-hover:border-primary/20 transition-all duration-700 relative">
+                                <div className="p-8 rounded-[32px] bg-white/[0.02] border border-white/5 group-hover:bg-primary/5 group-hover:border-primary/20 transition-all duration-700 relative">
                                     <div className="absolute inset-0 bg-primary/20 blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity" />
-                                    <Scan size={80} className="text-zinc-800 group-hover:text-primary transition-colors relative z-10" />
+                                    <Scan size={60} className="text-zinc-800 group-hover:text-primary transition-colors relative z-10" />
                                 </div>
-                                <div className="text-center space-y-2">
-                                    <p className="text-[11px] font-black text-zinc-600 uppercase tracking-[0.3em]">
-                                        {cameraError ? "Neural Bypass Engaged" : "Scanner Standby"}
+                                <div className="text-center space-y-1">
+                                    <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">
+                                        {cameraError ? "Neural Bypass" : "Scanner Ready"}
                                     </p>
-                                    <p className="text-xs font-bold text-zinc-400 opacity-60">
-                                        {cameraError ? "Simulating Secure Node Uplink" : "Authorize Optical Input to Begin"}
+                                    <p className="text-[10px] font-bold text-zinc-500">
+                                        {cameraError ? "Simulating Secure Link" : "Tap below to scan"}
                                     </p>
                                     {cameraError && cameraError !== "HARDWARE_BYPASS" && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); startCamera(); }}
-                                            className="mt-4 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-zinc-500 hover:text-white hover:bg-white/10 transition-all uppercase"
+                                            className="mt-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[9px] font-bold text-zinc-500 hover:text-white hover:bg-white/10 transition-all uppercase"
                                         >
-                                            Retry Camera Link
+                                            Retry Camera
                                         </button>
                                     )}
                                 </div>
@@ -207,7 +207,7 @@ export default function ScanPage() {
                                 initial={{ top: "0%" }}
                                 animate={{ top: "100%" }}
                                 transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                                className="absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-primary to-transparent z-30 pointer-events-none shadow-[0_0_30px_rgba(124,255,178,0.8)]"
+                                className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent z-30 pointer-events-none shadow-[0_0_20px_rgba(124,255,178,0.8)]"
                                 style={{ top: '0%' }}
                             />
                         )}
@@ -221,114 +221,168 @@ export default function ScanPage() {
             </div>
 
             {/* Inputs & Controls */}
-            <div className="space-y-4 pt-4">
+            <div className="space-y-3 pt-2">
                 <div className="relative group">
                     <input
                         type="text"
                         value={manualUpi}
                         onChange={(e) => setManualUpi(e.target.value)}
-                        placeholder="ENTER_UPI_ID"
-                        className="w-full bg-white/[0.03] border-2 border-white/5 rounded-[24px] py-6 px-8 text-white text-md font-black focus:outline-none focus:border-primary/40 transition-all placeholder:text-zinc-800 uppercase tracking-widest"
+                        placeholder="Enter UPI ID"
+                        className="w-full bg-white/[0.03] border-2 border-white/5 rounded-[20px] py-4 px-6 text-white text-sm font-bold focus:outline-none focus:border-primary/40 transition-all placeholder:text-zinc-700"
                     />
-                    <Grid3X3 className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-800 group-focus-within:text-primary transition-colors" size={24} />
+                    <Grid3X3 className="absolute right-5 top-1/2 -translate-y-1/2 text-zinc-700 group-focus-within:text-primary transition-colors" size={18} />
                 </div>
 
                 <button
                     disabled={isScanning}
                     onClick={startCamera}
-                    className="w-full h-24 rounded-[32px] bg-primary text-background font-black uppercase tracking-[0.3em] text-xs hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all flex items-center justify-center gap-4 shadow-[0_30px_100px_rgba(124,255,178,0.15)] group overflow-hidden relative"
+                    className="w-full h-16 rounded-[24px] bg-primary text-background font-black uppercase tracking-[0.2em] text-xs hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 transition-all flex items-center justify-center gap-3 shadow-[0_20px_60px_rgba(124,255,178,0.15)] group overflow-hidden relative"
                 >
                     <div className="absolute inset-0 bg-white/20 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 skew-x-12" />
-                    <Camera size={24} className="group-hover:rotate-12 transition-transform" />
-                    {isScanning ? 'System_Analyzing...' : 'Execute Security Pass'}
+                    <Camera size={20} className="group-hover:rotate-12 transition-transform" />
+                    {isScanning ? 'Analyzing...' : 'Start Scan'}
                 </button>
             </div>
 
-            {/* Result Modal */}
+            {/* Result Modal - Redesigned for Maximum Impact */}
             <AnimatePresence>
                 {result && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/98 backdrop-blur-3xl"
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl"
+                        onClick={() => setResult(null)}
                     >
                         <motion.div
-                            initial={{ scale: 0.8, y: 100, rotate: -5 }}
-                            animate={{ scale: 1, y: 0, rotate: 0 }}
-                            className={`w-full max-w-sm glass-card rounded-[56px] p-12 border-2 overflow-hidden relative shadow-[0_100px_200px_rgba(0,0,0,0.9)] ${result === 'safe' ? 'border-primary/30 bg-primary/[0.02]' : 'border-destructive/30 bg-destructive/[0.02]'
+                            initial={{ scale: 0.9, y: 50, opacity: 0 }}
+                            animate={{ scale: 1, y: 0, opacity: 1 }}
+                            exit={{ scale: 0.95, y: 20, opacity: 0 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className={`w-full max-w-md glass-card rounded-[48px] overflow-hidden relative ${result === 'safe'
+                                ? 'border-2 border-primary/40 bg-gradient-to-br from-primary/5 via-black/40 to-black/40'
+                                : 'border-2 border-destructive/40 bg-gradient-to-br from-destructive/5 via-black/40 to-black/40'
                                 }`}
                         >
-                            <div className="flex flex-col items-center text-center gap-10">
-                                <div className={`h-40 w-40 rounded-[48px] flex items-center justify-center rotate-12 relative shadow-2xl ${result === 'safe' ? 'bg-primary border-4 border-white/20 text-background' : 'bg-destructive border-4 border-white/20 text-white'
-                                    }`}>
-                                    <div className="absolute inset-[-20px] border-4 border-inherit rounded-[56px] opacity-20 animate-ping" />
-                                    {result === 'safe' ? <ShieldCheck size={80} strokeWidth={2.5} /> : <ShieldAlert size={80} strokeWidth={2.5} />}
-                                </div>
+                            {/* Animated Background Glow */}
+                            <div className={`absolute inset-0 opacity-20 blur-3xl ${result === 'safe' ? 'bg-primary' : 'bg-destructive'
+                                }`} />
 
-                                <div className="space-y-4">
-                                    <h2 className={`text-6xl font-black italic tracking-tighter ${result === 'safe' ? 'text-primary' : 'text-destructive'}`}>
-                                        {result === 'safe' ? 'CLEAR' : 'ALERT'}
+                            {/* Content */}
+                            <div className="relative z-10 p-10">
+                                {/* Status Icon */}
+                                <motion.div
+                                    initial={{ scale: 0, rotate: -180 }}
+                                    animate={{ scale: 1, rotate: 0 }}
+                                    transition={{ delay: 0.1, type: "spring", damping: 15 }}
+                                    className="flex justify-center mb-8"
+                                >
+                                    <div className={`relative h-32 w-32 rounded-[32px] flex items-center justify-center ${result === 'safe'
+                                        ? 'bg-primary/20 border-2 border-primary/40'
+                                        : 'bg-destructive/20 border-2 border-destructive/40'
+                                        }`}>
+                                        <div className={`absolute inset-0 rounded-[32px] animate-pulse ${result === 'safe' ? 'bg-primary/10' : 'bg-destructive/10'
+                                            }`} />
+                                        {result === 'safe' ? (
+                                            <ShieldCheck size={64} className="text-primary relative z-10" strokeWidth={2} />
+                                        ) : (
+                                            <ShieldAlert size={64} className="text-destructive relative z-10" strokeWidth={2} />
+                                        )}
+                                    </div>
+                                </motion.div>
+
+                                {/* Status Text */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="text-center mb-8"
+                                >
+                                    <h2 className={`text-7xl font-black mb-3 ${result === 'safe' ? 'text-primary' : 'text-destructive'
+                                        }`}>
+                                        {result === 'safe' ? 'SECURE' : 'THREAT'}
                                     </h2>
-                                    <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.4em]">
-                                        {result === 'safe' ? 'Node Trust Absolute' : 'Neural Anomaly Detected'}
+                                    <p className="text-zinc-400 text-sm font-bold uppercase tracking-[0.3em]">
+                                        {result === 'safe' ? 'Transaction Verified' : 'High Risk Detected'}
                                     </p>
+                                </motion.div>
 
-                                    <div className="flex flex-col gap-2 p-6 rounded-3xl bg-white/5 border border-white/5 mt-6 text-left">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Target Node</span>
-                                            <span className="text-[10px] font-bold text-white uppercase">{scannedUpi || manualUpi}</span>
+                                {/* Details Card */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="space-y-4 mb-8"
+                                >
+                                    <div className="p-6 rounded-3xl bg-white/[0.03] border border-white/10 space-y-4">
+                                        <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                                            <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">UPI ID</span>
+                                            <span className="text-sm font-bold text-white">{scannedUpi || manualUpi}</span>
                                         </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Protocol</span>
-                                            <span className="text-[10px] font-bold text-primary uppercase">SHA-512_SECURE</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Risk Factor</span>
-                                            <span className={`text-[10px] font-bold uppercase ${result === 'safe' ? 'text-primary' : 'text-destructive'}`}>
-                                                {result === 'safe' ? '0.002%' : '89.4%'}
+                                        <div className="flex items-center justify-between pb-3 border-b border-white/5">
+                                            <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">Risk Level</span>
+                                            <span className={`text-sm font-black ${result === 'safe' ? 'text-primary' : 'text-destructive'
+                                                }`}>
+                                                {result === 'safe' ? 'MINIMAL (0.2%)' : 'CRITICAL (94.7%)'}
                                             </span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs font-black text-zinc-500 uppercase tracking-widest">Protocol</span>
+                                            <span className="text-sm font-bold text-primary">SHA-512</span>
                                         </div>
                                     </div>
 
-                                    <p className="text-zinc-400 text-[11px] font-bold leading-relaxed max-w-[280px] mx-auto uppercase tracking-wide mt-4">
-                                        {result === 'safe'
-                                            ? 'Target identity verified via neural consensus. Transaction path is secure.'
-                                            : 'Warning: Cryptographic mismatch in merchant signature. Remote node is blacklisted.'}
-                                    </p>
-                                </div>
+                                    {/* Warning Message */}
+                                    <div className={`p-5 rounded-2xl ${result === 'safe'
+                                        ? 'bg-primary/5 border border-primary/20'
+                                        : 'bg-destructive/5 border border-destructive/20'
+                                        }`}>
+                                        <p className="text-xs font-bold text-zinc-300 leading-relaxed text-center">
+                                            {result === 'safe'
+                                                ? 'Identity verified via neural consensus. All cryptographic signatures match. Safe to proceed.'
+                                                : '⚠️ Merchant signature mismatch detected. This node appears on multiple fraud blacklists. DO NOT PROCEED.'}
+                                        </p>
+                                    </div>
+                                </motion.div>
 
-                                <div className="w-full space-y-3">
+                                {/* Action Buttons */}
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.4 }}
+                                    className="space-y-3"
+                                >
                                     {result === 'safe' ? (
                                         <button
                                             disabled={isProcessingPayment}
                                             onClick={handleProceedToPay}
-                                            className="w-full h-20 rounded-2xl bg-primary text-background font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 hover:opacity-90 active:scale-95 transition-all shadow-[0_10px_40px_rgba(124,255,178,0.2)] disabled:opacity-50"
+                                            className="w-full h-16 rounded-2xl bg-primary text-background font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_60px_rgba(124,255,178,0.3)] disabled:opacity-50"
                                         >
                                             {isProcessingPayment ? (
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-3">
                                                     <div className="h-4 w-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
-                                                    LINKING_PAYMENT...
+                                                    Linking Payment...
                                                 </div>
                                             ) : (
-                                                <>INTIATE_PAYMENT <ArrowRight size={16} /></>
+                                                <>Proceed to Pay <ArrowRight size={18} /></>
                                             )}
                                         </button>
                                     ) : (
                                         <button
                                             onClick={() => setResult(null)}
-                                            className="w-full h-20 rounded-2xl bg-destructive text-white font-black uppercase tracking-[0.3em] text-[10px] hover:opacity-90 active:scale-95 transition-all shadow-[0_10px_40px_rgba(255,107,107,0.2)]"
+                                            className="w-full h-16 rounded-2xl bg-destructive text-white font-black uppercase tracking-[0.2em] text-xs hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_60px_rgba(255,107,107,0.3)]"
                                         >
-                                            VOID_SESSION
+                                            Block Transaction
                                         </button>
                                     )}
                                     <button
                                         onClick={() => setResult(null)}
-                                        className="w-full py-5 rounded-2xl text-zinc-600 font-black uppercase text-[9px] tracking-[0.4em] hover:text-white transition-all"
+                                        className="w-full py-4 rounded-2xl text-zinc-500 font-bold uppercase text-xs tracking-[0.3em] hover:text-white hover:bg-white/5 transition-all"
                                     >
-                                        TERMINATE
+                                        Close
                                     </button>
-                                </div>
+                                </motion.div>
                             </div>
                         </motion.div>
                     </motion.div>
