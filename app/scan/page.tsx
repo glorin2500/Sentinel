@@ -282,10 +282,10 @@ export default function ScanPage() {
                 <div className="text-center space-y-1">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-2">
                         <Zap size={10} className="text-primary" />
-                        <span className="text-[9px] font-black text-primary uppercase tracking-widest">Neural Link Active</span>
+                        <span className="text-[9px] font-black text-primary uppercase tracking-widest">Scanner Online</span>
                     </div>
                     <h1 className="text-3xl font-black text-white tracking-tight">Scanner</h1>
-                    <p className="text-zinc-500 font-bold uppercase text-[8px] tracking-[0.3em]">Zero Trust Verification</p>
+                    <p className="text-zinc-500 font-bold uppercase text-[8px] tracking-[0.3em]">Threat Analysis Engine</p>
                 </div>
 
                 {/* Viewfinder Container */}
@@ -329,10 +329,10 @@ export default function ScanPage() {
                                     </div>
                                     <div className="text-center space-y-1">
                                         <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.2em]">
-                                            {cameraError ? "Neural Bypass" : "Scanner Ready"}
+                                            {cameraError ? "Simulation Mode" : "Scanner Ready"}
                                         </p>
                                         <p className="text-[10px] font-bold text-zinc-500">
-                                            {cameraError ? "Simulating Secure Link" : "Tap below to scan"}
+                                            {cameraError ? "Using virtual environment" : "Tap below to scan"}
                                         </p>
                                         {cameraError && cameraError !== "HARDWARE_BYPASS" && (
                                             <button

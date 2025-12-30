@@ -14,19 +14,6 @@ export function IntroSplash({ onComplete }: IntroSplashProps) {
     const [shouldShow, setShouldShow] = useState(true);
 
     useEffect(() => {
-        // Check if animation has already been shown this session
-        const hasShown = sessionStorage.getItem('sentinel-intro-shown');
-
-        if (hasShown === 'true') {
-            // Skip animation and immediately complete
-            setShouldShow(false);
-            onComplete();
-            return;
-        }
-
-        // Mark as shown for this session
-        sessionStorage.setItem('sentinel-intro-shown', 'true');
-
         // Simulate loading progress
         const interval = setInterval(() => {
             setProgress(prev => {

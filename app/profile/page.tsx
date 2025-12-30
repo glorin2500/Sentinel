@@ -139,12 +139,12 @@ export default function ProfilePage() {
                 <div className="space-y-6">
                     <div className="flex items-center gap-3 px-2">
                         <Shield size={18} className="text-zinc-500" />
-                        <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.3em]">Neural Protocols</h3>
+                        <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.3em]">Security Protocols</h3>
                     </div>
                     {[
-                        { key: 'biometricLock', label: 'Biometric Intercept', desc: 'Hardware-level authentication for all scans' },
+                        { key: 'biometricLock', label: 'Biometric Verification', desc: 'Hardware-level authentication for all scans' },
                         { key: 'notificationsEnabled', label: 'Deep Scanning', desc: 'Extended packet analysis on complex QR nodes' },
-                        { key: 'neuralPatching', label: 'Neural Patching', desc: 'Automatic threat signature updates via satellite' }
+                        { key: 'neuralPatching', label: 'Smart Updates', desc: 'Automatic threat signature updates' }
                     ].map((protocol) => (
                         <button
                             key={protocol.key}
@@ -166,7 +166,7 @@ export default function ProfilePage() {
                     <div className="flex justify-between items-center px-2">
                         <div className="flex items-center gap-3">
                             <CreditCard size={18} className="text-zinc-500" />
-                            <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.3em]">Financial Nodes</h3>
+                            <h3 className="text-xs font-black text-zinc-500 uppercase tracking-[0.3em]">Linked Accounts</h3>
                         </div>
                         <button
                             onClick={addFinancialNode}
