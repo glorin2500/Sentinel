@@ -86,14 +86,14 @@ export function HeroSection() {
                             className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0"
                         >
                             {/* Logo Container */}
-                            <div className="absolute inset-0 bg-primary/20 rounded-2xl rotate-3 backdrop-blur-sm" />
-                            <div className="absolute inset-0 bg-primary/10 rounded-2xl -rotate-3 backdrop-blur-sm" />
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center border border-primary/20 shadow-[0_0_30px_rgba(124,255,178,0.3)]">
-                                <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-primary fill-primary/20" strokeWidth={2.5} />
+                            <div className="absolute inset-0 bg-primary/10 rounded-2xl rotate-3 backdrop-blur-sm" />
+                            <div className="absolute inset-0 bg-primary/5 rounded-2xl -rotate-3 backdrop-blur-sm" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center border border-primary/10 shadow-[0_0_20px_rgba(124,255,178,0.15)]">
+                                <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-primary fill-primary/10" strokeWidth={2} />
 
                                 {/* Scanning Animation */}
                                 <motion.div
-                                    className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/20 to-transparent"
+                                    className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-transparent"
                                     animate={{ top: ['-100%', '100%'] }}
                                     transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                                 />
