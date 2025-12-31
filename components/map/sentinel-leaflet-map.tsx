@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 import { getNearbyMerchants, Merchant } from "@/lib/map/merchant-service";
 import { Shield, AlertTriangle, HelpCircle, Navigation, Star, Scan, Search } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -26,11 +27,6 @@ export default function SentinelLeafletMap() {
     // Initialize client-side only
     useEffect(() => {
         setIsClient(true);
-
-        // Import CSS client-side only
-        if (typeof window !== "undefined") {
-            require("leaflet/dist/leaflet.css");
-        }
     }, []);
 
     // 1. Get Real User Location on Mount
