@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
 import { getNearbyMerchants, Merchant } from "@/lib/map/merchant-service";
 import { Shield, AlertTriangle, HelpCircle, Navigation, Star, Scan, Search } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -23,10 +21,21 @@ export default function SentinelLeafletMap() {
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
     const [mapCenter, setMapCenter] = useState<[number, number]>([12.9716, 77.5946]);
+    const [isClient, setIsClient] = useState(false);
+
+    // Initialize client-side only
+    useEffect(() => {
+        setIsClient(true);
+
+        // Import CSS client-side only
+        if (typeof window !== "undefined") {
+            require("leaflet/dist/leaflet.css");
+        }
+    }, []);
 
     // 1. Get Real User Location on Mount
     useEffect(() => {
-        if (navigator.geolocation) {
+        if (typeof window !== "undefined" && navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
@@ -43,14 +52,17 @@ export default function SentinelLeafletMap() {
 
     // 2. Fetch Merchants whenever Map Center changes (Dynamic Generation)
     useEffect(() => {
-        // Fix Leaflet's default icon path issues in Next.js
-        // @ts-ignore
-        delete L.Icon.Default.prototype._getIconUrl;
-        L.Icon.Default.mergeOptions({
-            iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-        });
+        if (typeof window !== "undefined") {
+            // Fix Leaflet's default icon path issues in Next.js
+            const L = require("leaflet");
+            // @ts-ignore
+            delete L.Icon.Default.prototype._getIconUrl;
+            L.Icon.Default.mergeOptions({
+                iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+                iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+            });
+        }
 
         // Generate merchants around the CURRENT map center (could be search result or user loc)
         setMerchants(getNearbyMerchants(mapCenter[0], mapCenter[1]));
@@ -84,7 +96,7 @@ export default function SentinelLeafletMap() {
     };
 
     const handleLocateMe = () => {
-        if (navigator.geolocation) {
+        if (typeof window !== "undefined" && navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((pos) => {
                 const { latitude, longitude } = pos.coords;
                 const loc: [number, number] = [latitude, longitude];
@@ -96,6 +108,9 @@ export default function SentinelLeafletMap() {
 
     // Create custom icons using DivIcon and Lucide React rendered to HTML
     const createCustomIcon = (type: 'safe' | 'risky' | 'unknown' | 'user') => {
+        if (typeof window === "undefined") return undefined;
+
+        const L = require("leaflet");
         let iconHtml = '';
         let className = '';
 
@@ -138,6 +153,15 @@ export default function SentinelLeafletMap() {
             popupAnchor: [0, -60]
         });
     };
+
+    // Don't render until client-side
+    if (!isClient) {
+        return (
+            <div className="w-full h-full flex items-center justify-center bg-[#050510]">
+                <div className="text-zinc-500 text-sm">Initializing map...</div>
+            </div>
+        );
+    }
 
     return (
         <div className="w-full h-full relative z-0">
