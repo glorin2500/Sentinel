@@ -1,7 +1,7 @@
 "use client";
 
 import { MerchantMap } from "@/components/map/merchant-map";
-import { Shell } from "@/components/layout/shell";
+import Shell from "@/components/layout/shell";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
