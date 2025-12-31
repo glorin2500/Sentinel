@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import MarkerClusterGroup from "react-leaflet-cluster";
 import "leaflet/dist/leaflet.css";
 import { Shield, AlertTriangle, HelpCircle, Navigation, Search, Loader2, MapPin } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { EnhancedPlace, fetchEnhancedNearbyPlaces, getRiskColor, getPlaceMarkerStyle } from "@/lib/map/place-intelligence";
 import { PlaceCategory } from "@/lib/map/overpass-service";
 import { CategoryFilter } from "./category-filter";
+import { PlacePopup } from "./place-popup";
 
 // Custom Hook to update map view
 function MapUpdater({ center }: { center: [number, number] }) {
@@ -275,84 +277,52 @@ export default function SentinelLeafletMap() {
                     </Popup>
                 </Marker>
 
-                {/* Real Places with Safety Data */}
-                {places.map(place => (
-                    <Marker
-                        key={place.id}
-                        position={[place.lat, place.lon]}
-                        icon={createPlaceIcon(place)}
-                    >
-                        <Popup closeButton={false} maxWidth={320} minWidth={300}>
-                            <div className="p-4 font-sans">
-                                <div className="flex justify-between items-start mb-3">
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-black text-white m-0 leading-tight">{place.name}</h3>
-                                        <p className="text-xs text-zinc-400 font-bold uppercase tracking-wider mt-1">{place.category}</p>
-                                        {place.address && (
-                                            <p className="text-xs text-zinc-500 mt-1">{place.address}</p>
-                                        )}
-                                    </div>
-                                    {place.isSentinelVerified && (
-                                        <div className="bg-green-500/20 p-1.5 rounded-full border border-green-500/30">
-                                            <Shield size={16} className="text-green-500 fill-green-500" />
-                                        </div>
-                                    )}
-                                </div>
+                {/* Real Places with Safety Data - Clustered */}
+                <MarkerClusterGroup
+                    chunkedLoading
+                    maxClusterRadius={60}
+                    spiderfyOnMaxZoom={true}
+                    showCoverageOnHover={false}
+                    zoomToBoundsOnClick={true}
+                    iconCreateFunction={(cluster: any) => {
+                        const count = cluster.getChildCount();
+                        let size: 'small' | 'medium' | 'large' = 'small';
+                        if (count > 10) size = 'medium';
+                        if (count > 25) size = 'large';
 
-                                {/* Safety Score */}
-                                <div className={`p-3 rounded-xl border mb-3 ${place.riskLevel === 'safe' ? 'bg-green-500/10 border-green-500/20' :
-                                    place.riskLevel === 'caution' ? 'bg-yellow-500/10 border-yellow-500/20' :
-                                        place.riskLevel === 'warning' ? 'bg-orange-500/10 border-orange-500/20' :
-                                            'bg-red-500/10 border-red-500/20'
-                                    }`}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            {place.riskLevel === 'safe' && <Shield size={16} className="text-green-500" />}
-                                            {place.riskLevel === 'caution' && <HelpCircle size={16} className="text-yellow-500" />}
-                                            {(place.riskLevel === 'warning' || place.riskLevel === 'danger') && <AlertTriangle size={16} className="text-red-500" />}
-                                            <span className={`text-xs font-black uppercase ${place.riskLevel === 'safe' ? 'text-green-500' :
-                                                place.riskLevel === 'caution' ? 'text-yellow-500' :
-                                                    'text-red-500'
-                                                }`}>
-                                                {place.riskLevel === 'safe' ? 'Verified Safe' :
-                                                    place.riskLevel === 'caution' ? 'Use Caution' :
-                                                        place.riskLevel === 'warning' ? 'Warning' : 'Danger'}
-                                            </span>
-                                        </div>
-                                        <span className="text-lg font-black text-white">{place.safetyScore}%</span>
-                                    </div>
-                                    {place.reportCount > 0 && (
-                                        <div className="mt-2 text-xs text-zinc-400">
-                                            {place.reportCount} community {place.reportCount === 1 ? 'report' : 'reports'}
-                                        </div>
-                                    )}
-                                </div>
+                        const sizeMap: Record<'small' | 'medium' | 'large', string> = {
+                            small: 'w-8 h-8 text-xs',
+                            medium: 'w-10 h-10 text-sm',
+                            large: 'w-12 h-12 text-base'
+                        };
 
-                                {/* Additional Info */}
-                                {(place.phone || place.opening_hours) && (
-                                    <div className="mb-3 space-y-1">
-                                        {place.phone && (
-                                            <div className="text-xs text-zinc-400">📞 {place.phone}</div>
-                                        )}
-                                        {place.opening_hours && (
-                                            <div className="text-xs text-zinc-400">🕒 {place.opening_hours}</div>
-                                        )}
+                        if (typeof window !== "undefined") {
+                            const L = require("leaflet");
+                            return L.divIcon({
+                                html: `
+                                    <div class="${sizeMap[size]} bg-primary/90 backdrop-blur-sm rounded-full border-2 border-white/20 flex items-center justify-center font-black text-black shadow-lg">
+                                        ${count}
                                     </div>
-                                )}
-
-                                {/* Actions */}
-                                <div className="flex gap-2">
-                                    <button className="flex-1 py-2 bg-primary text-black font-black uppercase text-xs rounded-lg hover:opacity-90 transition-opacity">
-                                        Navigate
-                                    </button>
-                                    <button className="flex-1 py-2 bg-white/10 text-white font-bold uppercase text-xs rounded-lg hover:bg-white/20 transition-colors border border-white/10">
-                                        Report
-                                    </button>
-                                </div>
-                            </div>
-                        </Popup>
-                    </Marker>
-                ))}
+                                `,
+                                className: 'custom-cluster-icon',
+                                iconSize: [40, 40]
+                            });
+                        }
+                        return undefined as any;
+                    }}
+                >
+                    {places.map(place => (
+                        <Marker
+                            key={place.id}
+                            position={[place.lat, place.lon]}
+                            icon={createPlaceIcon(place)}
+                        >
+                            <Popup closeButton={false} maxWidth={300} minWidth={260}>
+                                <PlacePopup place={place} />
+                            </Popup>
+                        </Marker>
+                    ))}
+                </MarkerClusterGroup>
             </MapContainer>
         </div>
     );
