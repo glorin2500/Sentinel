@@ -20,11 +20,11 @@ function MapUpdater({ center }: { center: [number, number] }) {
 
 export default function SentinelLeafletMap() {
     const [places, setPlaces] = useState<EnhancedPlace[]>([]);
-    const [userLocation, setUserLocation] = useState<[number, number]>([12.9716, 77.5946]);
+    const [userLocation, setUserLocation] = useState<[number, number]>([9.9312, 76.2673]); // Default: Kochi, Kerala
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearching, setIsSearching] = useState(false);
     const [isLoadingPlaces, setIsLoadingPlaces] = useState(false);
-    const [mapCenter, setMapCenter] = useState<[number, number]>([12.9716, 77.5946]);
+    const [mapCenter, setMapCenter] = useState<[number, number]>([9.9312, 76.2673]); // Kochi, Kerala
     const [isClient, setIsClient] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<PlaceCategory>('all');
 
@@ -71,7 +71,7 @@ export default function SentinelLeafletMap() {
                 const enhancedPlaces = await fetchEnhancedNearbyPlaces(
                     mapCenter[0],
                     mapCenter[1],
-                    1000, // 1km radius
+                    5000, // 5km radius for better Kerala coverage
                     selectedCategory
                 );
                 setPlaces(enhancedPlaces);
@@ -301,9 +301,9 @@ export default function SentinelLeafletMap() {
 
                                 {/* Safety Score */}
                                 <div className={`p-3 rounded-xl border mb-3 ${place.riskLevel === 'safe' ? 'bg-green-500/10 border-green-500/20' :
-                                        place.riskLevel === 'caution' ? 'bg-yellow-500/10 border-yellow-500/20' :
-                                            place.riskLevel === 'warning' ? 'bg-orange-500/10 border-orange-500/20' :
-                                                'bg-red-500/10 border-red-500/20'
+                                    place.riskLevel === 'caution' ? 'bg-yellow-500/10 border-yellow-500/20' :
+                                        place.riskLevel === 'warning' ? 'bg-orange-500/10 border-orange-500/20' :
+                                            'bg-red-500/10 border-red-500/20'
                                     }`}>
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
@@ -311,8 +311,8 @@ export default function SentinelLeafletMap() {
                                             {place.riskLevel === 'caution' && <HelpCircle size={16} className="text-yellow-500" />}
                                             {(place.riskLevel === 'warning' || place.riskLevel === 'danger') && <AlertTriangle size={16} className="text-red-500" />}
                                             <span className={`text-xs font-black uppercase ${place.riskLevel === 'safe' ? 'text-green-500' :
-                                                    place.riskLevel === 'caution' ? 'text-yellow-500' :
-                                                        'text-red-500'
+                                                place.riskLevel === 'caution' ? 'text-yellow-500' :
+                                                    'text-red-500'
                                                 }`}>
                                                 {place.riskLevel === 'safe' ? 'Verified Safe' :
                                                     place.riskLevel === 'caution' ? 'Use Caution' :
