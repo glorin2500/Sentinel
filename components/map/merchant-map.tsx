@@ -3,7 +3,7 @@
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { getNearbyMerchants, Merchant } from "@/lib/map/merchant-service";
-import { MapPin, Navigation, Shield, AlertTriangle, Star, Search, Filter, X, Locate } from "lucide-react";
+import { MapPin, Navigation, Shield, AlertTriangle, Star, Search, Filter, X, Locate, HelpCircle } from "lucide-react";
 import { hapticClick, hapticLight } from "@/lib/haptic";
 
 export function MerchantMap() {

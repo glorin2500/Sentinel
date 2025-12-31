@@ -128,6 +128,8 @@ interface SentinelState {
     isFavorite: (upiId: string) => boolean;
     incrementMerchantCount: (upiId: string) => void;
     getMerchantScanCount: (upiId: string) => number;
+    isSplashComplete: boolean;
+    setSplashComplete: (val: boolean) => void;
 }
 
 const INITIAL_USER: UserProfile = {
@@ -289,6 +291,8 @@ export const useSentinelStore = create<SentinelState>((set, get) => ({
     },
     isAuthenticated: false,
     setAuthenticated: (val) => set({ isAuthenticated: val }),
+    isSplashComplete: false,
+    setSplashComplete: (val) => set({ isSplashComplete: val }),
     addFavorite: (upiId) => {
         const { favorites } = get();
         if (!favorites.includes(upiId)) {

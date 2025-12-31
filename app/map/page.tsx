@@ -1,6 +1,6 @@
 "use client";
 
-import { MerchantMap } from "@/components/map/merchant-map";
+import DynamicMap from "@/components/map/dynamic-map";
 import Shell from "@/components/layout/shell";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
@@ -10,7 +10,7 @@ export default function MapPage() {
     return (
         <Shell>
             <div className="absolute inset-0 z-0 bg-[#050510]">
-                <MerchantMap />
+                <DynamicMap />
 
                 {/* Overlaid Title for context (optional, but good for UX) */}
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 pointer-events-none opacity-0 sm:opacity-100">

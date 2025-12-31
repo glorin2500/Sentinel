@@ -14,12 +14,11 @@ export default function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const [isSplashComplete, setIsSplashComplete] = useState(false);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [isSecurityOpen, setIsSecurityOpen] = useState(false);
     const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
     const router = useRouter();
-    const { userProfile, updateProfile, isAuthenticated, setAuthenticated } = useSentinelStore();
+    const { userProfile, updateProfile, isAuthenticated, setAuthenticated, isSplashComplete, setSplashComplete } = useSentinelStore();
 
     // Security settings state
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
@@ -42,7 +41,7 @@ export default function RootLayout({
         if (confirm("Are you sure you want to log out?")) {
             setIsAccountOpen(false);
             setAuthenticated(false);
-            setIsSplashComplete(false);
+            setSplashComplete(false); // Reset splash on logout if desired, or keep true. Let's reset to show splash again on login.
             router.push('/');
         }
     };
@@ -70,7 +69,7 @@ export default function RootLayout({
     if (!isSplashComplete) {
         return (
             <div className="min-h-screen bg-black text-white font-sans selection:bg-primary/30">
-                <IntroSplash onComplete={() => setIsSplashComplete(true)} />
+                <IntroSplash onComplete={() => setSplashComplete(true)} />
             </div>
         );
     }
