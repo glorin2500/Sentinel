@@ -1,4 +1,4 @@
-import { ScanResult } from '../store';
+import { ScanResult } from '@/lib/store';
 
 export type SuggestionType =
     | 'add_to_favorites'

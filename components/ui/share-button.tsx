@@ -78,7 +78,7 @@ export function ShareButton({ scan, variant = "default", className = "" }: Share
                     >
                         <Check size={16} className="text-primary" />
                         <span className="text-xs font-black text-primary uppercase tracking-wider">
-                            {navigator.share ? "Shared!" : "Copied!"}
+                            {typeof navigator !== 'undefined' && typeof navigator.share === 'function' ? "Shared!" : "Copied!"}
                         </span>
                     </motion.div>
                 ) : (
@@ -89,9 +89,9 @@ export function ShareButton({ scan, variant = "default", className = "" }: Share
                         exit={{ scale: 0, opacity: 0 }}
                         className="flex items-center gap-2"
                     >
-                        {navigator.share ? <Share2 size={16} /> : <Copy size={16} />}
+                        {typeof navigator !== 'undefined' && typeof navigator.share === 'function' ? <Share2 size={16} /> : <Copy size={16} />}
                         <span className="text-xs font-black text-white uppercase tracking-wider">
-                            {isSharing ? "Sharing..." : navigator.share ? "Share" : "Copy"}
+                            {isSharing ? "Sharing..." : typeof navigator !== 'undefined' && typeof navigator.share === 'function' ? "Share" : "Copy"}
                         </span>
                     </motion.div>
                 )}
