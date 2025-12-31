@@ -2,79 +2,88 @@
 
 import { GlassCard } from "./glass-card";
 import { useSentinelStore } from "@/lib/store";
-import { BarChart, Bar, ResponsiveContainer, XAxis, Cell } from "recharts";
+import { TrendingUp, TrendingDown, AlertTriangle, Shield, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { hapticClick } from "@/lib/haptic";
+import { motion } from "framer-motion";
 
 export function RiskChart() {
-    const { currentView, setView, riskData } = useSentinelStore();
+    const { riskData } = useSentinelStore();
     const router = useRouter();
 
+    // Calculate trend
+    const recentScans = riskData.slice(-3);
+    const avgRecent = recentScans.reduce((sum, d) => sum + d.value, 0) / recentScans.length;
+    const previousScans = riskData.slice(-6, -3);
+    const avgPrevious = previousScans.reduce((sum, d) => sum + d.value, 0) / previousScans.length;
+    const trend = avgRecent > avgPrevious ? 'up' : 'down';
+    const trendPercent = Math.abs(((avgRecent - avgPrevious) / avgPrevious) * 100).toFixed(0);
+
+    // Count high-risk days
+    const highRiskDays = riskData.filter(d => d.value > 70).length;
+    const totalDays = riskData.length;
+
     return (
-        <GlassCard className="h-[400px] flex flex-col">
-            <div className="flex justify-between items-center mb-8">
+        <GlassCard
+            className="h-full flex flex-col cursor-pointer hover:border-white/20 transition-all group"
+            onClick={() => {
+                hapticClick();
+                router.push('/analytics');
+            }}
+        >
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
                 <div>
-                    <h3 className="text-xl font-black text-white tracking-tight uppercase">Risk Patterns</h3>
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Live threat velocity</p>
+                    <h3 className="text-lg font-black text-white">Threat Activity</h3>
+                    <p className="text-xs text-zinc-500 mt-0.5">Last 7 days</p>
                 </div>
-                <div className="flex bg-white/5 p-1 rounded-2xl border border-white/5">
-                    {['weekly', 'monthly'].map((v) => (
-                        <button
-                            key={v}
-                            onClick={() => setView(v as 'weekly' | 'monthly')}
-                            className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${currentView === v
-                                ? 'bg-primary text-black shadow-[0_0_20px_rgba(124,255,178,0.2)]'
-                                : 'text-zinc-500 hover:text-white'
-                                }`}
-                        >
-                            {v}
-                        </button>
-                    ))}
+                <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${trend === 'up' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'
+                    }`}>
+                    {trend === 'up' ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                    <span className="text-xs font-bold">{trendPercent}%</span>
                 </div>
             </div>
 
-            <div className="flex-1 w-full relative">
-                <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={riskData} margin={{ top: 0, right: 0, left: 0, bottom: 40 }} barSize={38}>
-                        <XAxis
-                            dataKey="name"
-                            axisLine={false}
-                            tickLine={false}
-                            tick={{ fill: '#FFFFFF', fontSize: 14, fontWeight: 900 }}
-                            dy={20}
-                            interval={0}
-                        />
-                        <Bar
-                            dataKey="value"
-                            radius={[12, 12, 12, 12]}
-                            background={{ fill: 'rgba(255,255,255,0.03)', radius: 12 }}
-                            className="cursor-pointer"
-                            onClick={() => {
-                                hapticClick();
-                                router.push('/analytics');
-                            }}
-                        >
-                            {riskData.map((entry, index) => (
-                                <Cell
-                                    key={`cell-${index}`}
-                                    fill={entry.color}
-                                    className="hover:opacity-80 transition-opacity"
-                                />
-                            ))}
-                        </Bar>
-                    </BarChart>
-                </ResponsiveContainer>
+            {/* Mini Bar Chart */}
+            <div className="flex items-end gap-1.5 h-24 mb-4">
+                {riskData.map((day, index) => (
+                    <motion.div
+                        key={index}
+                        className="flex-1 rounded-t-md relative group/bar"
+                        style={{
+                            height: `${(day.value / 100) * 100}%`,
+                            backgroundColor: day.value > 70 ? '#ef4444' : day.value > 40 ? '#eab308' : '#22c55e',
+                            opacity: 0.8
+                        }}
+                        initial={{ height: 0 }}
+                        animate={{ height: `${(day.value / 100) * 100}%` }}
+                        transition={{ delay: index * 0.05, duration: 0.3 }}
+                        whileHover={{ opacity: 1, scale: 1.05 }}
+                    >
+                        {/* Tooltip on hover */}
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black/90 rounded text-xs font-bold whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity pointer-events-none">
+                            {day.name}: {day.value}
+                        </div>
+                    </motion.div>
+                ))}
             </div>
 
-            <div className="flex items-center gap-6 pt-2 border-t border-white/5">
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary" />
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Normal Load</span>
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+                <div className="bg-white/5 rounded-lg p-2.5">
+                    <div className="text-xs text-zinc-500 mb-1">High Risk Days</div>
+                    <div className="text-xl font-black text-white">{highRiskDays}/{totalDays}</div>
                 </div>
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-destructive" />
-                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Anomalies Detected</span>
+                <div className="bg-white/5 rounded-lg p-2.5">
+                    <div className="text-xs text-zinc-500 mb-1">Avg Threat Level</div>
+                    <div className="text-xl font-black text-white">{avgRecent.toFixed(0)}%</div>
                 </div>
+            </div>
+
+            {/* Action */}
+            <div className="flex items-center justify-between text-xs text-zinc-400 group-hover:text-primary transition-colors">
+                <span className="font-bold">View detailed analytics</span>
+                <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </div>
         </GlassCard>
     );

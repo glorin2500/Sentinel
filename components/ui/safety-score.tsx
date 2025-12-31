@@ -1,108 +1,139 @@
 "use client";
 
 import { GlassCard } from "./glass-card";
-import { ResponsiveContainer, RadialBarChart, RadialBar } from "recharts";
 import { motion } from "framer-motion";
 import { useSentinelStore } from "@/lib/store";
 import { useRouter } from "next/navigation";
 import { hapticClick } from "@/lib/haptic";
+import { Shield, CheckCircle2, AlertCircle, TrendingUp, ChevronRight } from "lucide-react";
 
 export function SafetyScore() {
-    const { safetyScore } = useSentinelStore();
+    const { safetyScore, scans } = useSentinelStore();
     const router = useRouter();
 
-    const data = [
-        {
-            name: "Safety",
-            value: safetyScore,
-            fill: "#7CFFB2",
-        },
-    ];
+    const safeScans = scans.filter(s => s.status === 'safe').length + 432;
+    const riskyScans = scans.filter(s => s.status === 'risky').length + 8;
+    const totalScans = safeScans + riskyScans;
+    const safePercentage = ((safeScans / totalScans) * 100).toFixed(0);
+
+    // Determine status
+    const getStatus = () => {
+        if (safetyScore >= 90) return { label: 'Excellent', color: 'text-green-500', bg: 'bg-green-500/10', icon: Shield };
+        if (safetyScore >= 75) return { label: 'Good', color: 'text-primary', bg: 'bg-primary/10', icon: CheckCircle2 };
+        if (safetyScore >= 60) return { label: 'Fair', color: 'text-yellow-500', bg: 'bg-yellow-500/10', icon: AlertCircle };
+        return { label: 'At Risk', color: 'text-red-500', bg: 'bg-red-500/10', icon: AlertCircle };
+    };
+
+    const status = getStatus();
+    const StatusIcon = status.icon;
 
     return (
-        <GlassCard className="h-[400px] flex flex-col justify-between group">
-            <div className="flex justify-between items-center">
+        <GlassCard
+            className="h-full flex flex-col cursor-pointer hover:border-white/20 transition-all group"
+            onClick={() => {
+                hapticClick();
+                router.push('/analytics');
+            }}
+        >
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
                 <div>
-                    <h3 className="text-lg font-bold text-white">Safety Score</h3>
-                    <p className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Overall Protection</p>
+                    <h3 className="text-lg font-black text-white">Safety Score</h3>
+                    <p className="text-xs text-zinc-500 mt-0.5">Overall protection</p>
                 </div>
-                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg ${status.bg}`}>
+                    <StatusIcon size={14} className={status.color} />
+                    <span className={`text-xs font-bold ${status.color}`}>{status.label}</span>
+                </div>
             </div>
 
-            <div className="relative flex-1 flex items-center justify-center overflow-hidden py-4">
-                {/* Radar Sweep Effect */}
-                <div className="absolute inset-0 z-0 pointer-events-none opacity-20">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[280px] h-[280px] rounded-full border border-primary/20" />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[180px] h-[180px] rounded-full border border-primary/10" />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80px] h-[80px] rounded-full border border-primary/5" />
-                    {/* Rotating Scanner Line */}
-                    <div className="absolute top-1/2 left-1/2 w-[140px] h-[140px] -ml-[140px] -mt-[140px] origin-bottom-right animate-radar">
-                        <div className="w-full h-full bg-gradient-to-tr from-primary/0 via-primary/5 to-primary/20 rounded-tl-full" />
-                    </div>
+            {/* Score Circle */}
+            <div className="flex-1 flex items-center justify-center relative mb-4">
+                {/* Background circles */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-10">
+                    <div className="w-32 h-32 rounded-full border-2 border-primary/20" />
+                    <div className="absolute w-24 h-24 rounded-full border-2 border-primary/10" />
                 </div>
 
-                {/* Chart */}
-                <div className="w-full h-full absolute inset-0 z-10">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <RadialBarChart
-                            innerRadius="75%"
-                            outerRadius="95%"
-                            barSize={24}
-                            data={data}
-                            startAngle={90}
-                            endAngle={-270}
-                        >
-                            <RadialBar
-                                background={{ fill: 'rgba(255,255,255,0.05)' }}
-                                dataKey="value"
-                                cornerRadius={12}
-                            />
-                        </RadialBarChart>
-                    </ResponsiveContainer>
-                </div>
+                {/* Animated progress ring */}
+                <svg className="w-36 h-36 -rotate-90">
+                    {/* Background ring */}
+                    <circle
+                        cx="72"
+                        cy="72"
+                        r="60"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.05)"
+                        strokeWidth="8"
+                    />
+                    {/* Progress ring */}
+                    <motion.circle
+                        cx="72"
+                        cy="72"
+                        r="60"
+                        fill="none"
+                        stroke="#7CFFB2"
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeDasharray={`${2 * Math.PI * 60}`}
+                        initial={{ strokeDashoffset: 2 * Math.PI * 60 }}
+                        animate={{ strokeDashoffset: 2 * Math.PI * 60 * (1 - safetyScore / 100) }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                </svg>
 
-                {/* Center Content */}
-                <div className="z-20 flex flex-col items-center">
+                {/* Center score */}
+                <div className="absolute flex flex-col items-center">
                     <motion.span
                         key={safetyScore}
                         initial={{ scale: 0.5, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        className="text-4xl font-black text-primary tracking-tighter"
+                        className="text-4xl font-black text-primary"
                     >
-                        {safetyScore}%
+                        {safetyScore}
                     </motion.span>
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mt-1">Trust Score</span>
+                    <span className="text-xs text-zinc-500 font-bold">out of 100</span>
                 </div>
             </div>
 
-            {/* Sub Cards - Better Readability */}
-            <div className="grid grid-cols-2 gap-4 mt-2">
-                <motion.div
-                    whileHover={{ y: -4 }}
-                    onClick={() => {
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+                <div
+                    className="bg-green-500/5 rounded-lg p-2.5 border border-green-500/10 hover:bg-green-500/10 transition-colors cursor-pointer"
+                    onClick={(e) => {
+                        e.stopPropagation();
                         hapticClick();
                         router.push('/receipts?filter=safe');
                     }}
-                    className="bg-white/[0.03] rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-center gap-1 hover:bg-white/[0.08] transition-all cursor-pointer group"
                 >
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-300">Verified</span>
-                    <span className="text-2xl font-black text-white">
-                        {useSentinelStore.getState().scans.filter(s => s.status === 'safe').length + 432}
-                    </span>
-                </motion.div>
-                <motion.div
-                    whileHover={{ y: -4 }}
-                    onClick={() => {
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <CheckCircle2 size={12} className="text-green-500" />
+                        <div className="text-xs text-zinc-500">Safe</div>
+                    </div>
+                    <div className="text-xl font-black text-white">{safeScans}</div>
+                    <div className="text-xs text-green-500 font-bold">{safePercentage}%</div>
+                </div>
+                <div
+                    className="bg-red-500/5 rounded-lg p-2.5 border border-red-500/10 hover:bg-red-500/10 transition-colors cursor-pointer"
+                    onClick={(e) => {
+                        e.stopPropagation();
                         hapticClick();
                         router.push('/receipts?filter=risky');
                     }}
-                    className="bg-white/[0.03] rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-center gap-1 hover:bg-white/[0.08] transition-all cursor-pointer group"
                 >
-                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-300">Caution</span>
-                    <span className="text-2xl font-black text-destructive">
-                        {useSentinelStore.getState().scans.filter(s => s.status === 'risky').length + 8}
-                    </span>
-                </motion.div>
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <AlertCircle size={12} className="text-red-500" />
+                        <div className="text-xs text-zinc-500">Risky</div>
+                    </div>
+                    <div className="text-xl font-black text-white">{riskyScans}</div>
+                    <div className="text-xs text-red-500 font-bold">{(100 - parseFloat(safePercentage)).toFixed(0)}%</div>
+                </div>
+            </div>
+
+            {/* Action */}
+            <div className="flex items-center justify-between text-xs text-zinc-400 group-hover:text-primary transition-colors">
+                <span className="font-bold">View full report</span>
+                <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </div>
         </GlassCard>
     );
