@@ -73,14 +73,42 @@ export function HeroSection() {
                         </span>
                     </motion.div>
 
-                    <motion.h1
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-2 leading-tight"
-                    >
-                        Welcome to Sentinel
-                    </motion.h1>
+                    <div className="flex items-center gap-4 mb-2">
+                        <motion.div
+                            initial={{ scale: 0, rotate: -180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{
+                                type: "spring",
+                                stiffness: 260,
+                                damping: 20,
+                                delay: 0.2
+                            }}
+                            className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0"
+                        >
+                            {/* Logo Container */}
+                            <div className="absolute inset-0 bg-primary/20 rounded-2xl rotate-3 backdrop-blur-sm" />
+                            <div className="absolute inset-0 bg-primary/10 rounded-2xl -rotate-3 backdrop-blur-sm" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl flex items-center justify-center border border-primary/20 shadow-[0_0_30px_rgba(124,255,178,0.3)]">
+                                <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-primary fill-primary/20" strokeWidth={2.5} />
+
+                                {/* Scanning Animation */}
+                                <motion.div
+                                    className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/20 to-transparent"
+                                    animate={{ top: ['-100%', '100%'] }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                                />
+                            </div>
+                        </motion.div>
+
+                        <motion.h1
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight"
+                        >
+                            Welcome to Sentinel
+                        </motion.h1>
+                    </div>
 
                     <motion.p
                         initial={{ opacity: 0, x: -20 }}
