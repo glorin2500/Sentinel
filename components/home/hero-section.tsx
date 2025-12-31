@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useSentinelStore } from "@/lib/store";
-import { Scan, ArrowRight, Sparkles } from "lucide-react";
+import { Scan, ArrowRight, Sparkles, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { hapticClick } from "@/lib/haptic";
