@@ -6,31 +6,17 @@ import { AnalyticsWidget } from "@/components/ui/analytics-widget";
 import { UPIStatusCard } from "@/components/ui/upi-status-card";
 import { RecentScansWidget } from "@/components/ui/recent-scans-widget";
 import { GamificationWidget } from "@/components/gamification/gamification-widget";
+import { HeroSection } from "@/components/home/hero-section";
+import { StatsOverview } from "@/components/home/stats-overview";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AlertTriangle, BookOpen, Receipt, Trophy, ChevronRight, Shield, TrendingUp } from "lucide-react";
+import { AlertTriangle, BookOpen, Receipt, Trophy, ChevronRight, Shield, TrendingUp, Activity } from "lucide-react";
 import Link from "next/link";
 import { hapticClick, hapticLight } from "@/lib/haptic";
 
 export default function Home() {
     const router = useRouter();
-    const [currentDate, setCurrentDate] = useState("");
-
-    useEffect(() => {
-        const updateDate = () => {
-            const now = new Date();
-            const formatted = now.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-            }).toUpperCase();
-            setCurrentDate(formatted);
-        };
-        updateDate();
-        const interval = setInterval(updateDate, 60000);
-        return () => clearInterval(interval);
-    }, []);
 
     const quickAccessCards = [
         {
@@ -38,60 +24,64 @@ export default function Home() {
             title: "Emergency",
             description: "Quick fraud response",
             href: "/emergency",
-            color: "destructive",
-            gradient: "from-red-500/10 to-red-500/5",
+            gradient: "from-red-500/20 via-red-500/10 to-transparent",
             iconBg: "bg-destructive/10",
-            iconColor: "text-destructive"
+            iconColor: "text-destructive",
+            borderColor: "border-destructive/20",
+            glowColor: "shadow-[0_0_30px_rgba(255,107,107,0.15)]"
         },
         {
             icon: BookOpen,
             title: "Education",
             description: "Learn security tips",
             href: "/education",
-            color: "primary",
-            gradient: "from-primary/10 to-primary/5",
+            gradient: "from-primary/20 via-primary/10 to-transparent",
             iconBg: "bg-primary/10",
-            iconColor: "text-primary"
+            iconColor: "text-primary",
+            borderColor: "border-primary/20",
+            glowColor: "shadow-[0_0_30px_rgba(124,255,178,0.15)]"
         },
         {
             icon: Receipt,
             title: "Receipts",
             description: "Transaction history",
             href: "/receipts",
-            color: "blue-500",
-            gradient: "from-blue-500/10 to-blue-500/5",
+            gradient: "from-blue-500/20 via-blue-500/10 to-transparent",
             iconBg: "bg-blue-500/10",
-            iconColor: "text-blue-500"
+            iconColor: "text-blue-500",
+            borderColor: "border-blue-500/20",
+            glowColor: "shadow-[0_0_30px_rgba(59,130,246,0.15)]"
         }
     ];
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, staggerChildren: 0.1 }}
-            className="space-y-8 pb-24"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+            className="space-y-6 sm:space-y-8 pb-24"
         >
-            {/* Header */}
-            <div className="flex justify-between items-center pt-4">
-                <div>
-                    <h1 className="text-4xl font-black text-white tracking-tight">Dashboard</h1>
-                    <p className="text-zinc-500 text-sm font-medium mt-1 uppercase tracking-widest">Real-time Security Overview</p>
-                </div>
-                <div className="flex gap-2">
-                    <div className="px-4 py-2 rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-zinc-400">{currentDate || "LOADING..."}</div>
-                </div>
-            </div>
+            {/* Hero Section */}
+            <HeroSection />
 
-            {/* Quick Access Section */}
+            {/* Stats Overview */}
             <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
             >
+                <StatsOverview />
+            </motion.section>
+
+            {/* Quick Access Section */}
+            <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+            >
                 <div className="flex items-center gap-2 mb-4">
-                    <Shield size={18} className="text-primary" />
-                    <h2 className="text-lg font-black text-white">Quick Access</h2>
+                    <Shield size={20} className="text-primary" />
+                    <h2 className="text-xl font-black text-white">Quick Access</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {quickAccessCards.map((card, index) => (
@@ -99,24 +89,33 @@ export default function Home() {
                             key={card.href}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.15 + index * 0.05 }}
-                            whileHover={{ scale: 1.02 }}
+                            transition={{ delay: 0.2 + index * 0.05 }}
+                            whileHover={{ y: -6, scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                         >
                             <Link href={card.href} onClick={() => hapticClick()}>
-                                <div className={`p-5 rounded-2xl border border-white/10 bg-gradient-to-br ${card.gradient} hover:border-white/20 transition-all cursor-pointer group`}>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className={`h-12 w-12 rounded-xl ${card.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                                                <card.icon size={24} className={card.iconColor} />
+                                <div className={`relative p-6 rounded-2xl border ${card.borderColor} bg-gradient-to-br ${card.gradient} backdrop-blur-sm hover:border-white/30 transition-all cursor-pointer group ${card.glowColor}`}>
+                                    {/* Glow effect on hover */}
+                                    <div className={`absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity ${card.iconBg} blur-2xl`} />
+
+                                    <div className="relative z-10">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className={`h-14 w-14 rounded-xl ${card.iconBg} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                                                <card.icon size={28} className={card.iconColor} strokeWidth={2.5} />
                                             </div>
-                                            <div>
-                                                <h3 className="text-base font-black text-white">{card.title}</h3>
-                                                <p className="text-xs text-zinc-400">{card.description}</p>
-                                            </div>
+                                            <ChevronRight size={24} className="text-zinc-600 group-hover:text-white group-hover:translate-x-1 transition-all" />
                                         </div>
-                                        <ChevronRight size={20} className="text-zinc-500 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                                        <div>
+                                            <h3 className="text-lg font-black text-white mb-1">{card.title}</h3>
+                                            <p className="text-sm text-zinc-400">{card.description}</p>
+                                        </div>
                                     </div>
+
+                                    {/* Animated corner accent */}
+                                    <motion.div
+                                        className={`absolute top-0 right-0 w-20 h-20 rounded-bl-full opacity-0 group-hover:opacity-10 transition-opacity ${card.iconBg}`}
+                                        initial={false}
+                                    />
                                 </div>
                             </Link>
                         </motion.div>
@@ -128,13 +127,13 @@ export default function Home() {
             <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.25 }}
             >
                 <div className="flex items-center gap-2 mb-4">
-                    <TrendingUp size={18} className="text-primary" />
-                    <h2 className="text-lg font-black text-white">Security Metrics</h2>
+                    <TrendingUp size={20} className="text-primary" />
+                    <h2 className="text-xl font-black text-white">Security Metrics</h2>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                     <RiskChart />
                     <SafetyScore />
                     <AnalyticsWidget />
@@ -148,8 +147,8 @@ export default function Home() {
                 transition={{ delay: 0.3 }}
             >
                 <div className="flex items-center gap-2 mb-4">
-                    <Trophy size={18} className="text-primary" />
-                    <h2 className="text-lg font-black text-white">Your Progress</h2>
+                    <Trophy size={20} className="text-primary" />
+                    <h2 className="text-xl font-black text-white">Your Progress</h2>
                 </div>
                 <GamificationWidget />
             </motion.section>
@@ -158,8 +157,12 @@ export default function Home() {
             <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.35 }}
             >
+                <div className="flex items-center gap-2 mb-4">
+                    <Activity size={20} className="text-primary" />
+                    <h2 className="text-xl font-black text-white">Recent Activity</h2>
+                </div>
                 <RecentScansWidget />
             </motion.section>
         </motion.div>
