@@ -15,7 +15,7 @@ export function SafetyTrend({ scans, currentScore }: SafetyTrendProps) {
     // Calculate safety score over time (last 30 days)
     const trendData = useMemo(() => {
         const days = 30;
-        const data = [];
+        const data: { date: string; score: number; scans: number }[] = [];
         const now = new Date();
 
         for (let i = days - 1; i >= 0; i--) {
@@ -141,8 +141,8 @@ export function SafetyTrend({ scans, currentScore }: SafetyTrendProps) {
                     </p>
                 </div>
                 <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${trend === 'improving' ? 'bg-primary/10 border-primary/20' :
-                        trend === 'declining' ? 'bg-destructive/10 border-destructive/20' :
-                            'bg-white/5 border-white/10'
+                    trend === 'declining' ? 'bg-destructive/10 border-destructive/20' :
+                        'bg-white/5 border-white/10'
                     }`}>
                     {getTrendIcon()}
                     <span className={`text-xs font-black uppercase tracking-wider ${getTrendColor()}`}>
