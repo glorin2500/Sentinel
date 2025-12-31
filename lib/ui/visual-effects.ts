@@ -190,33 +190,6 @@ export class HapticFeedback {
 export const soundEffects = new SoundEffects();
 export const hapticFeedback = new HapticFeedback();
 
-// Helper function for easy haptic triggering
-export function triggerHaptic(type: 'light' | 'medium' | 'heavy' | 'success' | 'error' | 'warning' | 'selection') {
-    switch (type) {
-        case 'light':
-            hapticFeedback.light();
-            break;
-        case 'medium':
-            hapticFeedback.medium();
-            break;
-        case 'heavy':
-            hapticFeedback.heavy();
-            break;
-        case 'success':
-            hapticFeedback.success();
-            break;
-        case 'error':
-            hapticFeedback.error();
-            break;
-        case 'warning':
-            hapticFeedback.medium(); // Use medium for warning
-            break;
-        case 'selection':
-            hapticFeedback.selection();
-            break;
-    }
-}
-
 // Particle effects for backgrounds
 export function createParticleEffect(container: HTMLElement, count: number = 20) {
     const particles: HTMLDivElement[] = [];

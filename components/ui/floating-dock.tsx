@@ -6,12 +6,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { useHapticFeedback } from "@/hooks/use-haptic-feedback";
 
 export function FloatingDock() {
     const pathname = usePathname();
     const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-    const haptic = useHapticFeedback();
 
     const navItems = [
         { icon: Home, label: "Home", href: "/" },
@@ -34,7 +32,7 @@ export function FloatingDock() {
                     if (item.isCenter) {
                         return (
                             <div key="scan-btn" className="relative mx-1">
-                                <Link href="/scan" onClick={haptic.onHeavyClick}>
+                                <Link href="/scan">
                                     <motion.button
                                         whileHover={{ scale: 1.1, rotate: 5 }}
                                         whileTap={{ scale: 0.9 }}
@@ -79,7 +77,7 @@ export function FloatingDock() {
                     const isActive = pathname === item.href;
 
                     return (
-                        <Link key={item.href} href={item.href} onClick={haptic.onClick}>
+                        <Link key={item.href} href={item.href}>
                             <motion.div
                                 whileHover={{ scale: 1.15, y: -2 }}
                                 whileTap={{ scale: 0.9 }}

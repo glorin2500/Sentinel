@@ -57,14 +57,14 @@ export default function RootLayout({
         setIsPreferencesOpen(true);
     };
 
-    // 1. Biometric Gate - TEMPORARILY DISABLED TO SHOW NEW FEATURES
-    // if (!isAuthenticated) {
-    //     return (
-    //         <div className="min-h-screen bg-black text-white font-sans selection:bg-primary/30">
-    //             <BiometricGate />
-    //         </div>
-    //     );
-    // }
+    // 1. Biometric Gate
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-black text-white font-sans selection:bg-primary/30">
+                <BiometricGate />
+            </div>
+        );
+    }
 
     // 2. Intro Splash
     if (!isSplashComplete) {

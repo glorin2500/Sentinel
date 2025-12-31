@@ -13,10 +13,8 @@ import { predictFraud, AIPrediction } from "@/lib/ai/fraud-predictor";
 import { getSmartSuggestions, SmartSuggestion } from "@/lib/smart-suggestions";
 import { SmartSuggestionCard } from "@/components/ui/smart-suggestion-card";
 import { sendRiskyScanAlert, requestNotificationPermission } from "@/lib/notifications/alert-service";
-import { useHapticFeedback } from "@/hooks/use-haptic-feedback";
 
 export default function ScanPage() {
-    const haptic = useHapticFeedback();
     const [isScanning, setIsScanning] = useState(false);
     const [result, setResult] = useState<'safe' | 'risky' | null>(null);
     const [manualUpi, setManualUpi] = useState("");
@@ -195,13 +193,6 @@ export default function ScanPage() {
             });
 
             setResult(status);
-
-            // Haptic feedback based on result
-            if (status === 'risky') {
-                haptic.onError();
-            } else {
-                haptic.onSuccess();
-            }
 
             // Add scan with AI prediction and amount
             addScan({

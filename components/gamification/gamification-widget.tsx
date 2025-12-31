@@ -3,7 +3,8 @@
 import { motion } from "framer-motion";
 import { useSentinelStore } from "@/lib/store";
 import { generateDailyChallenges, calculateStreak, getXPForNextLevel } from "@/lib/gamification/progression-system";
-import { Trophy, Zap, Target, TrendingUp, Award, Star, Flame, CheckCircle2, Circle } from "lucide-react";
+import { Trophy, Zap, Target, TrendingUp, Award, Star, Flame, Crown } from "lucide-react";
+import { hapticClick, hapticSuccess, hapticLight } from "@/lib/haptic";
 
 export function GamificationWidget() {
     const { scans, gamification, addXP } = useSentinelStore();
@@ -18,20 +19,6 @@ export function GamificationWidget() {
     const xpForNext = getXPForNextLevel(gamification.xp);
     const xpProgress = ((gamification.xp % xpForNext) / xpForNext) * 100;
 
-    // Map challenge types to Lucide icons
-    const getChallengeIcon = (type: string) => {
-        switch (type) {
-            case 'scan_count':
-                return <Target size={20} className="text-primary" />;
-            case 'safe_scans':
-                return <CheckCircle2 size={20} className="text-green-500" />;
-            case 'streak':
-                return <Flame size={20} className="text-orange-500" />;
-            default:
-                return <Circle size={20} className="text-zinc-400" />;
-        }
-    };
-
     return (
         <div className="space-y-4">
             {/* Level & XP Progress */}
@@ -43,7 +30,7 @@ export function GamificationWidget() {
                 <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
                         <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                            <Trophy size={24} className="text-primary" />
+                            <Crown size={24} className="text-primary" />
                         </div>
                         <div>
                             <h3 className="text-2xl font-black text-white">Level {gamification.level}</h3>
@@ -86,7 +73,12 @@ export function GamificationWidget() {
                 transition={{ delay: 0.1 }}
                 className="grid grid-cols-2 gap-4"
             >
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => hapticLight()}
+                    className="p-4 rounded-2xl bg-white/5 border border-white/10 cursor-pointer"
+                >
                     <div className="flex items-center gap-2 mb-2">
                         <Flame size={16} className="text-orange-500" />
                         <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider">
@@ -95,21 +87,27 @@ export function GamificationWidget() {
                     </div>
                     <div className="flex items-baseline gap-2">
                         <p className="text-3xl font-black text-white">{currentStreak}</p>
-                        <Flame size={20} className="text-orange-500" />
+                        <span className="text-sm text-zinc-400">days</span>
                     </div>
-                    <p className="text-xs text-zinc-400 mt-1">days</p>
-                </div>
+                </motion.div>
 
-                <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => hapticLight()}
+                    className="p-4 rounded-2xl bg-white/5 border border-white/10 cursor-pointer"
+                >
                     <div className="flex items-center gap-2 mb-2">
                         <Award size={16} className="text-primary" />
                         <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider">
                             Best Streak
                         </span>
                     </div>
-                    <p className="text-3xl font-black text-white">{longestStreak}</p>
-                    <p className="text-xs text-zinc-400 mt-1">days</p>
-                </div>
+                    <div className="flex items-baseline gap-2">
+                        <p className="text-3xl font-black text-white">{longestStreak}</p>
+                        <span className="text-sm text-zinc-400">days</span>
+                    </div>
+                </motion.div>
             </motion.div>
 
             {/* Daily Challenges */}
@@ -120,7 +118,10 @@ export function GamificationWidget() {
                 className="space-y-3"
             >
                 <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-black text-white">Daily Challenges</h4>
+                    <div className="flex items-center gap-2">
+                        <Target size={16} className="text-primary" />
+                        <h4 className="text-sm font-black text-white">Daily Challenges</h4>
+                    </div>
                     <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
                         {challenges.filter(c => c.progress >= c.target).length}/{challenges.length} Complete
                     </span>
@@ -136,14 +137,19 @@ export function GamificationWidget() {
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 + index * 0.1 }}
-                            className={`p-4 rounded-2xl border transition-all ${isComplete
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            onClick={() => hapticLight()}
+                            className={`p-4 rounded-2xl border transition-all cursor-pointer ${isComplete
                                 ? 'bg-primary/5 border-primary/20'
                                 : 'bg-white/5 border-white/10'
                                 }`}
                         >
                             <div className="flex items-start gap-3">
-                                <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
-                                    {getChallengeIcon(challenge.type)}
+                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${isComplete ? 'bg-primary/20' : 'bg-white/5'}`}>
+                                    {challenge.type === 'scan_count' && <Target size={20} className={isComplete ? 'text-primary' : 'text-zinc-400'} />}
+                                    {challenge.type === 'safe_scans' && <Star size={20} className={isComplete ? 'text-primary' : 'text-zinc-400'} />}
+                                    {challenge.type === 'streak' && <Flame size={20} className={isComplete ? 'text-primary' : 'text-zinc-400'} />}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-1">
@@ -151,7 +157,7 @@ export function GamificationWidget() {
                                             {challenge.title}
                                         </h5>
                                         {isComplete && (
-                                            <CheckCircle2 size={16} className="text-primary fill-primary" />
+                                            <Star size={16} className="text-primary fill-primary" />
                                         )}
                                     </div>
                                     <p className="text-xs text-zinc-400 mb-2">
@@ -194,17 +200,23 @@ export function GamificationWidget() {
                     transition={{ delay: 0.5 }}
                     className="p-4 rounded-2xl bg-white/5 border border-white/10"
                 >
-                    <h4 className="text-sm font-black text-white mb-3">Unlocked Rewards</h4>
+                    <div className="flex items-center gap-2 mb-3">
+                        <Trophy size={16} className="text-primary" />
+                        <h4 className="text-sm font-black text-white">Unlocked Rewards</h4>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                         {gamification.unlockedThemes.map(theme => (
-                            <div
+                            <motion.div
                                 key={theme}
-                                className="px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20"
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => hapticClick()}
+                                className="px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 cursor-pointer"
                             >
-                                <span className="text-xs font-bold text-primary">
+                                <span className="text-xs font-bold text-primary capitalize">
                                     {theme.replace('theme-', '').replace('-', ' ')}
                                 </span>
-                            </div>
+                            </motion.div>
                         ))}
                     </div>
                 </motion.div>

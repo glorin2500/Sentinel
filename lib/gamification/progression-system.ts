@@ -2,6 +2,7 @@ import { ScanResult } from '../store';
 
 export interface DailyChallenge {
     id: string;
+    type: 'scan_count' | 'safe_scans' | 'streak';
     title: string;
     description: string;
     icon: string;
@@ -61,6 +62,7 @@ export function generateDailyChallenges(scans: ScanResult[], date: Date = new Da
     return [
         {
             id: 'daily-scans',
+            type: 'scan_count',
             title: 'Daily Scanner',
             description: 'Complete 5 scans today',
             icon: '🎯',
@@ -71,6 +73,7 @@ export function generateDailyChallenges(scans: ScanResult[], date: Date = new Da
         },
         {
             id: 'safe-streak',
+            type: 'safe_scans',
             title: 'Safety First',
             description: 'Scan 3 safe merchants',
             icon: '🛡️',
@@ -81,6 +84,7 @@ export function generateDailyChallenges(scans: ScanResult[], date: Date = new Da
         },
         {
             id: 'amount-tracker',
+            type: 'streak',
             title: 'Budget Conscious',
             description: 'Track amounts for 3 scans',
             icon: '💰',
