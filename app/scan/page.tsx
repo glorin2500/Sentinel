@@ -553,108 +553,109 @@ export default function ScanPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/95 backdrop-blur-3xl"
+                            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-2xl"
                             onClick={() => setResult(null)}
                         >
                             <motion.div
-                                initial={{ scale: 0.9, y: 50, opacity: 0 }}
+                                initial={{ scale: 0.95, y: 20, opacity: 0 }}
                                 animate={{ scale: 1, y: 0, opacity: 1 }}
-                                exit={{ scale: 0.95, y: 20, opacity: 0 }}
-                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                exit={{ scale: 0.98, y: 10, opacity: 0 }}
+                                transition={{ type: "spring", damping: 30, stiffness: 400 }}
                                 onClick={(e) => e.stopPropagation()}
-                                className={`w-full max-w-md glass-card rounded-[48px] overflow-hidden relative ${result === 'safe'
-                                    ? 'border-2 border-primary/40 bg-gradient-to-br from-primary/5 via-black/40 to-black/40'
-                                    : 'border-2 border-destructive/40 bg-gradient-to-br from-destructive/5 via-black/40 to-black/40'
+                                className={`w-full max-w-sm glass-card rounded-3xl overflow-hidden relative ${result === 'safe'
+                                    ? 'border border-primary/30 bg-gradient-to-br from-primary/10 via-black/50 to-black/50'
+                                    : 'border border-destructive/30 bg-gradient-to-br from-destructive/10 via-black/50 to-black/50'
                                     }`}
                             >
+                                {/* Close Button */}
+                                <button
+                                    onClick={() => setResult(null)}
+                                    className="absolute top-4 right-4 z-20 h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all"
+                                >
+                                    <X size={16} className="text-white" />
+                                </button>
+
                                 {/* Animated Background Glow */}
-                                <div className={`absolute inset-0 opacity-20 blur-3xl ${result === 'safe' ? 'bg-primary' : 'bg-destructive'
-                                    }`} />
+                                <div className={`absolute inset-0 opacity-10 blur-2xl ${result === 'safe' ? 'bg-primary' : 'bg-destructive'}`} />
 
                                 {/* Content */}
-                                <div className="relative z-10 p-6 sm:p-10">
-                                    {/* Status Icon */}
+                                <div className="relative z-10 p-6">
+                                    {/* Status Icon - Smaller */}
                                     <motion.div
-                                        initial={{ scale: 0, rotate: -180 }}
+                                        initial={{ scale: 0, rotate: -90 }}
                                         animate={{ scale: 1, rotate: 0 }}
-                                        transition={{ delay: 0.1, type: "spring", damping: 15 }}
-                                        className="flex justify-center mb-6 sm:mb-8"
+                                        transition={{ delay: 0.1, type: "spring", damping: 20 }}
+                                        className="flex justify-center mb-4"
                                     >
-                                        <div className={`relative h-24 w-24 sm:h-32 sm:w-32 rounded-[24px] sm:rounded-[32px] flex items-center justify-center ${result === 'safe'
-                                            ? 'bg-primary/20 border-2 border-primary/40'
-                                            : 'bg-destructive/20 border-2 border-destructive/40'
+                                        <div className={`relative h-16 w-16 rounded-2xl flex items-center justify-center ${result === 'safe'
+                                            ? 'bg-primary/20 border border-primary/40'
+                                            : 'bg-destructive/20 border border-destructive/40'
                                             }`}>
-                                            <div className={`absolute inset-0 rounded-[24px] sm:rounded-[32px] animate-pulse ${result === 'safe' ? 'bg-primary/10' : 'bg-destructive/10'
-                                                }`} />
                                             {result === 'safe' ? (
-                                                <ShieldCheck size={48} className="text-primary relative z-10 sm:w-[64px] sm:h-[64px]" strokeWidth={2} />
+                                                <ShieldCheck size={32} className="text-primary" strokeWidth={2.5} />
                                             ) : (
-                                                <ShieldAlert size={48} className="text-destructive relative z-10 sm:w-[64px] sm:h-[64px]" strokeWidth={2} />
+                                                <ShieldAlert size={32} className="text-destructive" strokeWidth={2.5} />
                                             )}
                                         </div>
                                     </motion.div>
 
-                                    {/* Status Text */}
+                                    {/* Status Text - Compact */}
                                     <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
+                                        initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.2 }}
-                                        className="text-center mb-6 sm:mb-8"
+                                        transition={{ delay: 0.15 }}
+                                        className="text-center mb-4"
                                     >
-                                        <h2 className={`text-4xl sm:text-7xl font-black mb-2 sm:mb-3 ${result === 'safe' ? 'text-primary' : 'text-destructive'
-                                            }`}>
+                                        <h2 className={`text-3xl font-black mb-1 ${result === 'safe' ? 'text-primary' : 'text-destructive'}`}>
                                             {result === 'safe' ? 'SECURE' : 'THREAT'}
                                         </h2>
-                                        <p className="text-zinc-400 text-[10px] sm:text-sm font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em]">
+                                        <p className="text-zinc-400 text-xs font-bold uppercase tracking-wider">
                                             {result === 'safe' ? 'Transaction Verified' : 'High Risk Detected'}
                                         </p>
                                     </motion.div>
 
-                                    {/* Details Card */}
+                                    {/* Details Card - Compact */}
                                     <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
+                                        initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.3 }}
-                                        className="space-y-4 mb-8"
+                                        transition={{ delay: 0.2 }}
+                                        className="space-y-3 mb-4"
                                     >
-                                        <div className="p-5 rounded-3xl bg-white/[0.03] border border-white/10">
-                                            <div className="grid grid-cols-1 gap-4">
-                                                <div className="pb-4 border-b border-white/5">
-                                                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">UPI ID</span>
-                                                    <span className="text-sm font-bold text-white break-all">{scannedUpi || manualUpi}</span>
+                                        <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider block mb-1">UPI ID</span>
+                                                    <span className="text-xs font-bold text-white break-all">{scannedUpi || manualUpi}</span>
                                                 </div>
-                                                <div className="grid grid-cols-2 gap-4">
+                                                <div className="grid grid-cols-2 gap-3">
                                                     <div>
-                                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">Risk Level</span>
-                                                        <span className={`text-sm font-black ${result === 'safe' ? 'text-primary' : 'text-destructive'
-                                                            }`}>
+                                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider block mb-1">Risk Level</span>
+                                                        <span className={`text-sm font-black ${result === 'safe' ? 'text-primary' : 'text-destructive'}`}>
                                                             {threatDetails ? `${threatDetails.riskScore}%` : (result === 'safe' ? '0.2%' : '94.7%')}
                                                         </span>
                                                     </div>
                                                     <div>
-                                                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest block mb-1">Protocol</span>
+                                                        <span className="text-[9px] font-black text-zinc-500 uppercase tracking-wider block mb-1">Protocol</span>
                                                         <span className="text-sm font-bold text-primary">SHA-512</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
-
-                                        {/* Threat Details - Real Analysis */}
+                                        {/* Threat Details - Compact */}
                                         {threatDetails && threatDetails.reasons && threatDetails.reasons.length > 0 && (
-                                            <div className={`p-4 sm:p-5 rounded-2xl ${result === 'safe'
+                                            <div className={`p-3 rounded-xl ${result === 'safe'
                                                 ? 'bg-primary/5 border border-primary/20'
                                                 : 'bg-destructive/5 border border-destructive/20'
                                                 }`}>
-                                                <p className="text-[9px] sm:text-[10px] font-black text-zinc-600 uppercase tracking-widest mb-3">
+                                                <p className="text-[9px] font-black text-zinc-600 uppercase tracking-wider mb-2">
                                                     {result === 'safe' ? '✓ Security Analysis' : '⚠ Threat Indicators'}
                                                 </p>
-                                                <div className="space-y-2">
-                                                    {threatDetails.reasons.slice(0, 3).map((reason: string, i: number) => (
+                                                <div className="space-y-1.5">
+                                                    {threatDetails.reasons.slice(0, 2).map((reason: string, i: number) => (
                                                         <div key={i} className="flex items-start gap-2">
-                                                            <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${result === 'safe' ? 'bg-primary' : 'bg-destructive'
-                                                                }`} />
-                                                            <p className="text-[10px] sm:text-[11px] font-bold text-zinc-300 leading-relaxed">
+                                                            <div className={`w-1 h-1 rounded-full mt-1.5 flex-shrink-0 ${result === 'safe' ? 'bg-primary' : 'bg-destructive'}`} />
+                                                            <p className="text-[10px] font-medium text-zinc-300 leading-relaxed">
                                                                 {reason}
                                                             </p>
                                                         </div>
@@ -662,189 +663,99 @@ export default function ScanPage() {
                                                 </div>
                                             </div>
                                         )}
-
-                                        {/* AI Prediction Display */}
-                                        {aiPrediction && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: 0.3 }}
-                                                className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10"
-                                            >
-                                                <div className="flex items-center justify-between mb-3">
-                                                    <p className="text-[9px] sm:text-[10px] font-black text-zinc-500 uppercase tracking-widest">
-                                                        🤖 AI Fraud Analysis
-                                                    </p>
-                                                    <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider ${aiPrediction.confidence >= 70 ? 'bg-destructive/20 text-destructive' :
-                                                        aiPrediction.confidence >= 50 ? 'bg-yellow-500/20 text-yellow-500' :
-                                                            aiPrediction.confidence >= 30 ? 'bg-blue-500/20 text-blue-500' :
-                                                                'bg-primary/20 text-primary'
-                                                        }`}>
-                                                        {aiPrediction.riskLevel} Risk
-                                                    </span>
-                                                </div>
-
-                                                {/* Confidence Bar */}
-                                                <div className="mb-3">
-                                                    <div className="flex justify-between items-center mb-1">
-                                                        <span className="text-[10px] font-bold text-zinc-400">Confidence</span>
-                                                        <span className="text-xs font-black text-white">{aiPrediction.confidence.toFixed(0)}%</span>
-                                                    </div>
-                                                    <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-                                                        <motion.div
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${aiPrediction.confidence}%` }}
-                                                            transition={{ duration: 0.8, delay: 0.4 }}
-                                                            className={`h-full rounded-full ${aiPrediction.confidence >= 70 ? 'bg-destructive' :
-                                                                aiPrediction.confidence >= 50 ? 'bg-yellow-500' :
-                                                                    aiPrediction.confidence >= 30 ? 'bg-blue-500' :
-                                                                        'bg-primary'
-                                                                }`}
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                {/* AI Factors */}
-                                                {aiPrediction.factors.length > 0 && (
-                                                    <div className="space-y-1.5 mb-3">
-                                                        {aiPrediction.factors.slice(0, 3).map((factor, i) => (
-                                                            <div key={i} className="flex items-start gap-2">
-                                                                <div className="w-1 h-1 rounded-full bg-zinc-600 mt-1.5 flex-shrink-0" />
-                                                                <p className="text-[10px] font-medium text-zinc-400 leading-relaxed">
-                                                                    {factor}
-                                                                </p>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-
-                                                {/* Recommendation */}
-                                                <div className="pt-3 border-t border-white/5">
-                                                    <p className="text-[10px] font-bold text-zinc-300 leading-relaxed">
-                                                        💡 {aiPrediction.recommendation}
-                                                    </p>
-                                                </div>
-                                            </motion.div>
-                                        )}
-
-                                        {/* Smart Suggestions */}
-                                        {smartSuggestions.length > 0 && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                transition={{ delay: 0.35 }}
-                                                className="space-y-3"
-                                            >
-                                                {smartSuggestions.slice(0, 2).map((suggestion) => (
-                                                    <SmartSuggestionCard
-                                                        key={suggestion.id}
-                                                        suggestion={{
-                                                            ...suggestion,
-                                                            action: suggestion.type === 'add_to_favorites' ? {
-                                                                label: 'Add to Favorites',
-                                                                handler: () => addFavorite(scannedUpi || manualUpi)
-                                                            } : suggestion.action
-                                                        }}
-                                                        onDismiss={(id) => setSmartSuggestions(prev => prev.filter(s => s.id !== id))}
-                                                    />
-                                                ))}
-                                            </motion.div>
-                                        )}
                                     </motion.div>
 
-                                    {/* Share and Favorite Buttons */}
+                                    {/* Action Buttons - Better Aligned */}
                                     <motion.div
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.35 }}
-                                        className="flex gap-3"
+                                        transition={{ delay: 0.25 }}
+                                        className="space-y-2"
                                     >
-                                        {/* Share Button */}
-                                        <div className="flex-1">
-                                            <ShareButton
-                                                scan={{
-                                                    id: Math.random().toString(36).substr(2, 9),
-                                                    upiId: scannedUpi || manualUpi,
-                                                    merchantName: parseUPIString(scannedUpi || manualUpi)?.payeeName || "Unknown Merchant",
-                                                    status: result as 'safe' | 'risky',
-                                                    timestamp: Date.now(),
-                                                    threatType: threatDetails?.threatType
+                                        {/* Share and Favorite Row */}
+                                        <div className="flex gap-2">
+                                            <div className="flex-1">
+                                                <ShareButton
+                                                    scan={{
+                                                        id: Math.random().toString(36).substr(2, 9),
+                                                        upiId: scannedUpi || manualUpi,
+                                                        merchantName: parseUPIString(scannedUpi || manualUpi)?.payeeName || "Unknown Merchant",
+                                                        status: result as 'safe' | 'risky',
+                                                        timestamp: Date.now(),
+                                                        threatType: threatDetails?.threatType
+                                                    }}
+                                                    variant="default"
+                                                    className="w-full h-10 text-xs"
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    const upiId = scannedUpi || manualUpi;
+                                                    if (isFavorite(upiId)) {
+                                                        removeFavorite(upiId);
+                                                    } else {
+                                                        addFavorite(upiId);
+                                                    }
                                                 }}
-                                                className="w-full"
-                                            />
+                                                className={`h-10 w-10 rounded-xl border flex items-center justify-center transition-all ${isFavorite(scannedUpi || manualUpi)
+                                                    ? 'bg-primary/10 border-primary/20 text-primary'
+                                                    : 'bg-white/5 border-white/10 text-zinc-400 hover:border-primary/20'
+                                                    }`}
+                                            >
+                                                <Star
+                                                    size={16}
+                                                    className={isFavorite(scannedUpi || manualUpi) ? 'fill-primary' : ''}
+                                                />
+                                            </button>
                                         </div>
 
-                                        {/* Favorite Button */}
-                                        <button
-                                            onClick={() => {
-                                                const upiId = scannedUpi || manualUpi;
-                                                if (isFavorite(upiId)) {
-                                                    removeFavorite(upiId);
-                                                } else {
-                                                    addFavorite(upiId);
-                                                }
-                                            }}
-                                            className={`h-10 px-4 rounded-xl border flex items-center gap-2 transition-all ${isFavorite(scannedUpi || manualUpi)
-                                                ? 'bg-primary/10 border-primary/20 text-primary'
-                                                : 'bg-white/5 border-white/10 text-zinc-400 hover:border-primary/20'
-                                                }`}
-                                        >
-                                            <Star
-                                                size={16}
-                                                className={isFavorite(scannedUpi || manualUpi) ? 'fill-primary' : ''}
-                                            />
-                                        </button>
-                                    </motion.div>
-
-                                    {/* Action Buttons */}
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.4 }}
-                                        className="space-y-3"
-                                    >
+                                        {/* Primary Action */}
                                         {result === 'safe' ? (
                                             <button
                                                 disabled={isProcessingPayment}
                                                 onClick={handleProceedToPay}
-                                                className="w-full h-16 rounded-2xl bg-primary text-background font-black uppercase tracking-[0.2em] text-xs flex items-center justify-center gap-3 hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_60px_rgba(124,255,178,0.3)] disabled:opacity-50"
+                                                className="w-full h-12 rounded-xl bg-primary text-background font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 hover:opacity-90 active:scale-[0.98] transition-all shadow-lg disabled:opacity-50"
                                             >
                                                 {isProcessingPayment ? (
-                                                    <div className="flex items-center gap-3">
+                                                    <>
                                                         <div className="h-4 w-4 border-2 border-background border-t-transparent rounded-full animate-spin" />
-                                                        Linking Payment...
-                                                    </div>
+                                                        Linking...
+                                                    </>
                                                 ) : (
-                                                    <>Proceed to Pay <ArrowRight size={18} /></>
+                                                    <>Proceed to Pay <ArrowRight size={16} /></>
                                                 )}
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={() => setResult(null)}
-                                                className="w-full h-16 rounded-2xl bg-destructive text-white font-black uppercase tracking-[0.2em] text-xs hover:opacity-90 active:scale-[0.98] transition-all shadow-[0_20px_60px_rgba(255,107,107,0.3)]"
+                                                className="w-full h-12 rounded-xl bg-destructive text-white font-black uppercase tracking-wider text-xs hover:opacity-90 active:scale-[0.98] transition-all shadow-lg"
                                             >
                                                 Block Transaction
                                             </button>
                                         )}
-                                        <button
-                                            onClick={() => setResult(null)}
-                                            className="w-full py-4 rounded-2xl text-zinc-500 font-bold uppercase text-xs tracking-[0.3em] hover:text-white hover:bg-white/5 transition-all"
-                                        >
-                                            Close
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                if (scannedUpi || manualUpi) {
-                                                    reportFraud(scannedUpi || manualUpi);
-                                                    alert("Report submitted! This ID has been flagged and logged as a threat.");
-                                                }
-                                                setResult(null);
-                                            }}
-                                            className="w-full py-2 rounded-2xl text-destructive font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-destructive/10 transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <AlertTriangle size={12} />
-                                            Report as Fraud
-                                        </button>
+
+                                        {/* Secondary Actions */}
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setResult(null)}
+                                                className="flex-1 h-10 rounded-xl text-zinc-500 font-bold uppercase text-[10px] tracking-wider hover:text-white hover:bg-white/5 transition-all"
+                                            >
+                                                Close
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    if (scannedUpi || manualUpi) {
+                                                        reportFraud(scannedUpi || manualUpi);
+                                                        alert("Report submitted! This ID has been flagged and logged as a threat.");
+                                                    }
+                                                    setResult(null);
+                                                }}
+                                                className="flex-1 h-10 rounded-xl text-destructive font-bold uppercase text-[10px] tracking-wider hover:bg-destructive/10 transition-all flex items-center justify-center gap-1.5"
+                                            >
+                                                <AlertTriangle size={12} />
+                                                Report Fraud
+                                            </button>
+                                        </div>
                                     </motion.div>
                                 </div>
                             </motion.div>

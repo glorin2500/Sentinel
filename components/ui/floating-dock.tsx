@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { hapticClick, hapticLight } from "@/lib/haptic";
 
 export function FloatingDock() {
     const pathname = usePathname();
@@ -32,11 +33,14 @@ export function FloatingDock() {
                     if (item.isCenter) {
                         return (
                             <div key="scan-btn" className="relative mx-1">
-                                <Link href="/scan">
+                                <Link href="/scan" onClick={() => hapticClick()}>
                                     <motion.button
                                         whileHover={{ scale: 1.1, rotate: 5 }}
                                         whileTap={{ scale: 0.9 }}
-                                        onHoverStart={() => setHoveredIndex(index)}
+                                        onHoverStart={() => {
+                                            setHoveredIndex(index);
+                                            hapticLight();
+                                        }}
                                         onHoverEnd={() => setHoveredIndex(null)}
                                         className="relative w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-[0_0_30px_rgba(124,255,178,0.4)] text-[#0B0F0E] group"
                                     >
@@ -77,11 +81,14 @@ export function FloatingDock() {
                     const isActive = pathname === item.href;
 
                     return (
-                        <Link key={item.href} href={item.href}>
+                        <Link key={item.href} href={item.href} onClick={() => hapticClick()}>
                             <motion.div
                                 whileHover={{ scale: 1.15, y: -2 }}
                                 whileTap={{ scale: 0.9 }}
-                                onHoverStart={() => setHoveredIndex(index)}
+                                onHoverStart={() => {
+                                    setHoveredIndex(index);
+                                    hapticLight();
+                                }}
                                 onHoverEnd={() => setHoveredIndex(null)}
                                 className={cn(
                                     "relative p-3 rounded-2xl transition-all duration-300",
