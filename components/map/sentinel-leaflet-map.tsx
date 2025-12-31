@@ -5,7 +5,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { getNearbyMerchants, Merchant } from "@/lib/map/merchant-service";
-import { Shield, AlertTriangle, HelpCircle, Navigation, Star, Scan } from "lucide-react";
+import { Shield, AlertTriangle, HelpCircle, Navigation, Star, Scan, Search } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
 
 // Custom Hook to update map view
@@ -19,8 +19,29 @@ function MapUpdater({ center }: { center: [number, number] }) {
 
 export default function SentinelLeafletMap() {
     const [merchants, setMerchants] = useState<Merchant[]>([]);
-    const [userLocation] = useState<[number, number]>([12.9716, 77.5946]); // Bangalore Mock
+    const [userLocation, setUserLocation] = useState<[number, number]>([12.9716, 77.5946]); // Default: Bangalore
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
+    const [mapCenter, setMapCenter] = useState<[number, number]>([12.9716, 77.5946]);
 
+    // 1. Get Real User Location on Mount
+    useEffect(() => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const { latitude, longitude } = position.coords;
+                    const realLoc: [number, number] = [latitude, longitude];
+                    setUserLocation(realLoc);
+                    setMapCenter(realLoc);
+                },
+                (error) => {
+                    console.error("Error getting location:", error);
+                }
+            );
+        }
+    }, []);
+
+    // 2. Fetch Merchants whenever Map Center changes (Dynamic Generation)
     useEffect(() => {
         // Fix Leaflet's default icon path issues in Next.js
         // @ts-ignore
@@ -31,8 +52,47 @@ export default function SentinelLeafletMap() {
             shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
         });
 
-        setMerchants(getNearbyMerchants(userLocation[0], userLocation[1]));
-    }, [userLocation]);
+        // Generate merchants around the CURRENT map center (could be search result or user loc)
+        setMerchants(getNearbyMerchants(mapCenter[0], mapCenter[1]));
+    }, [mapCenter]);
+
+    // 3. Nominatim Search Handler
+    const handleSearch = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) return;
+
+        setIsSearching(true);
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}`);
+            const data = await response.json();
+
+            if (data && data.length > 0) {
+                const { lat, lon } = data[0];
+                const newCenter: [number, number] = [parseFloat(lat), parseFloat(lon)];
+                setMapCenter(newCenter);
+                // MapUpdater will handle flyTo via passing center prop
+                // Note: We need to ensure MapUpdater uses mapCenter, not userLocation
+            } else {
+                alert("Location not found");
+            }
+        } catch (error) {
+            console.error("Search failed:", error);
+            alert("Search failed. Please try again.");
+        } finally {
+            setIsSearching(false);
+        }
+    };
+
+    const handleLocateMe = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((pos) => {
+                const { latitude, longitude } = pos.coords;
+                const loc: [number, number] = [latitude, longitude];
+                setUserLocation(loc);
+                setMapCenter(loc);
+            });
+        }
+    };
 
     // Create custom icons using DivIcon and Lucide React rendered to HTML
     const createCustomIcon = (type: 'safe' | 'risky' | 'unknown' | 'user') => {
@@ -137,7 +197,7 @@ export default function SentinelLeafletMap() {
                     url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 />
 
-                <MapUpdater center={userLocation} />
+                <MapUpdater center={mapCenter} />
 
                 {/* User Location */}
                 <Marker position={userLocation} icon={createCustomIcon('user')} />
