@@ -8,6 +8,7 @@ import { RecentScansWidget } from "@/components/ui/recent-scans-widget";
 import { GamificationWidget } from "@/components/gamification/gamification-widget";
 import { HeroSection } from "@/components/home/hero-section";
 import { StatsOverview } from "@/components/home/stats-overview";
+import { NearbyThreatsCard } from "@/components/home/nearby-threats-card";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -71,6 +72,15 @@ export default function Home() {
                 transition={{ delay: 0.1 }}
             >
                 <StatsOverview />
+            </motion.section>
+
+            {/* Nearby Threats Map Preview */}
+            <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 }}
+            >
+                <NearbyThreatsCard />
             </motion.section>
 
             {/* Quick Access Section */}

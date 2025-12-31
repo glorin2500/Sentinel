@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Home, History, BarChart3, User, ScanLine } from "lucide-react";
+import { Home, History, BarChart3, User, ScanLine, Map as MapIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ export function FloatingDock() {
 
     const navItems = [
         { icon: Home, label: "Home", href: "/" },
-        { icon: History, label: "History", href: "/history" },
+        { icon: MapIcon, label: "Map", href: "/map" },
         // Center spacing for QR button
         { icon: null, label: "Scan", href: "/scan", isCenter: true },
         { icon: BarChart3, label: "Analytics", href: "/analytics" },
