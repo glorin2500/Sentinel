@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useSentinelStore } from "@/lib/store";
 import { generateDailyChallenges, calculateStreak, getXPForNextLevel } from "@/lib/gamification/progression-system";
-import { Trophy, Zap, Target, TrendingUp, Award, Star } from "lucide-react";
+import { Trophy, Zap, Target, TrendingUp, Award, Star, Flame, CheckCircle2, Circle } from "lucide-react";
 
 export function GamificationWidget() {
     const { scans, gamification, addXP } = useSentinelStore();
@@ -17,6 +17,20 @@ export function GamificationWidget() {
     // Calculate XP for next level
     const xpForNext = getXPForNextLevel(gamification.xp);
     const xpProgress = ((gamification.xp % xpForNext) / xpForNext) * 100;
+
+    // Map challenge types to Lucide icons
+    const getChallengeIcon = (type: string) => {
+        switch (type) {
+            case 'scan_count':
+                return <Target size={20} className="text-primary" />;
+            case 'safe_scans':
+                return <CheckCircle2 size={20} className="text-green-500" />;
+            case 'streak':
+                return <Flame size={20} className="text-orange-500" />;
+            default:
+                return <Circle size={20} className="text-zinc-400" />;
+        }
+    };
 
     return (
         <div className="space-y-4">
@@ -74,12 +88,15 @@ export function GamificationWidget() {
             >
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
                     <div className="flex items-center gap-2 mb-2">
-                        <Zap size={16} className="text-orange-500" />
+                        <Flame size={16} className="text-orange-500" />
                         <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider">
                             Current Streak
                         </span>
                     </div>
-                    <p className="text-3xl font-black text-white">{currentStreak} 🔥</p>
+                    <div className="flex items-baseline gap-2">
+                        <p className="text-3xl font-black text-white">{currentStreak}</p>
+                        <Flame size={20} className="text-orange-500" />
+                    </div>
                     <p className="text-xs text-zinc-400 mt-1">days</p>
                 </div>
 
@@ -120,19 +137,21 @@ export function GamificationWidget() {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 + index * 0.1 }}
                             className={`p-4 rounded-2xl border transition-all ${isComplete
-                                    ? 'bg-primary/5 border-primary/20'
-                                    : 'bg-white/5 border-white/10'
+                                ? 'bg-primary/5 border-primary/20'
+                                : 'bg-white/5 border-white/10'
                                 }`}
                         >
                             <div className="flex items-start gap-3">
-                                <span className="text-2xl">{challenge.icon}</span>
+                                <div className="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
+                                    {getChallengeIcon(challenge.type)}
+                                </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-1">
                                         <h5 className="text-sm font-black text-white">
                                             {challenge.title}
                                         </h5>
                                         {isComplete && (
-                                            <Star size={16} className="text-primary fill-primary" />
+                                            <CheckCircle2 size={16} className="text-primary fill-primary" />
                                         )}
                                     </div>
                                     <p className="text-xs text-zinc-400 mb-2">
