@@ -13,8 +13,10 @@ import { predictFraud, AIPrediction } from "@/lib/ai/fraud-predictor";
 import { getSmartSuggestions, SmartSuggestion } from "@/lib/smart-suggestions";
 import { SmartSuggestionCard } from "@/components/ui/smart-suggestion-card";
 import { sendRiskyScanAlert, requestNotificationPermission } from "@/lib/notifications/alert-service";
+import { useHapticFeedback } from "@/hooks/use-haptic-feedback";
 
 export default function ScanPage() {
+    const haptic = useHapticFeedback();
     const [isScanning, setIsScanning] = useState(false);
     const [result, setResult] = useState<'safe' | 'risky' | null>(null);
     const [manualUpi, setManualUpi] = useState("");
@@ -193,6 +195,13 @@ export default function ScanPage() {
             });
 
             setResult(status);
+
+            // Haptic feedback based on result
+            if (status === 'risky') {
+                haptic.onError();
+            } else {
+                haptic.onSuccess();
+            }
 
             // Add scan with AI prediction and amount
             addScan({
@@ -676,9 +685,9 @@ export default function ScanPage() {
                                                         🤖 AI Fraud Analysis
                                                     </p>
                                                     <span className={`px-2 py-1 rounded-lg text-[8px] font-black uppercase tracking-wider ${aiPrediction.confidence >= 70 ? 'bg-destructive/20 text-destructive' :
-                                                            aiPrediction.confidence >= 50 ? 'bg-yellow-500/20 text-yellow-500' :
-                                                                aiPrediction.confidence >= 30 ? 'bg-blue-500/20 text-blue-500' :
-                                                                    'bg-primary/20 text-primary'
+                                                        aiPrediction.confidence >= 50 ? 'bg-yellow-500/20 text-yellow-500' :
+                                                            aiPrediction.confidence >= 30 ? 'bg-blue-500/20 text-blue-500' :
+                                                                'bg-primary/20 text-primary'
                                                         }`}>
                                                         {aiPrediction.riskLevel} Risk
                                                     </span>
@@ -696,9 +705,9 @@ export default function ScanPage() {
                                                             animate={{ width: `${aiPrediction.confidence}%` }}
                                                             transition={{ duration: 0.8, delay: 0.4 }}
                                                             className={`h-full rounded-full ${aiPrediction.confidence >= 70 ? 'bg-destructive' :
-                                                                    aiPrediction.confidence >= 50 ? 'bg-yellow-500' :
-                                                                        aiPrediction.confidence >= 30 ? 'bg-blue-500' :
-                                                                            'bg-primary'
+                                                                aiPrediction.confidence >= 50 ? 'bg-yellow-500' :
+                                                                    aiPrediction.confidence >= 30 ? 'bg-blue-500' :
+                                                                        'bg-primary'
                                                                 }`}
                                                         />
                                                     </div>
