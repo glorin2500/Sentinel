@@ -5,9 +5,12 @@ import { motion } from "framer-motion";
 import { ArrowUpRight, ArrowDownLeft, SlidersHorizontal, ShieldCheck, AlertTriangle } from "lucide-react";
 import { useSentinelStore } from "@/lib/store";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { hapticClick } from "@/lib/haptic";
 
 export function AnalyticsWidget() {
     const { scans } = useSentinelStore();
+    const router = useRouter();
     const [showRiskyOnly, setShowRiskyOnly] = useState(false);
 
     // Calculate real stats
@@ -67,11 +70,18 @@ export function AnalyticsWidget() {
                     </div>
                 ) : (
                     recentScans.map((scan) => (
-                        <div key={scan.id} className="flex items-center justify-between group cursor-pointer hover:bg-white/[0.03] p-2 rounded-xl transition-all">
+                        <div
+                            key={scan.id}
+                            onClick={() => {
+                                hapticClick();
+                                router.push(`/receipts/${scan.id}`);
+                            }}
+                            className="flex items-center justify-between group cursor-pointer hover:bg-white/[0.03] p-2 rounded-xl transition-all"
+                        >
                             <div className="flex items-center gap-3 min-w-0 flex-1">
                                 <div className={`h-9 w-9 sm:h-10 sm:w-10 rounded-full flex items-center justify-center border flex-shrink-0 ${scan.status === 'safe'
-                                        ? 'bg-primary/10 border-primary/20 text-primary'
-                                        : 'bg-destructive/10 border-destructive/20 text-destructive'
+                                    ? 'bg-primary/10 border-primary/20 text-primary'
+                                    : 'bg-destructive/10 border-destructive/20 text-destructive'
                                     }`}>
                                     {scan.status === 'safe' ? <ShieldCheck size={18} /> : <AlertTriangle size={18} />}
                                 </div>

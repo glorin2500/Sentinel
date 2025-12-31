@@ -3,9 +3,12 @@
 import { GlassCard } from "./glass-card";
 import { useSentinelStore } from "@/lib/store";
 import { BarChart, Bar, ResponsiveContainer, XAxis, Cell } from "recharts";
+import { useRouter } from "next/navigation";
+import { hapticClick } from "@/lib/haptic";
 
 export function RiskChart() {
     const { currentView, setView, riskData } = useSentinelStore();
+    const router = useRouter();
 
     return (
         <GlassCard className="h-[400px] flex flex-col">
@@ -46,6 +49,10 @@ export function RiskChart() {
                             radius={[12, 12, 12, 12]}
                             background={{ fill: 'rgba(255,255,255,0.03)', radius: 12 }}
                             className="cursor-pointer"
+                            onClick={() => {
+                                hapticClick();
+                                router.push('/analytics');
+                            }}
                         >
                             {riskData.map((entry, index) => (
                                 <Cell

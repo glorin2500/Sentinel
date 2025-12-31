@@ -4,9 +4,12 @@ import { GlassCard } from "./glass-card";
 import { ResponsiveContainer, RadialBarChart, RadialBar } from "recharts";
 import { motion } from "framer-motion";
 import { useSentinelStore } from "@/lib/store";
+import { useRouter } from "next/navigation";
+import { hapticClick } from "@/lib/haptic";
 
 export function SafetyScore() {
     const { safetyScore } = useSentinelStore();
+    const router = useRouter();
 
     const data = [
         {
@@ -76,6 +79,10 @@ export function SafetyScore() {
             <div className="grid grid-cols-2 gap-4 mt-2">
                 <motion.div
                     whileHover={{ y: -4 }}
+                    onClick={() => {
+                        hapticClick();
+                        router.push('/receipts?filter=safe');
+                    }}
                     className="bg-white/[0.03] rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-center gap-1 hover:bg-white/[0.08] transition-all cursor-pointer group"
                 >
                     <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-300">Verified</span>
@@ -85,6 +92,10 @@ export function SafetyScore() {
                 </motion.div>
                 <motion.div
                     whileHover={{ y: -4 }}
+                    onClick={() => {
+                        hapticClick();
+                        router.push('/receipts?filter=risky');
+                    }}
                     className="bg-white/[0.03] rounded-2xl p-4 border border-white/5 flex flex-col items-center justify-center gap-1 hover:bg-white/[0.08] transition-all cursor-pointer group"
                 >
                     <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest group-hover:text-zinc-300">Caution</span>

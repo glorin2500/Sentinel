@@ -29,7 +29,8 @@ export function StatsOverview() {
             trend: "+12%",
             color: "text-blue-500",
             bg: "bg-blue-500/10",
-            glow: "shadow-[0_0_20px_rgba(59,130,246,0.15)]"
+            glow: "shadow-[0_0_20px_rgba(59,130,246,0.15)]",
+            action: () => router.push('/history')
         },
         {
             icon: Shield,
@@ -38,7 +39,8 @@ export function StatsOverview() {
             trend: safetyScore >= 80 ? "Excellent" : "Good",
             color: "text-primary",
             bg: "bg-primary/10",
-            glow: "shadow-[0_0_20px_rgba(124,255,178,0.15)]"
+            glow: "shadow-[0_0_20px_rgba(124,255,178,0.15)]",
+            action: () => router.push('/analytics')
         },
         {
             icon: Zap,
@@ -47,7 +49,8 @@ export function StatsOverview() {
             trend: "All time",
             color: "text-destructive",
             bg: "bg-destructive/10",
-            glow: "shadow-[0_0_20px_rgba(255,107,107,0.15)]"
+            glow: "shadow-[0_0_20px_rgba(255,107,107,0.15)]",
+            action: () => router.push('/analytics')
         },
         {
             icon: TrendingUp,
@@ -56,7 +59,8 @@ export function StatsOverview() {
             trend: `Best: ${gamification.longestStreak}d`,
             color: "text-orange-500",
             bg: "bg-orange-500/10",
-            glow: "shadow-[0_0_20px_rgba(249,115,22,0.15)]"
+            glow: "shadow-[0_0_20px_rgba(249,115,22,0.15)]",
+            action: () => router.push('/education')
         }
     ];
 
@@ -70,7 +74,10 @@ export function StatsOverview() {
                     transition={{ delay: index * 0.05 }}
                     whileHover={{ y: -4, scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
-                    onClick={() => hapticClick()}
+                    onClick={() => {
+                        hapticClick();
+                        stat.action();
+                    }}
                     className={`relative p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm hover:border-white/20 transition-all cursor-pointer group ${stat.glow}`}
                 >
                     {/* Glow effect */}
