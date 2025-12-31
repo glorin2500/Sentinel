@@ -20,10 +20,11 @@ export interface Merchant {
 
 // Mock data generator for nearby merchants
 export const getNearbyMerchants = (
-    centerLat: number = 12.9716, // Default to Bangalore coordinates
-    centerLng: number = 77.5946,
+    centerLat: number,
+    centerLng: number,
     radius: number = 2 // km
 ): Merchant[] => {
+    // Generate semi-random merchants around the center
     const merchants: Merchant[] = [
         {
             id: 'm1',
@@ -36,7 +37,7 @@ export const getNearbyMerchants = (
             reviews: 124,
             latitude: centerLat + 0.002,
             longitude: centerLng + 0.003,
-            address: "124, MG Road, Bangalore",
+            address: "Near your location",
             isSentinelApproved: true
         },
         {
@@ -50,7 +51,7 @@ export const getNearbyMerchants = (
             reviews: 32,
             latitude: centerLat - 0.004,
             longitude: centerLng + 0.002,
-            address: "Shop 4, Brigade Road",
+            address: "Tech Park Road",
             isSentinelApproved: false,
             threatType: ["Frequent Disputes", "Suspicious Activity"]
         },
@@ -65,7 +66,7 @@ export const getNearbyMerchants = (
             reviews: 89,
             latitude: centerLat + 0.001,
             longitude: centerLng - 0.005,
-            address: "Near Central Metro Station",
+            address: "Main Street",
             isSentinelApproved: true
         },
         {
@@ -79,7 +80,7 @@ export const getNearbyMerchants = (
             reviews: 15,
             latitude: centerLat + 0.006,
             longitude: centerLng + 0.001,
-            address: "Koramangala 4th Block",
+            address: "Station Road",
             isSentinelApproved: false,
             threatType: ["Reported Fraud", "Identity Theft"]
         },
@@ -94,7 +95,7 @@ export const getNearbyMerchants = (
             reviews: 210,
             latitude: centerLat - 0.002,
             longitude: centerLng - 0.003,
-            address: "Indiranagar 100ft Road",
+            address: "Central Avenue",
             isSentinelApproved: false
         },
         {
@@ -108,7 +109,7 @@ export const getNearbyMerchants = (
             reviews: 0,
             latitude: centerLat + 0.003,
             longitude: centerLng - 0.002,
-            address: "Street vendor near Church Street",
+            address: "Street Market",
             isSentinelApproved: false
         }
     ];

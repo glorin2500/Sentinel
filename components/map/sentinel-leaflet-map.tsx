@@ -100,6 +100,30 @@ export default function SentinelLeafletMap() {
                 }
             `}</style>
 
+            {/* Search Bar Overlay */}
+            <div className="absolute top-4 left-4 right-4 z-[1000] flex gap-2 pointer-events-auto">
+                <form onSubmit={handleSearch} className="flex-1 relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                        <Search size={18} />
+                    </div>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search for a location..."
+                        className="w-full h-12 bg-[#0A0A15]/90 backdrop-blur-xl border border-white/10 rounded-2xl pl-10 pr-4 text-white placeholder:text-zinc-500 shadow-xl outline-none focus:border-primary/50 transition-colors"
+                    />
+                    {isSearching && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        </div>
+                    )}
+                </form>
+                <div onClick={handleLocateMe} className="h-12 w-12 bg-[#0A0A15]/90 backdrop-blur-xl border border-white/10 rounded-2xl flex items-center justify-center text-blue-500 shadow-xl cursor-pointer hover:bg-white/10 active:scale-95 transition-all">
+                    <Navigation size={20} className="fill-blue-500/20" />
+                </div>
+            </div>
+
             <MapContainer
                 center={userLocation}
                 zoom={16}
@@ -140,15 +164,15 @@ export default function SentinelLeafletMap() {
                                 </div>
 
                                 <div className={`p-3 rounded-xl border mb-3 flex items-center justify-between ${merchant.status === 'safe' ? 'bg-green-500/10 border-green-500/20' :
-                                        merchant.status === 'risky' ? 'bg-red-500/10 border-red-500/20' :
-                                            'bg-yellow-500/10 border-yellow-500/20'
+                                    merchant.status === 'risky' ? 'bg-red-500/10 border-red-500/20' :
+                                        'bg-yellow-500/10 border-yellow-500/20'
                                     }`}>
                                     <div className="flex items-center gap-2">
                                         {merchant.status === 'safe' && <Shield size={16} className="text-green-500" />}
                                         {merchant.status === 'risky' && <AlertTriangle size={16} className="text-red-500" />}
                                         {merchant.status === 'unknown' && <HelpCircle size={16} className="text-yellow-500" />}
                                         <span className={`text-xs font-black uppercase ${merchant.status === 'safe' ? 'text-green-500' :
-                                                merchant.status === 'risky' ? 'text-red-500' : 'text-yellow-500'
+                                            merchant.status === 'risky' ? 'text-red-500' : 'text-yellow-500'
                                             }`}>
                                             {merchant.status === 'safe' ? 'Verified Safe' : merchant.status === 'risky' ? 'Risk Detected' : 'Unknown'}
                                         </span>
