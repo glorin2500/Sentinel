@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Urbanist } from "next/font/google";
 import "./globals.css";
 import Shell from "@/components/layout/shell";
+import { AuthProvider } from "@/lib/auth-context";
 
 const urbanist = Urbanist({
     subsets: ["latin"],
@@ -23,7 +24,9 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={`${urbanist.variable} font-sans antialiased bg-background text-foreground`}>
-                <Shell>{children}</Shell>
+                <AuthProvider>
+                    <Shell>{children}</Shell>
+                </AuthProvider>
             </body>
         </html>
     );

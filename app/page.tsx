@@ -15,8 +15,17 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, BookOpen, Receipt, Trophy, ChevronRight, Shield, TrendingUp, Activity } from "lucide-react";
 import Link from "next/link";
 import { hapticClick, hapticLight } from "@/lib/haptic";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 
 export default function Home() {
+    return (
+        <ProtectedRoute>
+            <HomePage />
+        </ProtectedRoute>
+    );
+}
+
+function HomePage() {
     const router = useRouter();
 
     const quickAccessCards = [

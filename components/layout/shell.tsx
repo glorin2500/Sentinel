@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { X, User, Shield, Bell, LogOut, Lock, Key, Smartphone, Wifi, Eye, EyeOff, Check, Sun, Moon } from "lucide-react";
 import { useSentinelStore } from "@/lib/store";
 import { BiometricGate } from "@/components/auth/biometric-gate";
+import { useAuth } from "@/lib/auth-context";
 
 export default function RootLayout({
     children,
@@ -19,6 +20,7 @@ export default function RootLayout({
     const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
     const router = useRouter();
     const { userProfile, updateProfile, isAuthenticated, setAuthenticated, isSplashComplete, setSplashComplete } = useSentinelStore();
+    const { user, signOut } = useAuth();
 
     // Security settings state
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
@@ -36,13 +38,12 @@ export default function RootLayout({
         (window as any).__sentinelUserName = userProfile.name;
     }, [userProfile.name]);
 
-    const handleLogout = () => {
-        // Clear any session data
+    const handleLogout = async () => {
         if (confirm("Are you sure you want to log out?")) {
+            await signOut();
             setIsAccountOpen(false);
             setAuthenticated(false);
-            setSplashComplete(false); // Reset splash on logout if desired, or keep true. Let's reset to show splash again on login.
-            router.push('/');
+            router.push('/auth');
         }
     };
 
