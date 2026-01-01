@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { TransactionService } from '@/lib/services/transaction-service';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Scan, Upload, CheckCircle, XCircle, AlertTriangle, Loader2, X, Share2, Flag } from 'lucide-react';
+import { Shield, Scan, Upload, CheckCircle, XCircle, AlertTriangle, Loader2, X, Share2, Flag, Camera } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
 
 export default function ScanPage() {
@@ -23,13 +23,9 @@ function ScanPageContent() {
     const [loading, setLoading] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleScan = async () => {
-        if (!upiId) {
-            alert('Please enter a UPI ID');
-            return;
-        }
-
+    const analyzeUPI = async (upiToAnalyze: string) => {
         setLoading(true);
         setShowPopup(false);
 
@@ -54,7 +50,7 @@ function ScanPageContent() {
                     indicators: mockLevel !== 'safe' ? [
                         { type: 'suspicious_pattern', severity: 'high', description: 'UPI ID shows suspicious patterns' }
                     ] : [],
-                    upiId: upiId,
+                    upiId: upiToAnalyze,
                     protocol: 'SHA-512',
                     verified: mockLevel === 'safe'
                 });
@@ -67,14 +63,14 @@ function ScanPageContent() {
                 user.id,
                 {
                     merchantName: 'UPI Merchant',
-                    merchantUPI: upiId,
+                    merchantUPI: upiToAnalyze,
                     amount: amount ? parseFloat(amount) : 0,
                 }
             );
 
             setResult({
                 ...analysis,
-                upiId: upiId,
+                upiId: upiToAnalyze,
                 protocol: 'SHA-512',
                 verified: analysis.level === 'safe'
             });
@@ -87,8 +83,34 @@ function ScanPageContent() {
         }
     };
 
+    const handleQRScan = () => {
+        // Trigger file upload for QR code
+        fileInputRef.current?.click();
+    };
+
+    const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        // For now, simulate QR code extraction
+        // In production, you'd use a QR code library like jsQR
+        const mockUPI = `merchant-${Math.floor(Math.random() * 1000)}@paytm`;
+        setUpiId(mockUPI);
+
+        // Auto-analyze the extracted UPI
+        await analyzeUPI(mockUPI);
+    };
+
     const handleCheckUPI = () => {
-        handleScan(); // Same functionality for now
+        if (!upiId) {
+            alert('Please enter a UPI ID');
+            return;
+        }
+        analyzeUPI(upiId);
+    };
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
     };
 
     const getRiskColor = (level: string) => {
@@ -133,6 +155,15 @@ function ScanPageContent() {
 
     return (
         <div className="min-h-screen flex flex-col items-center justify-center p-4 pb-24">
+            {/* Hidden file input */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+            />
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -207,11 +238,11 @@ function ScanPageContent() {
                     </div>
                 </div>
 
-                {/* Input Fields */}
+                {/* Input Fields - Optional for manual entry */}
                 <div className="space-y-3">
                     <input
                         type="text"
-                        placeholder="Enter UPI ID"
+                        placeholder="Enter UPI ID (optional)"
                         value={upiId}
                         onChange={(e) => setUpiId(e.target.value)}
                         disabled={loading}
@@ -230,8 +261,8 @@ function ScanPageContent() {
                 {/* Action Buttons */}
                 <div className="grid grid-cols-2 gap-3">
                     <button
-                        onClick={handleScan}
-                        disabled={loading || !upiId}
+                        onClick={handleQRScan}
+                        disabled={loading}
                         className="py-3 bg-primary text-black font-black rounded-xl hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                     >
                         {loading ? (
@@ -241,7 +272,7 @@ function ScanPageContent() {
                             </>
                         ) : (
                             <>
-                                <Scan size={18} />
+                                <Camera size={18} />
                                 QR SCAN
                             </>
                         )}
@@ -251,18 +282,22 @@ function ScanPageContent() {
                         disabled={loading || !upiId}
                         className="py-3 bg-zinc-900/50 backdrop-blur-xl border border-white/10 text-zinc-400 font-bold rounded-xl hover:border-white/20 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                     >
-                        <Upload size={18} />
+                        <Shield size={18} />
                         Check UPI
                     </button>
                 </div>
 
                 {/* Upload QR Code Section */}
-                <div className="bg-zinc-900/30 backdrop-blur-xl border border-white/5 rounded-2xl p-6 text-center">
+                <button
+                    onClick={handleUploadClick}
+                    disabled={loading}
+                    className="w-full bg-zinc-900/30 backdrop-blur-xl border border-white/5 hover:border-white/10 rounded-2xl p-6 text-center transition-all disabled:opacity-50"
+                >
                     <Upload size={32} className="text-zinc-600 mx-auto mb-3" />
                     <h3 className="text-sm font-bold text-white mb-1">UPLOAD QR CODE</h3>
                     <p className="text-xs text-zinc-500 mb-3">CLICK OR DRAG & DROP</p>
                     <p className="text-xs text-zinc-600">PNG, JPG, WEBP</p>
-                </div>
+                </button>
             </motion.div>
 
             {/* Threat Analysis Popup */}
