@@ -309,12 +309,6 @@ function ScanPageContent() {
                 animate={{ scale: 1, opacity: 1 }}
               >
                 <div id="qr-reader" className="rounded-xl overflow-hidden" />
-                <button
-                  onClick={stopCamera}
-                  className="absolute top-2 right-2 w-10 h-10 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center z-10 transition-colors"
-                >
-                  <X size={20} className="text-white" />
-                </button>
                 <motion.p
                   className="text-xs text-center text-primary mt-3 font-bold"
                   animate={{ opacity: [0.5, 1, 0.5] }}
