@@ -34,8 +34,8 @@ function ScanPageContent() {
     return () => {
       if (scannerRef.current) {
         try {
-          scannerRef.current.stop().catch(() => {});
-        } catch (e) {}
+          scannerRef.current.stop().catch(() => { });
+        } catch (e) { }
       }
     };
   }, []);
@@ -52,18 +52,18 @@ function ScanPageContent() {
 
     try {
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       const mockScore = Math.random() * 100;
       const mockLevel = mockScore < 20 ? 'safe' : mockScore < 50 ? 'caution' : mockScore < 75 ? 'warning' : 'danger';
-      
+
       setResult({
         score: Math.round(mockScore),
         level: mockLevel,
-        recommendation: mockLevel === 'safe' 
-          ? 'This transaction appears safe to proceed.' 
+        recommendation: mockLevel === 'safe'
+          ? 'This transaction appears safe to proceed.'
           : mockLevel === 'danger'
-          ? 'High risk detected! We recommend not proceeding with this transaction.'
-          : 'Exercise caution with this transaction.',
+            ? 'High risk detected! We recommend not proceeding with this transaction.'
+            : 'Exercise caution with this transaction.',
         indicators: mockLevel !== 'safe' ? [
           { type: 'suspicious_pattern', severity: 'high', description: 'UPI ID shows suspicious patterns' }
         ] : [],
@@ -95,9 +95,9 @@ function ScanPageContent() {
     setCameraError('');
     setShowCamera(true);
     setScanStep('scanning');
-    
+
     await new Promise(resolve => setTimeout(resolve, 150));
-    
+
     try {
       const scanner = new Html5Qrcode("qr-reader");
       scannerRef.current = scanner;
@@ -107,26 +107,33 @@ function ScanPageContent() {
         { fps: 10, qrbox: { width: 250, height: 250 } },
         async (decodedText) => {
           console.log('QR Code detected:', decodedText);
-          
+
           try {
             await scanner.stop();
-          } catch (e) {}
+          } catch (e) { }
           setShowCamera(false);
-          
+
           let extractedUPI = decodedText;
           if (decodedText.includes('upi://')) {
             const match = decodedText.match(/pa=([^&]+)/);
             if (match) extractedUPI = match[1];
           }
-          
+
           setUpiId(extractedUPI);
           await analyzeUPI(extractedUPI);
         },
-        () => {}
+        () => { }
       );
     } catch (error: any) {
       console.error('Camera error:', error);
-      setCameraError('Camera access denied. Please enable camera permissions or use file upload.');
+      const errorMsg = error.message || error.toString();
+      if (errorMsg.includes('Timeout') || errorMsg.includes('AbortError')) {
+        setCameraError('Camera is taking too long to start. Please try file upload instead.');
+      } else if (errorMsg.includes('Permission') || errorMsg.includes('NotAllowed')) {
+        setCameraError('Camera access denied. Please enable camera permissions in your browser settings.');
+      } else {
+        setCameraError('Unable to access camera. Please use file upload or manual entry.');
+      }
       setShowCamera(false);
       setScanStep('idle');
     }
@@ -136,7 +143,7 @@ function ScanPageContent() {
     if (scannerRef.current) {
       try {
         await scannerRef.current.stop();
-      } catch (e) {}
+      } catch (e) { }
     }
     setShowCamera(false);
     setScanStep('idle');
@@ -152,17 +159,17 @@ function ScanPageContent() {
 
     setLoading(true);
     setScanStep('analyzing');
-    
+
     try {
       const tempScanner = new Html5Qrcode("qr-reader-file");
       const decodedText = await tempScanner.scanFile(file, false);
-      
+
       let extractedUPI = decodedText;
       if (decodedText.includes('upi://')) {
         const match = decodedText.match(/pa=([^&]+)/);
         if (match) extractedUPI = match[1];
       }
-      
+
       setUpiId(extractedUPI);
       await analyzeUPI(extractedUPI);
     } catch (error) {
@@ -228,13 +235,13 @@ function ScanPageContent() {
         className="w-full max-w-lg space-y-6 relative z-10"
       >
         {/* Header with animated badge */}
-        <motion.div 
+        <motion.div
           className="text-center mb-8"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <motion.div 
+          <motion.div
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-full mb-4"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -257,13 +264,13 @@ function ScanPageContent() {
         </motion.div>
 
         {/* Scanner Frame with enhanced animations */}
-        <motion.div 
+        <motion.div
           className="relative"
           initial={{ scale: 0.9, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          {/* Animated Corners */}
+          {/* Animated Corners - More Rounded */}
           {[
             { top: '-top-2', left: '-left-2', rotate: 0 },
             { top: '-top-2', right: '-right-2', rotate: 90 },
@@ -272,7 +279,7 @@ function ScanPageContent() {
           ].map((pos, i) => (
             <motion.div
               key={i}
-              className={`absolute ${pos.top || pos.bottom} ${pos.left || pos.right} w-16 h-16 border-l-4 border-t-4 border-primary rounded-tl-2xl`}
+              className={`absolute ${pos.top || pos.bottom} ${pos.left || pos.right} w-20 h-20 border-l-4 border-t-4 border-primary rounded-tl-3xl`}
               style={{ rotate: pos.rotate }}
               animate={{
                 opacity: scanStep === 'scanning' ? [0.5, 1, 0.5] : 1,
@@ -281,7 +288,7 @@ function ScanPageContent() {
             />
           ))}
 
-          <div className="bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 relative overflow-hidden">
+          <div className="bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-3xl p-8 relative overflow-hidden">
             {/* Scanning Animation */}
             <AnimatePresence>
               {(loading || showCamera) && (
@@ -296,7 +303,7 @@ function ScanPageContent() {
             </AnimatePresence>
 
             {showCamera ? (
-              <motion.div 
+              <motion.div
                 className="relative"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -308,7 +315,7 @@ function ScanPageContent() {
                 >
                   <X size={20} className="text-white" />
                 </button>
-                <motion.p 
+                <motion.p
                   className="text-xs text-center text-primary mt-3 font-bold"
                   animate={{ opacity: [0.5, 1, 0.5] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
@@ -322,7 +329,7 @@ function ScanPageContent() {
                 animate={{ opacity: 1 }}
               >
                 <div className="flex items-center justify-center mb-6">
-                  <motion.div 
+                  <motion.div
                     className="relative"
                     whileHover={{ scale: 1.05 }}
                   >
@@ -345,7 +352,7 @@ function ScanPageContent() {
                 </div>
 
                 <div className="text-center mb-6">
-                  <motion.p 
+                  <motion.p
                     className="text-sm font-bold text-white uppercase tracking-wider"
                     key={scanStep}
                     initial={{ opacity: 0, y: -10 }}
@@ -405,7 +412,7 @@ function ScanPageContent() {
                 <Camera size={24} />
                 <span className="text-sm">Camera Scan</span>
               </motion.button>
-              
+
               <motion.button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={loading}
@@ -419,7 +426,7 @@ function ScanPageContent() {
             </div>
 
             {/* Manual Entry Section */}
-            <motion.div 
+            <motion.div
               className="p-4 bg-zinc-900/30 backdrop-blur-xl border border-white/5 rounded-xl"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -504,13 +511,13 @@ function ScanPageContent() {
                 const Icon = colors.icon;
                 return (
                   <>
-                    <motion.div 
+                    <motion.div
                       className="flex flex-col items-center mb-6"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
                       transition={{ delay: 0.2, type: "spring" }}
                     >
-                      <motion.div 
+                      <motion.div
                         className={`w-20 h-20 rounded-2xl ${colors.bg} border-2 ${colors.border} flex items-center justify-center mb-4`}
                         animate={{
                           boxShadow: [
@@ -523,7 +530,7 @@ function ScanPageContent() {
                       >
                         <Icon size={40} className={colors.text} />
                       </motion.div>
-                      <motion.h2 
+                      <motion.h2
                         className={`text-3xl font-black ${colors.text} mb-1`}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -534,7 +541,7 @@ function ScanPageContent() {
                       <p className="text-sm text-zinc-400 uppercase tracking-wider">Transaction Verified</p>
                     </motion.div>
 
-                    <motion.div 
+                    <motion.div
                       className="bg-black/30 border border-white/5 rounded-2xl p-4 mb-4"
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -547,7 +554,7 @@ function ScanPageContent() {
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Risk Level</p>
-                          <motion.p 
+                          <motion.p
                             className={`text-2xl font-black ${colors.text}`}
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
@@ -563,7 +570,7 @@ function ScanPageContent() {
                       </div>
                     </motion.div>
 
-                    <motion.div 
+                    <motion.div
                       className="bg-primary/5 border border-primary/20 rounded-2xl p-4 mb-4"
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -578,13 +585,13 @@ function ScanPageContent() {
                       </p>
                     </motion.div>
 
-                    <motion.div 
+                    <motion.div
                       className="space-y-3"
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.6 }}
                     >
-                      <motion.button 
+                      <motion.button
                         onClick={handleProceedToPay}
                         className="w-full py-3.5 bg-primary text-black font-black rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 relative overflow-hidden group"
                         whileHover={{ scale: 1.02 }}
@@ -605,7 +612,7 @@ function ScanPageContent() {
                       </motion.button>
 
                       <div className="grid grid-cols-2 gap-3">
-                        <motion.button 
+                        <motion.button
                           className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -613,7 +620,7 @@ function ScanPageContent() {
                           <Share2 size={16} />
                           SHARE
                         </motion.button>
-                        <motion.button 
+                        <motion.button
                           className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -630,7 +637,7 @@ function ScanPageContent() {
                         >
                           CLOSE
                         </motion.button>
-                        <motion.button 
+                        <motion.button
                           className="text-sm text-red-500 hover:text-red-400 transition-colors flex items-center gap-1"
                           whileHover={{ scale: 1.05 }}
                         >

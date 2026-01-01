@@ -140,7 +140,12 @@ export async function fetchNearbyPlaces(
                 console.warn('Rate limit hit, using cached data or returning empty');
                 return cached?.data || [];
             }
-            throw new Error(`Overpass API error: ${response.statusText}`);
+            if (response.status === 504 || response.statusText === 'Gateway Timeout') {
+                console.warn('Overpass API timeout, using cached data or returning empty');
+                return cached?.data || [];
+            }
+            console.warn(`Overpass API error: ${response.statusText}, using cached data or returning empty`);
+            return cached?.data || [];
         }
 
         const data = await response.json();
