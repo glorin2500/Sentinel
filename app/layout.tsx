@@ -22,7 +22,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
             <body className={`${urbanist.variable} font-sans antialiased bg-background text-foreground`}>
                 <AuthProvider>
                     <Shell>{children}</Shell>
