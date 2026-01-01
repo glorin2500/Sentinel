@@ -1,173 +1,98 @@
+"use client";
+
 import { motion } from "framer-motion";
-import { useSentinelStore } from "@/lib/store";
-import { Scan, ArrowRight, Sparkles, Shield } from "lucide-react";
+import { Shield, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { hapticClick } from "@/lib/haptic";
+import { useState, useEffect } from "react";
 
 export function HeroSection() {
-    const { safetyScore } = useSentinelStore();
     const router = useRouter();
-    const [greeting, setGreeting] = useState("");
+    const [greeting, setGreeting] = useState("Good Evening");
 
     useEffect(() => {
         const hour = new Date().getHours();
-        if (hour < 12) setGreeting("Good Morning");
-        else if (hour < 17) setGreeting("Good Afternoon");
-        else setGreeting("Good Evening");
+        if (hour < 12) {
+            setGreeting("Good Morning");
+        } else if (hour < 18) {
+            setGreeting("Good Afternoon");
+        } else {
+            setGreeting("Good Evening");
+        }
     }, []);
 
     return (
-        <motion.div
+        <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="relative overflow-hidden rounded-3xl p-6 sm:p-8 bg-gradient-to-br from-primary/20 via-primary/10 to-transparent border border-primary/20"
+            className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20 p-8"
         >
-            {/* Animated background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent opacity-50" />
+            {/* Animated background glow */}
             <motion.div
-                className="absolute inset-0 bg-gradient-to-tr from-transparent via-primary/5 to-primary/10"
+                className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl"
                 animate={{
+                    scale: [1, 1.2, 1],
                     opacity: [0.3, 0.5, 0.3],
                 }}
-                transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut"
-                }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
             />
 
-            {/* Floating particles */}
-            {[...Array(5)].map((_, i) => (
+            <div className="relative z-10">
+                {/* Greeting */}
                 <motion.div
-                    key={i}
-                    className="absolute w-1 h-1 bg-primary/30 rounded-full"
-                    style={{
-                        left: `${20 + i * 15}%`,
-                        top: `${30 + i * 10}%`,
-                    }}
-                    animate={{
-                        y: [-10, 10, -10],
-                        opacity: [0.2, 0.5, 0.2],
-                    }}
-                    transition={{
-                        duration: 3 + i,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: i * 0.2,
-                    }}
-                />
-            ))}
-
-            <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                <div className="flex-1">
-                    <motion.div
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="flex items-center gap-2 mb-2"
-                    >
-                        <Sparkles size={20} className="text-primary" />
-                        <span className="text-sm font-bold text-primary uppercase tracking-wider">
-                            {greeting}
-                        </span>
-                    </motion.div>
-
-                    <div className="flex items-center gap-4 mb-2">
-                        <motion.div
-                            initial={{ scale: 0, rotate: -180 }}
-                            animate={{ scale: 1, rotate: 0 }}
-                            transition={{
-                                type: "spring",
-                                stiffness: 260,
-                                damping: 20,
-                                delay: 0.2
-                            }}
-                            className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0"
-                        >
-                            {/* Logo Container */}
-                            <div className="absolute inset-0 bg-primary/10 rounded-2xl rotate-3 backdrop-blur-sm" />
-                            <div className="absolute inset-0 bg-primary/5 rounded-2xl -rotate-3 backdrop-blur-sm" />
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center border border-primary/10 shadow-[0_0_20px_rgba(124,255,178,0.15)]">
-                                <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-primary fill-primary/10" strokeWidth={2} />
-
-                                {/* Scanning Animation */}
-                                <motion.div
-                                    className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-transparent"
-                                    animate={{ top: ['-100%', '100%'] }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                />
-                            </div>
-                        </motion.div>
-
-                        <motion.h1
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                            className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight"
-                        >
-                            Welcome to Sentinel
-                        </motion.h1>
-                    </div>
-
-                    <motion.p
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="text-sm sm:text-base text-zinc-400 max-w-xl"
-                    >
-                        Your AI-powered guardian against UPI fraud. Stay protected with real-time threat detection.
-                    </motion.p>
-
-                    {/* Safety Score Badge */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="mt-4 inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
-                    >
-                        <div className="flex items-center gap-2">
-                            <div className={`h-2 w-2 rounded-full ${safetyScore >= 80 ? 'bg-primary' : safetyScore >= 60 ? 'bg-yellow-500' : 'bg-destructive'} animate-pulse`} />
-                            <span className="text-xs font-bold text-zinc-400">Safety Score</span>
-                        </div>
-                        <span className={`text-lg font-black ${safetyScore >= 80 ? 'text-primary' : safetyScore >= 60 ? 'text-yellow-500' : 'text-destructive'}`}>
-                            {safetyScore}%
-                        </span>
-                    </motion.div>
-                </div>
-
-                {/* CTA Button */}
-                <motion.button
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                        hapticClick();
-                        router.push('/scan');
-                    }}
-                    className="group relative px-6 py-4 rounded-2xl bg-primary text-background font-black uppercase tracking-wider text-sm flex items-center gap-3 shadow-[0_0_40px_rgba(124,255,178,0.3)] hover:shadow-[0_0_60px_rgba(124,255,178,0.4)] transition-all"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="mb-6"
                 >
-                    <Scan size={20} className="group-hover:rotate-12 transition-transform" />
-                    Quick Scan
-                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    <p className="text-sm text-zinc-400 uppercase tracking-wider mb-2">
+                        {greeting}
+                    </p>
+                    <h1 className="text-4xl md:text-5xl font-black text-white mb-2">
+                        Stay Protected
+                    </h1>
+                    <p className="text-zinc-400 text-lg">
+                        Your personal fraud detection shield
+                    </p>
+                </motion.div>
 
-                    {/* Pulsing ring */}
+                {/* Quick Scan Button */}
+                <motion.button
+                    onClick={() => router.push('/scan')}
+                    className="relative group px-8 py-4 bg-primary text-black font-black rounded-xl hover:opacity-90 transition-all flex items-center gap-3 overflow-hidden"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                >
+                    {/* Shimmer effect */}
                     <motion.div
-                        className="absolute inset-0 rounded-2xl border-2 border-primary"
-                        animate={{
-                            scale: [1, 1.1, 1],
-                            opacity: [0.5, 0, 0.5],
-                        }}
-                        transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                        }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                        animate={{ x: ['-100%', '100%'] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                     />
+
+                    <Zap size={20} className="relative z-10" />
+                    <span className="relative z-10">Scan Now</span>
                 </motion.button>
+
+                {/* Stats */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="mt-6 flex items-center gap-6"
+                >
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        <span className="text-sm text-zinc-400">System Active</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Shield size={16} className="text-primary" />
+                        <span className="text-sm text-zinc-400">Protected</span>
+                    </div>
+                </motion.div>
             </div>
-        </motion.div>
+        </motion.section>
     );
 }
