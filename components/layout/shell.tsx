@@ -5,7 +5,7 @@ import { IntroSplash } from "@/components/ui/intro-splash";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { X, User, Shield, Bell, LogOut, Lock, Key, Smartphone, Wifi, Eye, EyeOff, Check, Sun, Moon } from "lucide-react";
+import { X, User, Shield, Bell, LogOut, Lock, Key, Smartphone, Wifi, Eye, EyeOff, Check, Sun, Moon, AlertTriangle } from "lucide-react";
 import { useSentinelStore } from "@/lib/store";
 import { BiometricGate } from "@/components/auth/biometric-gate";
 import { useAuth } from "@/lib/auth-context";
@@ -18,6 +18,7 @@ export default function RootLayout({
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [isSecurityOpen, setIsSecurityOpen] = useState(false);
     const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const router = useRouter();
     const { userProfile, updateProfile, isAuthenticated, setAuthenticated, isSplashComplete, setSplashComplete } = useSentinelStore();
     const { user, signOut } = useAuth();
@@ -114,28 +115,8 @@ export default function RootLayout({
                             />
 
                             {/* Logo text */}
-                            <span className="relative text-black font-black text-base tracking-tight uppercase">
+                            <span className="relative text-black font-black text-base tracking-tight">
                                 Sentinel
-                            </span>
-                        </motion.div>
-
-                        {/* Status indicator */}
-                        <motion.div
-                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20"
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                        >
-                            <motion.div
-                                className="w-2 h-2 rounded-full bg-primary"
-                                animate={{
-                                    scale: [1, 1.3, 1],
-                                    opacity: [1, 0.7, 1],
-                                }}
-                                transition={{ duration: 2, repeat: Infinity }}
-                            />
-                            <span className="text-xs font-bold text-primary uppercase tracking-wider">
-                                Active
                             </span>
                         </motion.div>
                     </motion.div>
@@ -144,6 +125,7 @@ export default function RootLayout({
                     <div className="flex items-center gap-3">
                         {/* Notifications */}
                         <motion.button
+                            onClick={() => setIsNotificationsOpen(true)}
                             className="relative h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-primary/30 transition-all group"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
@@ -273,6 +255,94 @@ export default function RootLayout({
                                         <p className="text-[10px] font-medium text-zinc-500 leading-relaxed">System optimized. All security layers active.</p>
                                     </div>
                                 </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>
+
+                {/* Notifications Panel */}
+                <AnimatePresence>
+                    {isNotificationsOpen && (
+                        <>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setIsNotificationsOpen(false)}
+                                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                            />
+                            <motion.div
+                                initial={{ x: "100%" }}
+                                animate={{ x: 0 }}
+                                exit={{ x: "100%" }}
+                                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                                className="fixed top-0 right-0 h-full w-full max-w-[380px] bg-background border-l border-white/10 z-[60] p-6 shadow-2xl overflow-y-auto"
+                            >
+                                <div className="flex justify-between items-center mb-8">
+                                    <h2 className="text-2xl font-black text-white tracking-tight">Notifications</h2>
+                                    <button onClick={() => setIsNotificationsOpen(false)} className="text-zinc-500 hover:text-white transition-colors">
+                                        <X size={24} />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {[
+                                        {
+                                            type: 'warning',
+                                            title: 'Suspicious Activity Detected',
+                                            message: 'A high-risk transaction was blocked from merchant@fraud.com',
+                                            time: '5 min ago',
+                                            icon: AlertTriangle,
+                                            color: 'text-orange-500',
+                                            bg: 'bg-orange-500/10',
+                                            border: 'border-orange-500/20'
+                                        },
+                                        {
+                                            type: 'success',
+                                            title: 'Scan Complete',
+                                            message: 'Your recent scan shows no threats detected',
+                                            time: '1 hour ago',
+                                            icon: Shield,
+                                            color: 'text-primary',
+                                            bg: 'bg-primary/10',
+                                            border: 'border-primary/20'
+                                        },
+                                        {
+                                            type: 'info',
+                                            title: 'New Feature Available',
+                                            message: 'Check out the enhanced fraud detection system',
+                                            time: '3 hours ago',
+                                            icon: Bell,
+                                            color: 'text-blue-500',
+                                            bg: 'bg-blue-500/10',
+                                            border: 'border-blue-500/20'
+                                        }
+                                    ].map((notification, index) => (
+                                        <motion.div
+                                            key={index}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: index * 0.1 }}
+                                            className={`p-4 rounded-xl ${notification.bg} border ${notification.border} hover:bg-white/5 transition-all cursor-pointer group`}
+                                        >
+                                            <div className="flex gap-3">
+                                                <div className={`w-10 h-10 rounded-lg ${notification.bg} border ${notification.border} flex items-center justify-center flex-shrink-0`}>
+                                                    <notification.icon size={18} className={notification.color} />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-sm font-bold text-white mb-1">{notification.title}</h3>
+                                                    <p className="text-xs text-zinc-400 leading-relaxed mb-2">{notification.message}</p>
+                                                    <p className="text-[10px] text-zinc-600 font-medium">{notification.time}</p>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </div>
+
+                                {/* Clear All Button */}
+                                <button className="w-full mt-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white font-bold text-sm transition-all">
+                                    Clear All Notifications
+                                </button>
                             </motion.div>
                         </>
                     )}
