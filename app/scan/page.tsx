@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { TransactionService } from '@/lib/services/transaction-service';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Scan, Upload, CheckCircle, XCircle, AlertTriangle, Loader2, X, Share2, Flag, Camera } from 'lucide-react';
+import { Shield, Scan, Upload, CheckCircle, XCircle, AlertTriangle, Loader2, X, Share2, Flag, Camera, XCircleIcon } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
+import { Html5Qrcode } from 'html5-qrcode';
 
 export default function ScanPage() {
     return (
@@ -22,8 +23,20 @@ function ScanPageContent() {
     const [amount, setAmount] = useState('');
     const [loading, setLoading] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
+    const [showCamera, setShowCamera] = useState(false);
     const [result, setResult] = useState<any>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const scannerRef = useRef<Html5Qrcode | null>(null);
+    const [cameraError, setCameraError] = useState('');
+
+    useEffect(() => {
+        return () => {
+            // Cleanup scanner on unmount
+            if (scannerRef.current?.isScanning) {
+                scannerRef.current.stop();
+            }
+        };
+    }, []);
 
     const analyzeUPI = async (upiToAnalyze: string) => {
         setLoading(true);
@@ -83,22 +96,93 @@ function ScanPageContent() {
         }
     };
 
+    const startCamera = async () => {
+        setShowCamera(true);
+        setCameraError('');
+
+        try {
+            const scanner = new Html5Qrcode("qr-reader");
+            scannerRef.current = scanner;
+
+            await scanner.start(
+                { facingMode: "environment" }, // Use back camera
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                async (decodedText) => {
+                    // QR Code detected!
+                    console.log('QR Code detected:', decodedText);
+
+                    // Stop scanner
+                    await scanner.stop();
+                    setShowCamera(false);
+
+                    // Extract UPI ID from QR code
+                    let extractedUPI = decodedText;
+
+                    // If it's a UPI URL, extract the UPI ID
+                    if (decodedText.includes('upi://')) {
+                        const match = decodedText.match(/pa=([^&]+)/);
+                        if (match) {
+                            extractedUPI = match[1];
+                        }
+                    }
+
+                    setUpiId(extractedUPI);
+
+                    // Auto-analyze
+                    await analyzeUPI(extractedUPI);
+                },
+                (errorMessage) => {
+                    // QR Code scan error (ignore, happens frequently)
+                }
+            );
+        } catch (error: any) {
+            console.error('Camera error:', error);
+            setCameraError('Failed to access camera. Please check permissions.');
+            setShowCamera(false);
+        }
+    };
+
+    const stopCamera = async () => {
+        if (scannerRef.current?.isScanning) {
+            await scannerRef.current.stop();
+        }
+        setShowCamera(false);
+    };
+
     const handleQRScan = () => {
-        // Trigger file upload for QR code
-        fileInputRef.current?.click();
+        startCamera();
     };
 
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
 
-        // For now, simulate QR code extraction
-        // In production, you'd use a QR code library like jsQR
-        const mockUPI = `merchant-${Math.floor(Math.random() * 1000)}@paytm`;
-        setUpiId(mockUPI);
+        setLoading(true);
 
-        // Auto-analyze the extracted UPI
-        await analyzeUPI(mockUPI);
+        try {
+            const scanner = new Html5Qrcode("qr-reader-file");
+
+            const decodedText = await scanner.scanFile(file, false);
+
+            // Extract UPI ID
+            let extractedUPI = decodedText;
+            if (decodedText.includes('upi://')) {
+                const match = decodedText.match(/pa=([^&]+)/);
+                if (match) {
+                    extractedUPI = match[1];
+                }
+            }
+
+            setUpiId(extractedUPI);
+            await analyzeUPI(extractedUPI);
+        } catch (error) {
+            console.error('QR scan error:', error);
+            alert('Failed to read QR code from image. Please try again.');
+            setLoading(false);
+        }
     };
 
     const handleCheckUPI = () => {
@@ -111,6 +195,16 @@ function ScanPageContent() {
 
     const handleUploadClick = () => {
         fileInputRef.current?.click();
+    };
+
+    const handleProceedToPay = () => {
+        if (!result?.upiId) return;
+
+        // Create UPI payment URL
+        const upiUrl = `upi://pay?pa=${result.upiId}&pn=Merchant${amount ? `&am=${amount}` : ''}`;
+
+        // Try to open UPI app
+        window.location.href = upiUrl;
     };
 
     const getRiskColor = (level: string) => {
@@ -164,6 +258,9 @@ function ScanPageContent() {
                 className="hidden"
             />
 
+            {/* Hidden QR reader for file upload */}
+            <div id="qr-reader-file" className="hidden" />
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -190,7 +287,7 @@ function ScanPageContent() {
                     {/* Scanner Box */}
                     <div className="bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-2xl p-8 relative overflow-hidden">
                         {/* Scanning Animation */}
-                        {loading && (
+                        {(loading || showCamera) && (
                             <motion.div
                                 className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-transparent"
                                 animate={{
@@ -204,100 +301,121 @@ function ScanPageContent() {
                             />
                         )}
 
-                        {/* Scanner Icon */}
-                        <div className="flex items-center justify-center mb-6">
+                        {/* Camera View or Scanner Icon */}
+                        {showCamera ? (
                             <div className="relative">
-                                <div className="w-32 h-32 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-center">
-                                    <Scan size={64} className="text-primary" />
-                                </div>
-                                {loading && (
-                                    <motion.div
-                                        className="absolute inset-0 rounded-2xl border-2 border-primary"
-                                        animate={{
-                                            opacity: [0.5, 1, 0.5],
-                                        }}
-                                        transition={{
-                                            duration: 1.5,
-                                            repeat: Infinity,
-                                            ease: "easeInOut"
-                                        }}
-                                    />
-                                )}
+                                <div id="qr-reader" className="rounded-xl overflow-hidden" />
+                                <button
+                                    onClick={stopCamera}
+                                    className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center"
+                                >
+                                    <X size={16} className="text-white" />
+                                </button>
                             </div>
-                        </div>
+                        ) : (
+                            <>
+                                <div className="flex items-center justify-center mb-6">
+                                    <div className="relative">
+                                        <div className="w-32 h-32 rounded-2xl bg-black/50 border border-white/10 flex items-center justify-center">
+                                            <Scan size={64} className="text-primary" />
+                                        </div>
+                                        {loading && (
+                                            <motion.div
+                                                className="absolute inset-0 rounded-2xl border-2 border-primary"
+                                                animate={{
+                                                    opacity: [0.5, 1, 0.5],
+                                                }}
+                                                transition={{
+                                                    duration: 1.5,
+                                                    repeat: Infinity,
+                                                    ease: "easeInOut"
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                </div>
 
-                        {/* Status Text */}
-                        <div className="text-center mb-6">
-                            <p className="text-sm font-bold text-white uppercase tracking-wider">
-                                {loading ? 'Analyzing...' : 'Scanner Ready'}
-                            </p>
-                            <p className="text-xs text-zinc-500 mt-1">
-                                {loading ? 'Running threat analysis' : 'Tap below to scan'}
-                            </p>
-                        </div>
+                                {/* Status Text */}
+                                <div className="text-center mb-6">
+                                    <p className="text-sm font-bold text-white uppercase tracking-wider">
+                                        {loading ? 'Analyzing...' : 'Scanner Ready'}
+                                    </p>
+                                    <p className="text-xs text-zinc-500 mt-1">
+                                        {loading ? 'Running threat analysis' : 'Tap QR Scan to start camera'}
+                                    </p>
+                                    {cameraError && (
+                                        <p className="text-xs text-red-500 mt-2">{cameraError}</p>
+                                    )}
+                                </div>
+                            </>
+                        )}
                     </div>
                 </div>
 
-                {/* Input Fields - Optional for manual entry */}
-                <div className="space-y-3">
-                    <input
-                        type="text"
-                        placeholder="Enter UPI ID (optional)"
-                        value={upiId}
-                        onChange={(e) => setUpiId(e.target.value)}
-                        disabled={loading}
-                        className="w-full px-4 py-3 bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-zinc-600 focus:border-primary/50 focus:outline-none disabled:opacity-50"
-                    />
-                    <input
-                        type="number"
-                        placeholder="Amount (optional)"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        disabled={loading}
-                        className="w-full px-4 py-3 bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-zinc-600 focus:border-primary/50 focus:outline-none disabled:opacity-50"
-                    />
-                </div>
+                {!showCamera && (
+                    <>
+                        {/* Input Fields - Optional for manual entry */}
+                        <div className="space-y-3">
+                            <input
+                                type="text"
+                                placeholder="Enter UPI ID (optional)"
+                                value={upiId}
+                                onChange={(e) => setUpiId(e.target.value)}
+                                disabled={loading}
+                                className="w-full px-4 py-3 bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-zinc-600 focus:border-primary/50 focus:outline-none disabled:opacity-50"
+                            />
+                            <input
+                                type="number"
+                                placeholder="Amount (optional)"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                disabled={loading}
+                                className="w-full px-4 py-3 bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-xl text-white placeholder:text-zinc-600 focus:border-primary/50 focus:outline-none disabled:opacity-50"
+                            />
+                        </div>
 
-                {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-3">
-                    <button
-                        onClick={handleQRScan}
-                        disabled={loading}
-                        className="py-3 bg-primary text-black font-black rounded-xl hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-                    >
-                        {loading ? (
-                            <>
-                                <Loader2 size={18} className="animate-spin" />
-                                Scanning
-                            </>
-                        ) : (
-                            <>
-                                <Camera size={18} />
-                                QR SCAN
-                            </>
-                        )}
-                    </button>
-                    <button
-                        onClick={handleCheckUPI}
-                        disabled={loading || !upiId}
-                        className="py-3 bg-zinc-900/50 backdrop-blur-xl border border-white/10 text-zinc-400 font-bold rounded-xl hover:border-white/20 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-                    >
-                        <Shield size={18} />
-                        Check UPI
-                    </button>
-                </div>
+                        {/* Action Buttons */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                onClick={handleQRScan}
+                                disabled={loading}
+                                className="py-3 bg-primary text-black font-black rounded-xl hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader2 size={18} className="animate-spin" />
+                                        Scanning
+                                    </>
+                                ) : (
+                                    <>
+                                        <Camera size={18} />
+                                        QR SCAN
+                                    </>
+                                )}
+                            </button>
+                            <button
+                                onClick={handleCheckUPI}
+                                disabled={loading || !upiId}
+                                className="py-3 bg-zinc-900/50 backdrop-blur-xl border border-white/10 text-zinc-400 font-bold rounded-xl hover:border-white/20 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                            >
+                                <Shield size={18} />
+                                Check UPI
+                            </button>
+                        </div>
 
-                {/* Upload QR Code Section */}
-                <button
-                    onClick={handleUploadClick}
-                    disabled={loading}
-                    className="w-full bg-zinc-900/30 backdrop-blur-xl border border-white/5 hover:border-white/10 rounded-2xl p-6 text-center transition-all disabled:opacity-50"
-                >
-                    <Upload size={32} className="text-zinc-600 mx-auto mb-3" />
-                    <h3 className="text-sm font-bold text-white mb-1">UPLOAD QR CODE</h3>
-                    <p className="text-xs text-zinc-500 mb-3">CLICK OR DRAG & DROP</p>
-                    <p className="text-xs text-zinc-600">PNG, JPG, WEBP</p>
-                </button>
+                        {/* Upload QR Code Section */}
+                        <button
+                            onClick={handleUploadClick}
+                            disabled={loading}
+                            className="w-full bg-zinc-900/30 backdrop-blur-xl border border-white/5 hover:border-white/10 rounded-2xl p-6 text-center transition-all disabled:opacity-50"
+                        >
+                            <Upload size={32} className="text-zinc-600 mx-auto mb-3" />
+                            <h3 className="text-sm font-bold text-white mb-1">UPLOAD QR CODE</h3>
+                            <p className="text-xs text-zinc-500 mb-3">CLICK OR DRAG & DROP</p>
+                            <p className="text-xs text-zinc-600">PNG, JPG, WEBP</p>
+                        </button>
+                    </>
+                )}
             </motion.div>
 
             {/* Threat Analysis Popup */}
@@ -344,7 +462,7 @@ function ScanPageContent() {
                             <div className="bg-black/30 border border-white/5 rounded-2xl p-4 mb-4">
                                 <div className="mb-3">
                                     <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">UPI ID</p>
-                                    <p className="text-sm font-bold text-white">{result.upiId}</p>
+                                    <p className="text-sm font-bold text-white break-all">{result.upiId}</p>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div>
@@ -371,7 +489,10 @@ function ScanPageContent() {
 
                             {/* Action Buttons */}
                             <div className="space-y-3">
-                                <button className="w-full py-3 bg-primary text-black font-black rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                                <button
+                                    onClick={handleProceedToPay}
+                                    className="w-full py-3 bg-primary text-black font-black rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
+                                >
                                     PROCEED TO PAY
                                     <motion.div
                                         animate={{ x: [0, 4, 0] }}
