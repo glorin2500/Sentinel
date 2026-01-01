@@ -1,4 +1,4 @@
-// Overpass API service for fetching real-world places from OpenStreetMap
+// Overpass API service with rate limiting and caching
 
 export interface OSMPlace {
     id: string;
@@ -18,6 +18,16 @@ export interface OSMPlace {
 export type PlaceCategory = 'all' | 'food' | 'shopping' | 'services' | 'health' | 'finance';
 
 const OVERPASS_API = 'https://overpass-api.de/api/interpreter';
+
+// Rate limiting: Max 2 requests per minute
+const RATE_LIMIT_MS = 30000; // 30 seconds between requests
+let lastRequestTime = 0;
+let requestQueue: Array<() => void> = [];
+let isProcessingQueue = false;
+
+// Cache for API responses (5 minutes)
+const CACHE_DURATION_MS = 5 * 60 * 1000;
+const cache = new Map<string, { data: OSMPlace[], timestamp: number }>();
 
 // Category to OSM tag mapping
 const CATEGORY_QUERIES: Record<PlaceCategory, string> = {
@@ -44,14 +54,71 @@ const CATEGORY_QUERIES: Record<PlaceCategory, string> = {
 };
 
 /**
- * Fetch nearby places from OpenStreetMap via Overpass API
+ * Rate-limited fetch with queue
+ */
+async function rateLimitedFetch(url: string, options: RequestInit): Promise<Response> {
+    return new Promise((resolve, reject) => {
+        const executeRequest = async () => {
+            const now = Date.now();
+            const timeSinceLastRequest = now - lastRequestTime;
+
+            if (timeSinceLastRequest < RATE_LIMIT_MS) {
+                const waitTime = RATE_LIMIT_MS - timeSinceLastRequest;
+                await new Promise(r => setTimeout(r, waitTime));
+            }
+
+            lastRequestTime = Date.now();
+
+            try {
+                const response = await fetch(url, options);
+                resolve(response);
+            } catch (error) {
+                reject(error);
+            }
+        };
+
+        requestQueue.push(executeRequest);
+        processQueue();
+    });
+}
+
+/**
+ * Process request queue
+ */
+async function processQueue() {
+    if (isProcessingQueue || requestQueue.length === 0) return;
+
+    isProcessingQueue = true;
+
+    while (requestQueue.length > 0) {
+        const request = requestQueue.shift();
+        if (request) {
+            await request();
+        }
+    }
+
+    isProcessingQueue = false;
+}
+
+/**
+ * Fetch nearby places with caching and rate limiting
  */
 export async function fetchNearbyPlaces(
     lat: number,
     lon: number,
-    radius: number = 1000, // meters
+    radius: number = 1000,
     category: PlaceCategory = 'all'
 ): Promise<OSMPlace[]> {
+    // Create cache key
+    const cacheKey = `${lat.toFixed(4)},${lon.toFixed(4)},${radius},${category}`;
+
+    // Check cache first
+    const cached = cache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < CACHE_DURATION_MS) {
+        console.log('Using cached data for', cacheKey);
+        return cached.data;
+    }
+
     try {
         const query = CATEGORY_QUERIES[category]
             .replace(/RADIUS/g, radius.toString())
@@ -60,7 +127,7 @@ export async function fetchNearbyPlaces(
 
         const overpassQuery = `[out:json][timeout:25];(${query});out body;`;
 
-        const response = await fetch(OVERPASS_API, {
+        const response = await rateLimitedFetch(OVERPASS_API, {
             method: 'POST',
             body: overpassQuery,
             headers: {
@@ -69,14 +136,24 @@ export async function fetchNearbyPlaces(
         });
 
         if (!response.ok) {
+            if (response.status === 429) {
+                console.warn('Rate limit hit, using cached data or returning empty');
+                return cached?.data || [];
+            }
             throw new Error(`Overpass API error: ${response.statusText}`);
         }
 
         const data = await response.json();
-        return parseOSMData(data.elements);
+        const places = parseOSMData(data.elements);
+
+        // Cache the result
+        cache.set(cacheKey, { data: places, timestamp: Date.now() });
+
+        return places;
     } catch (error) {
         console.error('Error fetching places from Overpass:', error);
-        return [];
+        // Return cached data if available, otherwise empty array
+        return cached?.data || [];
     }
 }
 
@@ -172,4 +249,11 @@ export function getCategoryIcon(category: string): string {
     };
 
     return iconMap[category] || 'map-pin';
+}
+
+/**
+ * Clear cache (useful for testing or manual refresh)
+ */
+export function clearCache() {
+    cache.clear();
 }
