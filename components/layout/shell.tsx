@@ -83,36 +83,141 @@ export default function RootLayout({
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.5 }}
             >
-                {/* Header */}
-                <header className="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex justify-between items-center bg-background/80 backdrop-blur-md border-b border-white/5">
+                {/* Enhanced Header with Sentinel Vibe */}
+                <motion.header
+                    className="fixed top-0 left-0 right-0 z-40 px-6 py-4 flex justify-between items-center bg-gradient-to-b from-black via-black/95 to-black/80 backdrop-blur-xl border-b border-primary/20"
+                    initial={{ y: -100, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+                >
+                    {/* Left: Logo with glow effect */}
+                    <motion.div
+                        className="flex items-center gap-3"
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ type: "spring", stiffness: 400 }}
+                    >
+                        <motion.div
+                            className="relative h-11 px-6 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center group cursor-pointer"
+                            whileHover={{ boxShadow: "0 0 40px rgba(124,255,178,0.5)" }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            {/* Animated glow */}
+                            <motion.div
+                                className="absolute inset-0 rounded-full bg-primary/30 blur-xl"
+                                animate={{
+                                    scale: [1, 1.2, 1],
+                                    opacity: [0.5, 0.8, 0.5],
+                                }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            />
+
+                            {/* Logo text */}
+                            <span className="relative text-black font-black text-base tracking-tight uppercase">
+                                Sentinel
+                            </span>
+
+                            {/* Shimmer effect */}
+                            <motion.div
+                                className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                                animate={{ x: ['-100%', '100%'] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                            />
+                        </motion.div>
+
+                        {/* Status indicator */}
+                        <motion.div
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                        >
+                            <motion.div
+                                className="w-2 h-2 rounded-full bg-primary"
+                                animate={{
+                                    scale: [1, 1.3, 1],
+                                    opacity: [1, 0.7, 1],
+                                }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            />
+                            <span className="text-xs font-bold text-primary uppercase tracking-wider">
+                                Active
+                            </span>
+                        </motion.div>
+                    </motion.div>
+
+                    {/* Right: Actions */}
                     <div className="flex items-center gap-3">
-                        <div className="h-10 px-5 rounded-full bg-primary flex items-center justify-center shadow-[0_0_30px_rgba(124,255,178,0.3)]">
-                            <span className="text-background font-black text-sm tracking-tight">sentinel</span>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        {/* Theme Toggle */}
-                        <button
+                        {/* Notifications */}
+                        <motion.button
+                            className="relative h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-primary/30 transition-all group"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            aria-label="Notifications"
+                        >
+                            <Bell size={18} className="text-zinc-400 group-hover:text-primary transition-colors" />
+                            {/* Notification badge */}
+                            <motion.div
+                                className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 border-2 border-black flex items-center justify-center"
+                                initial={{ scale: 0 }}
+                                animate={{ scale: 1 }}
+                                transition={{ delay: 0.5, type: "spring" }}
+                            >
+                                <span className="text-[10px] font-black text-white">3</span>
+                            </motion.div>
+                        </motion.button>
+
+                        {/* Theme Toggle with animation */}
+                        <motion.button
                             onClick={() => useSentinelStore.getState().toggleTheme()}
-                            className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-white/20 transition-all group"
+                            className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-primary/30 transition-all group relative overflow-hidden"
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
                             aria-label="Toggle theme"
                         >
+                            <motion.div
+                                className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
+                                animate={{ x: ['-100%', '100%'] }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                            />
                             {useSentinelStore.getState().theme === 'dark' ? (
-                                <Sun size={18} className="text-zinc-400 group-hover:text-primary transition-colors" />
+                                <Sun size={18} className="text-zinc-400 group-hover:text-primary transition-colors relative z-10" />
                             ) : (
-                                <Moon size={18} className="text-zinc-600 group-hover:text-primary transition-colors" />
+                                <Moon size={18} className="text-zinc-600 group-hover:text-primary transition-colors relative z-10" />
                             )}
-                        </button>
+                        </motion.button>
 
-                        {/* Account Avatar */}
-                        <button
+                        {/* Account Avatar with enhanced styling */}
+                        <motion.button
                             onClick={() => (window as any).toggleAccountPanel?.()}
-                            className="h-10 w-10 rounded-full bg-primary/20 text-primary border-2 border-primary/40 flex items-center justify-center text-sm font-black hover:scale-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(124,255,178,0.2)]"
+                            className="relative h-11 w-11 rounded-full bg-gradient-to-br from-primary/30 to-primary/10 text-primary border-2 border-primary/50 flex items-center justify-center text-sm font-black shadow-lg group overflow-hidden"
+                            whileHover={{ scale: 1.1, rotate: 5 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 400 }}
                         >
-                            {typeof window !== 'undefined' && (window as any).__sentinelUserName ? (window as any).__sentinelUserName[0].toUpperCase() : 'G'}
-                        </button>
+                            {/* Animated ring */}
+                            <motion.div
+                                className="absolute inset-0 rounded-full border-2 border-primary"
+                                animate={{
+                                    scale: [1, 1.3, 1],
+                                    opacity: [0.5, 0, 0.5],
+                                }}
+                                transition={{ duration: 2, repeat: Infinity }}
+                            />
+
+                            {/* Avatar letter */}
+                            <span className="relative z-10">
+                                {typeof window !== 'undefined' && (window as any).__sentinelUserName ? (window as any).__sentinelUserName[0].toUpperCase() : 'G'}
+                            </span>
+
+                            {/* Glow effect on hover */}
+                            <motion.div
+                                className="absolute inset-0 rounded-full bg-primary/20 blur-md"
+                                initial={{ opacity: 0 }}
+                                whileHover={{ opacity: 1 }}
+                            />
+                        </motion.button>
                     </div>
-                </header>
+                </motion.header>
 
                 {/* Main Content */}
                 <main className="pt-20 px-4 md:px-6 max-w-7xl mx-auto">
