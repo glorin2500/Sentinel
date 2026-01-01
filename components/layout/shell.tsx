@@ -90,23 +90,25 @@ export default function RootLayout({
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
                 >
-                    {/* Left: Logo with glow effect */}
+                    {/* Left: Logo with clean glow effect */}
                     <motion.div
                         className="flex items-center gap-3"
                         whileHover={{ scale: 1.02 }}
                         transition={{ type: "spring", stiffness: 400 }}
                     >
                         <motion.div
-                            className="relative h-11 px-6 rounded-full bg-gradient-to-r from-primary to-primary/80 flex items-center justify-center group cursor-pointer"
-                            whileHover={{ boxShadow: "0 0 40px rgba(124,255,178,0.5)" }}
+                            className="relative h-11 px-6 rounded-full bg-gradient-to-r from-primary to-primary/90 flex items-center justify-center group cursor-pointer shadow-lg"
+                            whileHover={{
+                                boxShadow: "0 0 30px rgba(124,255,178,0.6), 0 0 60px rgba(124,255,178,0.3)"
+                            }}
                             transition={{ duration: 0.3 }}
                         >
-                            {/* Animated glow */}
+                            {/* Subtle pulsing glow */}
                             <motion.div
-                                className="absolute inset-0 rounded-full bg-primary/30 blur-xl"
+                                className="absolute inset-0 rounded-full bg-primary/40 blur-xl"
                                 animate={{
-                                    scale: [1, 1.2, 1],
-                                    opacity: [0.5, 0.8, 0.5],
+                                    scale: [1, 1.15, 1],
+                                    opacity: [0.4, 0.6, 0.4],
                                 }}
                                 transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
                             />
@@ -115,13 +117,6 @@ export default function RootLayout({
                             <span className="relative text-black font-black text-base tracking-tight uppercase">
                                 Sentinel
                             </span>
-
-                            {/* Shimmer effect */}
-                            <motion.div
-                                className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                                animate={{ x: ['-100%', '100%'] }}
-                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                            />
                         </motion.div>
 
                         {/* Status indicator */}
@@ -166,23 +161,18 @@ export default function RootLayout({
                             </motion.div>
                         </motion.button>
 
-                        {/* Theme Toggle with animation */}
+                        {/* Theme Toggle */}
                         <motion.button
                             onClick={() => useSentinelStore.getState().toggleTheme()}
-                            className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-primary/30 transition-all group relative overflow-hidden"
+                            className="h-10 w-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 hover:border-primary/30 transition-all group"
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.95 }}
                             aria-label="Toggle theme"
                         >
-                            <motion.div
-                                className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/10 to-transparent"
-                                animate={{ x: ['-100%', '100%'] }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                            />
                             {useSentinelStore.getState().theme === 'dark' ? (
-                                <Sun size={18} className="text-zinc-400 group-hover:text-primary transition-colors relative z-10" />
+                                <Sun size={18} className="text-zinc-400 group-hover:text-primary transition-colors" />
                             ) : (
-                                <Moon size={18} className="text-zinc-600 group-hover:text-primary transition-colors relative z-10" />
+                                <Moon size={18} className="text-zinc-600 group-hover:text-primary transition-colors" />
                             )}
                         </motion.button>
 
