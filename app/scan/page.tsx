@@ -100,6 +100,9 @@ function ScanPageContent() {
         setShowCamera(true);
         setCameraError('');
 
+        // Wait for DOM to render the qr-reader div
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         try {
             const scanner = new Html5Qrcode("qr-reader");
             scannerRef.current = scanner;
