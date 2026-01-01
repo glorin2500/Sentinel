@@ -1,147 +1,171 @@
 "use client";
 
+import { GlassCard } from "../ui/glass-card";
 import { motion } from "framer-motion";
-import { Trophy, Target, TrendingUp, Award, Flame, CheckCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useEffect, useState } from "react";
 import { TransactionService } from "@/lib/services/transaction-service";
+import { Trophy, Target, Zap, Shield, TrendingUp, Award } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export function GamificationWidget() {
     const { user } = useAuth();
-    const [stats, setStats] = useState({
-        total: 0,
-        safe: 0,
-        caution: 0,
-        warning: 0,
-        danger: 0,
-        totalAmount: 0,
-        avgAmount: 0
-    });
+    const router = useRouter();
+    const [stats, setStats] = useState({ total: 0, safe: 0, danger: 0 });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (user) {
-            TransactionService.getTransactionStats(user.id).then(setStats);
+            TransactionService.getTransactionStats(user.id)
+                .then(setStats)
+                .finally(() => setLoading(false));
         }
     }, [user]);
 
-    // Calculate level based on total scans
+    // Calculate level and progress
     const level = Math.floor(stats.total / 10) + 1;
-    const scansForNextLevel = (level * 10) - stats.total;
-    const progress = ((stats.total % 10) / 10) * 100;
+    const scansInCurrentLevel = stats.total % 10;
+    const scansForNextLevel = 10;
+    const progress = (scansInCurrentLevel / scansForNextLevel) * 100;
 
-    // Calculate achievements
+    // Calculate threat neutralization rate
+    const neutralizationRate = stats.total > 0
+        ? Math.round((stats.danger / stats.total) * 100)
+        : 0;
+
     const achievements = [
-        { id: 1, name: 'First Scan', icon: Target, unlocked: stats.total >= 1, requirement: 1 },
-        { id: 2, name: 'Safety Conscious', icon: CheckCircle, unlocked: stats.total >= 5, requirement: 5 },
-        { id: 3, name: 'Vigilant Guardian', icon: Award, unlocked: stats.total >= 20, requirement: 20 },
-        { id: 4, name: 'Fraud Hunter', icon: Trophy, unlocked: stats.total >= 50, requirement: 50 },
+        {
+            icon: Shield,
+            title: "First Scan",
+            description: "Complete your first threat scan",
+            unlocked: stats.total >= 1,
+            color: "text-blue-500",
+            bg: "bg-blue-500/10"
+        },
+        {
+            icon: Target,
+            title: "Threat Hunter",
+            description: "Block 5 dangerous transactions",
+            unlocked: stats.danger >= 5,
+            color: "text-red-500",
+            bg: "bg-red-500/10"
+        },
+        {
+            icon: Zap,
+            title: "Quick Responder",
+            description: "Scan 25 transactions",
+            unlocked: stats.total >= 25,
+            color: "text-yellow-500",
+            bg: "bg-yellow-500/10"
+        },
+        {
+            icon: Trophy,
+            title: "Elite Guardian",
+            description: "Reach level 10",
+            unlocked: level >= 10,
+            color: "text-primary",
+            bg: "bg-primary/10"
+        }
     ];
 
     const unlockedCount = achievements.filter(a => a.unlocked).length;
 
-    return (
-        <div className="space-y-4">
-            {/* Level Progress */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-6 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent"
-            >
-                <div className="flex items-center justify-between mb-4">
-                    <div>
-                        <h3 className="text-2xl font-black text-white">Level {level}</h3>
-                        <p className="text-sm text-zinc-400">{stats.total} scans completed</p>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-xs text-zinc-500 uppercase tracking-wider">Next Level</p>
-                        <p className="text-lg font-black text-primary">{scansForNextLevel} scans</p>
-                    </div>
-                </div>
+    if (loading) {
+        return (
+            <GlassCard className="h-full flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+            </GlassCard>
+        );
+    }
 
-                {/* Progress Bar */}
-                <div className="space-y-2">
-                    <div className="h-3 bg-white/5 rounded-full overflow-hidden">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${progress}%` }}
-                            transition={{ duration: 1, ease: "easeOut" }}
-                            className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full"
-                        />
-                    </div>
-                    <p className="text-xs text-zinc-500 text-center">
-                        {Math.round(progress)}% to Level {level + 1}
-                    </p>
+    return (
+        <GlassCard className="h-full flex flex-col">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
+                <div>
+                    <h3 className="text-lg font-black text-white">Operative Status</h3>
+                    <p className="text-xs text-zinc-500 mt-0.5">Your progress in the field</p>
                 </div>
-            </motion.div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 border border-primary/20">
+                    <Award size={14} className="text-primary" />
+                    <span className="text-xs font-bold text-primary">LVL {level}</span>
+                </div>
+            </div>
+
+            {/* Level Progress */}
+            <div className="mb-6">
+                <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                        Level {level} Progress
+                    </span>
+                    <span className="text-xs text-zinc-500">
+                        {scansInCurrentLevel}/{scansForNextLevel} scans
+                    </span>
+                </div>
+                <div className="h-2 bg-black/50 rounded-full overflow-hidden">
+                    <motion.div
+                        className="h-full bg-gradient-to-r from-primary to-primary/60"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${progress}%` }}
+                        transition={{ duration: 1, ease: "easeOut" }}
+                    />
+                </div>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                    <div className="flex items-center gap-2 mb-1">
+                        <Target size={14} className="text-primary" />
+                        <span className="text-xs text-zinc-400">Total Scans</span>
+                    </div>
+                    <div className="text-2xl font-black text-white">{stats.total}</div>
+                </div>
+                <div className="p-3 rounded-lg bg-red-500/5 border border-red-500/20">
+                    <div className="flex items-center gap-2 mb-1">
+                        <Shield size={14} className="text-red-500" />
+                        <span className="text-xs text-zinc-400">Threats Blocked</span>
+                    </div>
+                    <div className="text-2xl font-black text-red-500">{stats.danger}</div>
+                </div>
+            </div>
 
             {/* Achievements */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="p-6 rounded-2xl border border-white/10 bg-zinc-900/50"
-            >
-                <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-black text-white">Achievements</h3>
-                    <span className="text-sm text-zinc-400">{unlockedCount}/{achievements.length}</span>
+            <div className="mb-4">
+                <div className="flex justify-between items-center mb-3">
+                    <h4 className="text-sm font-bold text-white">Achievements</h4>
+                    <span className="text-xs text-zinc-500">{unlockedCount}/{achievements.length}</span>
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-2">
                     {achievements.map((achievement, i) => {
                         const Icon = achievement.icon;
                         return (
                             <motion.div
-                                key={achievement.id}
+                                key={i}
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.2 + i * 0.1 }}
-                                className={`p-4 rounded-xl border transition-all ${achievement.unlocked
-                                        ? 'bg-primary/10 border-primary/30'
-                                        : 'bg-black/30 border-white/5 opacity-50'
+                                transition={{ delay: i * 0.1 }}
+                                className={`p-3 rounded-lg border ${achievement.unlocked
+                                    ? `${achievement.bg} border-${achievement.color.replace('text-', '')}/20`
+                                    : 'bg-black/20 border-white/5 opacity-40'
                                     }`}
                             >
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 ${achievement.unlocked ? 'bg-primary/20' : 'bg-white/5'
-                                    }`}>
-                                    <Icon size={20} className={achievement.unlocked ? 'text-primary' : 'text-zinc-600'} />
-                                </div>
-                                <h4 className={`text-sm font-bold mb-1 ${achievement.unlocked ? 'text-white' : 'text-zinc-600'
-                                    }`}>
-                                    {achievement.name}
-                                </h4>
-                                <p className="text-xs text-zinc-500">
-                                    {achievement.unlocked ? 'Unlocked!' : `${achievement.requirement} scans`}
-                                </p>
+                                <Icon size={16} className={achievement.unlocked ? achievement.color : 'text-zinc-600'} />
+                                <div className="text-xs font-bold text-white mt-2">{achievement.title}</div>
                             </motion.div>
                         );
                     })}
                 </div>
-            </motion.div>
+            </div>
 
-            {/* Quick Stats */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="grid grid-cols-2 gap-3"
+            {/* CTA */}
+            <button
+                onClick={() => router.push('/scan')}
+                className="w-full py-2.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 hover:border-primary/30 rounded-lg transition-all flex items-center justify-center gap-2 group"
             >
-                <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
-                    <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle size={16} className="text-green-500" />
-                        <span className="text-xs text-zinc-500 uppercase tracking-wider">Safe Scans</span>
-                    </div>
-                    <div className="text-2xl font-black text-green-500">{stats.safe}</div>
-                </div>
-
-                <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
-                    <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp size={16} className="text-primary" />
-                        <span className="text-xs text-zinc-500 uppercase tracking-wider">Accuracy</span>
-                    </div>
-                    <div className="text-2xl font-black text-primary">
-                        {stats.total > 0 ? Math.round((stats.safe / stats.total) * 100) : 100}%
-                    </div>
-                </div>
-            </motion.div>
-        </div>
+                <Zap size={16} className="text-primary group-hover:scale-110 transition-transform" />
+                <span className="text-sm font-bold text-primary">Continue Mission</span>
+            </button>
+        </GlassCard>
     );
 }
