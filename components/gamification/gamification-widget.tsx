@@ -1,52 +1,60 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useSentinelStore } from "@/lib/store";
-import { generateDailyChallenges, calculateStreak, getXPForNextLevel } from "@/lib/gamification/progression-system";
-import { Trophy, Zap, Target, TrendingUp, Award, Star, Flame, Crown } from "lucide-react";
-import { hapticClick, hapticSuccess, hapticLight } from "@/lib/haptic";
+import { Trophy, Target, TrendingUp, Award, Flame, CheckCircle } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
+import { useEffect, useState } from "react";
+import { TransactionService } from "@/lib/services/transaction-service";
 
 export function GamificationWidget() {
-    const { scans, gamification, addXP } = useSentinelStore();
+    const { user } = useAuth();
+    const [stats, setStats] = useState({
+        total: 0,
+        safe: 0,
+        caution: 0,
+        warning: 0,
+        danger: 0,
+        totalAmount: 0,
+        avgAmount: 0
+    });
 
-    // Calculate streak
-    const { current: currentStreak, longest: longestStreak } = calculateStreak(scans);
+    useEffect(() => {
+        if (user) {
+            TransactionService.getTransactionStats(user.id).then(setStats);
+        }
+    }, [user]);
 
-    // Get daily challenges
-    const challenges = generateDailyChallenges(scans);
+    // Calculate level based on total scans
+    const level = Math.floor(stats.total / 10) + 1;
+    const scansForNextLevel = (level * 10) - stats.total;
+    const progress = ((stats.total % 10) / 10) * 100;
 
-    // Calculate XP for next level
-    const xpForNext = getXPForNextLevel(gamification.xp);
-    const xpProgress = ((gamification.xp % xpForNext) / xpForNext) * 100;
+    // Calculate achievements
+    const achievements = [
+        { id: 1, name: 'First Scan', icon: Target, unlocked: stats.total >= 1, requirement: 1 },
+        { id: 2, name: 'Safety Conscious', icon: CheckCircle, unlocked: stats.total >= 5, requirement: 5 },
+        { id: 3, name: 'Vigilant Guardian', icon: Award, unlocked: stats.total >= 20, requirement: 20 },
+        { id: 4, name: 'Fraud Hunter', icon: Trophy, unlocked: stats.total >= 50, requirement: 50 },
+    ];
+
+    const unlockedCount = achievements.filter(a => a.unlocked).length;
 
     return (
         <div className="space-y-4">
-            {/* Level & XP Progress */}
+            {/* Level Progress */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-6 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10"
+                className="p-6 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent"
             >
                 <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center">
-                            <Crown size={24} className="text-primary" />
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-black text-white">Level {gamification.level}</h3>
-                            <p className="text-xs text-zinc-400">
-                                {gamification.xp.toLocaleString()} XP
-                            </p>
-                        </div>
+                    <div>
+                        <h3 className="text-2xl font-black text-white">Level {level}</h3>
+                        <p className="text-sm text-zinc-400">{stats.total} scans completed</p>
                     </div>
-
                     <div className="text-right">
-                        <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
-                            Next Level
-                        </p>
-                        <p className="text-sm font-black text-primary">
-                            {(xpForNext - (gamification.xp % xpForNext)).toLocaleString()} XP
-                        </p>
+                        <p className="text-xs text-zinc-500 uppercase tracking-wider">Next Level</p>
+                        <p className="text-lg font-black text-primary">{scansForNextLevel} scans</p>
                     </div>
                 </div>
 
@@ -55,172 +63,85 @@ export function GamificationWidget() {
                     <div className="h-3 bg-white/5 rounded-full overflow-hidden">
                         <motion.div
                             initial={{ width: 0 }}
-                            animate={{ width: `${xpProgress}%` }}
+                            animate={{ width: `${progress}%` }}
                             transition={{ duration: 1, ease: "easeOut" }}
                             className="h-full bg-gradient-to-r from-primary to-primary/80 rounded-full"
                         />
                     </div>
-                    <p className="text-[10px] text-zinc-500 text-right">
-                        {xpProgress.toFixed(1)}% to Level {gamification.level + 1}
+                    <p className="text-xs text-zinc-500 text-center">
+                        {Math.round(progress)}% to Level {level + 1}
                     </p>
                 </div>
             </motion.div>
 
-            {/* Streak */}
+            {/* Achievements */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="grid grid-cols-2 gap-4"
+                className="p-6 rounded-2xl border border-white/10 bg-zinc-900/50"
             >
-                <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => hapticLight()}
-                    className="p-4 rounded-2xl bg-white/5 border border-white/10 cursor-pointer"
-                >
-                    <div className="flex items-center gap-2 mb-2">
-                        <Flame size={16} className="text-orange-500" />
-                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider">
-                            Current Streak
-                        </span>
-                    </div>
-                    <div className="flex items-baseline gap-2">
-                        <p className="text-3xl font-black text-white">{currentStreak}</p>
-                        <span className="text-sm text-zinc-400">days</span>
-                    </div>
-                </motion.div>
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-black text-white">Achievements</h3>
+                    <span className="text-sm text-zinc-400">{unlockedCount}/{achievements.length}</span>
+                </div>
 
-                <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => hapticLight()}
-                    className="p-4 rounded-2xl bg-white/5 border border-white/10 cursor-pointer"
-                >
-                    <div className="flex items-center gap-2 mb-2">
-                        <Award size={16} className="text-primary" />
-                        <span className="text-[10px] font-black text-zinc-500 uppercase tracking-wider">
-                            Best Streak
-                        </span>
-                    </div>
-                    <div className="flex items-baseline gap-2">
-                        <p className="text-3xl font-black text-white">{longestStreak}</p>
-                        <span className="text-sm text-zinc-400">days</span>
-                    </div>
-                </motion.div>
+                <div className="grid grid-cols-2 gap-3">
+                    {achievements.map((achievement, i) => {
+                        const Icon = achievement.icon;
+                        return (
+                            <motion.div
+                                key={achievement.id}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.2 + i * 0.1 }}
+                                className={`p-4 rounded-xl border transition-all ${achievement.unlocked
+                                        ? 'bg-primary/10 border-primary/30'
+                                        : 'bg-black/30 border-white/5 opacity-50'
+                                    }`}
+                            >
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-2 ${achievement.unlocked ? 'bg-primary/20' : 'bg-white/5'
+                                    }`}>
+                                    <Icon size={20} className={achievement.unlocked ? 'text-primary' : 'text-zinc-600'} />
+                                </div>
+                                <h4 className={`text-sm font-bold mb-1 ${achievement.unlocked ? 'text-white' : 'text-zinc-600'
+                                    }`}>
+                                    {achievement.name}
+                                </h4>
+                                <p className="text-xs text-zinc-500">
+                                    {achievement.unlocked ? 'Unlocked!' : `${achievement.requirement} scans`}
+                                </p>
+                            </motion.div>
+                        );
+                    })}
+                </div>
             </motion.div>
 
-            {/* Daily Challenges */}
+            {/* Quick Stats */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="space-y-3"
+                className="grid grid-cols-2 gap-3"
             >
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <Target size={16} className="text-primary" />
-                        <h4 className="text-sm font-black text-white">Daily Challenges</h4>
+                <div className="p-4 rounded-xl bg-green-500/10 border border-green-500/20">
+                    <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle size={16} className="text-green-500" />
+                        <span className="text-xs text-zinc-500 uppercase tracking-wider">Safe Scans</span>
                     </div>
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
-                        {challenges.filter(c => c.progress >= c.target).length}/{challenges.length} Complete
-                    </span>
+                    <div className="text-2xl font-black text-green-500">{stats.safe}</div>
                 </div>
 
-                {challenges.map((challenge, index) => {
-                    const progress = (challenge.progress / challenge.target) * 100;
-                    const isComplete = progress >= 100;
-
-                    return (
-                        <motion.div
-                            key={challenge.id}
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 + index * 0.1 }}
-                            whileHover={{ scale: 1.01 }}
-                            whileTap={{ scale: 0.99 }}
-                            onClick={() => hapticLight()}
-                            className={`p-4 rounded-2xl border transition-all cursor-pointer ${isComplete
-                                ? 'bg-primary/5 border-primary/20'
-                                : 'bg-white/5 border-white/10'
-                                }`}
-                        >
-                            <div className="flex items-start gap-3">
-                                <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${isComplete ? 'bg-primary/20' : 'bg-white/5'}`}>
-                                    {challenge.type === 'scan_count' && <Target size={20} className={isComplete ? 'text-primary' : 'text-zinc-400'} />}
-                                    {challenge.type === 'safe_scans' && <Star size={20} className={isComplete ? 'text-primary' : 'text-zinc-400'} />}
-                                    {challenge.type === 'streak' && <Flame size={20} className={isComplete ? 'text-primary' : 'text-zinc-400'} />}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <h5 className="text-sm font-black text-white">
-                                            {challenge.title}
-                                        </h5>
-                                        {isComplete && (
-                                            <Star size={16} className="text-primary fill-primary" />
-                                        )}
-                                    </div>
-                                    <p className="text-xs text-zinc-400 mb-2">
-                                        {challenge.description}
-                                    </p>
-
-                                    {!isComplete && (
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between text-[10px] text-zinc-500">
-                                                <span>Progress</span>
-                                                <span>{challenge.progress}/{challenge.target}</span>
-                                            </div>
-                                            <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                                <div
-                                                    className="h-full bg-primary/50 rounded-full transition-all"
-                                                    style={{ width: `${Math.min(progress, 100)}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="flex items-center gap-2 mt-2">
-                                        <Zap size={12} className="text-primary" />
-                                        <span className="text-[10px] font-bold text-primary">
-                                            +{challenge.reward.xp} XP
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    );
-                })}
+                <div className="p-4 rounded-xl bg-primary/10 border border-primary/20">
+                    <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp size={16} className="text-primary" />
+                        <span className="text-xs text-zinc-500 uppercase tracking-wider">Accuracy</span>
+                    </div>
+                    <div className="text-2xl font-black text-primary">
+                        {stats.total > 0 ? Math.round((stats.safe / stats.total) * 100) : 100}%
+                    </div>
+                </div>
             </motion.div>
-
-            {/* Unlocked Rewards */}
-            {gamification.unlockedThemes.length > 0 && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                    className="p-4 rounded-2xl bg-white/5 border border-white/10"
-                >
-                    <div className="flex items-center gap-2 mb-3">
-                        <Trophy size={16} className="text-primary" />
-                        <h4 className="text-sm font-black text-white">Unlocked Rewards</h4>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {gamification.unlockedThemes.map(theme => (
-                            <motion.div
-                                key={theme}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => hapticClick()}
-                                className="px-3 py-1.5 rounded-lg bg-primary/10 border border-primary/20 cursor-pointer"
-                            >
-                                <span className="text-xs font-bold text-primary capitalize">
-                                    {theme.replace('theme-', '').replace('-', ' ')}
-                                </span>
-                            </motion.div>
-                        ))}
-                    </div>
-                </motion.div>
-            )}
         </div>
     );
 }

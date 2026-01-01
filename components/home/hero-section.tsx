@@ -1,21 +1,53 @@
 import { motion } from "framer-motion";
-import { useSentinelStore } from "@/lib/store";
 import { Scan, ArrowRight, Sparkles, Shield } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { hapticClick } from "@/lib/haptic";
+import { useAuth } from "@/lib/auth-context";
+import { TransactionService } from "@/lib/services/transaction-service";
 
 export function HeroSection() {
-    const { safetyScore } = useSentinelStore();
+    const { user } = useAuth();
     const router = useRouter();
     const [greeting, setGreeting] = useState("");
+    const [safetyScore, setSafetyScore] = useState(100);
 
     useEffect(() => {
-        const hour = new Date().getHours();
-        if (hour < 12) setGreeting("Good Morning");
-        else if (hour < 17) setGreeting("Good Afternoon");
-        else setGreeting("Good Evening");
+        // Update greeting based on current time
+        const updateGreeting = () => {
+            const hour = new Date().getHours();
+            if (hour < 12) setGreeting("Good Morning");
+            else if (hour < 17) setGreeting("Good Afternoon");
+            else setGreeting("Good Evening");
+        };
+
+        updateGreeting();
+        // Update greeting every minute
+        const interval = setInterval(updateGreeting, 60000);
+        return () => clearInterval(interval);
     }, []);
+
+    useEffect(() => {
+        // Fetch real safety score
+        if (user) {
+            TransactionService.getTransactionStats(user.id).then(stats => {
+                if (stats.total === 0) {
+                    setSafetyScore(100);
+                    return;
+                }
+
+                const safeWeight = stats.safe * 100;
+                const cautionWeight = stats.caution * 75;
+                const warningWeight = stats.warning * 50;
+                const dangerWeight = stats.danger * 0;
+
+                const totalWeight = safeWeight + cautionWeight + warningWeight + dangerWeight;
+                setSafetyScore(Math.round(totalWeight / stats.total));
+            });
+        }
+    }, [user]);
+
+    const userName = user?.email?.split('@')[0] || 'Guardian';
 
     return (
         <motion.div
@@ -54,118 +86,76 @@ export function HeroSection() {
                         duration: 3 + i,
                         repeat: Infinity,
                         ease: "easeInOut",
-                        delay: i * 0.2,
                     }}
                 />
             ))}
 
-            <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-                <div className="flex-1">
-                    <motion.div
+            <div className="relative z-10">
+                {/* Greeting */}
+                <div className="mb-6">
+                    <motion.h1
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="flex items-center gap-2 mb-2"
+                        transition={{ delay: 0.2 }}
+                        className="text-3xl sm:text-4xl font-black text-white mb-2"
                     >
-                        <Sparkles size={20} className="text-primary" />
-                        <span className="text-sm font-bold text-primary uppercase tracking-wider">
-                            {greeting}
-                        </span>
-                    </motion.div>
-
-                    <div className="flex items-center gap-4 mb-2">
-                        <motion.div
-                            initial={{ scale: 0, rotate: -180 }}
-                            animate={{ scale: 1, rotate: 0 }}
-                            transition={{
-                                type: "spring",
-                                stiffness: 260,
-                                damping: 20,
-                                delay: 0.2
-                            }}
-                            className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0"
-                        >
-                            {/* Logo Container */}
-                            <div className="absolute inset-0 bg-primary/10 rounded-2xl rotate-3 backdrop-blur-sm" />
-                            <div className="absolute inset-0 bg-primary/5 rounded-2xl -rotate-3 backdrop-blur-sm" />
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl flex items-center justify-center border border-primary/10 shadow-[0_0_20px_rgba(124,255,178,0.15)]">
-                                <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-primary fill-primary/10" strokeWidth={2} />
-
-                                {/* Scanning Animation */}
-                                <motion.div
-                                    className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/10 to-transparent"
-                                    animate={{ top: ['-100%', '100%'] }}
-                                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                                />
-                            </div>
-                        </motion.div>
-
-                        <motion.h1
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.3 }}
-                            className="text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight"
-                        >
-                            Welcome to Sentinel
-                        </motion.h1>
-                    </div>
-
+                        {greeting}, <span className="text-primary capitalize">{userName}</span>
+                    </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="text-sm sm:text-base text-zinc-400 max-w-xl"
+                        className="text-zinc-400 text-sm sm:text-base"
                     >
-                        Your AI-powered guardian against UPI fraud. Stay protected with real-time threat detection.
+                        Your fraud protection is <span className="text-primary font-bold">active</span>
                     </motion.p>
+                </div>
 
-                    {/* Safety Score Badge */}
+                {/* Stats Row */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
                     <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="mt-4 inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
+                        className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-white/5"
                     >
-                        <div className="flex items-center gap-2">
-                            <div className={`h-2 w-2 rounded-full ${safetyScore >= 80 ? 'bg-primary' : safetyScore >= 60 ? 'bg-yellow-500' : 'bg-destructive'} animate-pulse`} />
-                            <span className="text-xs font-bold text-zinc-400">Safety Score</span>
+                        <div className="flex items-center gap-2 mb-1">
+                            <Shield size={16} className="text-primary" />
+                            <span className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Safety Score</span>
                         </div>
-                        <span className={`text-lg font-black ${safetyScore >= 80 ? 'text-primary' : safetyScore >= 60 ? 'text-yellow-500' : 'text-destructive'}`}>
-                            {safetyScore}%
-                        </span>
+                        <div className="text-2xl font-black text-white">{safetyScore}</div>
+                        <div className="text-xs text-zinc-400">/ 100</div>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.5 }}
+                        className="bg-black/20 backdrop-blur-sm rounded-xl p-4 border border-white/5"
+                    >
+                        <div className="flex items-center gap-2 mb-1">
+                            <Sparkles size={16} className="text-primary" />
+                            <span className="text-xs text-zinc-500 font-medium uppercase tracking-wider">Status</span>
+                        </div>
+                        <div className="text-2xl font-black text-primary">Protected</div>
+                        <div className="text-xs text-zinc-400">Real-time</div>
                     </motion.div>
                 </div>
 
                 {/* CTA Button */}
                 <motion.button
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.5 }}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
                     onClick={() => {
                         hapticClick();
                         router.push('/scan');
                     }}
-                    className="group relative px-6 py-4 rounded-2xl bg-primary text-background font-black uppercase tracking-wider text-sm flex items-center gap-3 shadow-[0_0_40px_rgba(124,255,178,0.3)] hover:shadow-[0_0_60px_rgba(124,255,178,0.4)] transition-all"
+                    className="w-full sm:w-auto px-6 py-3 bg-primary text-black font-black rounded-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 group"
                 >
-                    <Scan size={20} className="group-hover:rotate-12 transition-transform" />
-                    Quick Scan
+                    <Scan size={18} className="group-hover:rotate-12 transition-transform" />
+                    Scan Transaction
                     <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-
-                    {/* Pulsing ring */}
-                    <motion.div
-                        className="absolute inset-0 rounded-2xl border-2 border-primary"
-                        animate={{
-                            scale: [1, 1.1, 1],
-                            opacity: [0.5, 0, 0.5],
-                        }}
-                        transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            ease: "easeInOut"
-                        }}
-                    />
                 </motion.button>
             </div>
         </motion.div>
