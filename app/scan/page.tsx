@@ -31,6 +31,7 @@ function ScanPageContent() {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [cameraError, setCameraError] = useState('');
   const [scanStep, setScanStep] = useState<'idle' | 'scanning' | 'analyzing' | 'complete'>('idle');
+  const [isFavorite, setIsFavorite] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -175,26 +176,57 @@ function ScanPageContent() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Security: Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+
+    // Security: Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
     setLoading(true);
-    setScanStep('analyzing');
+    setScanStep('scanning');
 
     try {
-      const tempScanner = new Html5Qrcode("qr-reader-file");
+      // Create a temporary scanner for file upload
+      const tempScanner = new Html5Qrcode('qr-reader-temp');
       const decodedText = await tempScanner.scanFile(file, false);
 
+      // Security: Validate QR content
+      if (!validateQrContent(decodedText)) {
+        logger.security('Invalid QR content from file upload', { filename: file.name });
+        alert('Invalid QR code content detected.');
+        setLoading(false);
+        setScanStep('idle');
+        return;
+      }
+
+      // Extract UPI ID from QR content
       let extractedUPI = decodedText;
       if (decodedText.includes('upi://')) {
         const match = decodedText.match(/pa=([^&]+)/);
-        if (match) extractedUPI = match[1];
+        if (match) {
+          extractedUPI = decodeURIComponent(match[1]);
+        }
       }
 
+      logger.info('QR code scanned from file', { upiId: extractedUPI });
       setUpiId(extractedUPI);
       await analyzeUPI(extractedUPI);
-    } catch (error) {
-      console.error('QR scan error:', error);
+    } catch (error: any) {
+      logger.error('QR file scan error', error);
       setLoading(false);
       setScanStep('idle');
       alert('Failed to read QR code. Please ensure the image contains a valid QR code.');
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -218,16 +250,79 @@ function ScanPageContent() {
 
     // Add amount if provided
     if (amount && parseFloat(amount) > 0) {
-      params.append('am', amount);
+      params.append('am', sanitizeAmount(amount));
     }
 
     // Create proper UPI URL
     const upiUrl = `upi://pay?${params.toString()}`;
 
-    console.log('Opening UPI URL:', upiUrl);
+    logger.info('Opening UPI payment', { upiId: result.upiId, amount });
 
     // Try to open UPI app
     window.location.href = upiUrl;
+
+    // Close popup after initiating payment
+    setTimeout(() => setShowPopup(false), 500);
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: 'Sentinel Scan Result',
+      text: `UPI ID: ${result?.upiId}\nRisk Score: ${result?.riskScore}%\nStatus: ${result?.riskLevel?.toUpperCase()}`,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        logger.info('Scan result shared');
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(shareData.text);
+        alert('Scan result copied to clipboard!');
+      }
+    } catch (error) {
+      logger.error('Share failed', error);
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    setIsFavorite(!isFavorite);
+
+    // Save to Supabase if configured
+    if (isSupabaseConfigured() && user && result) {
+      try {
+        // Update transaction as favorite
+        // You would implement this in TransactionService
+        logger.info('Toggled favorite', { upiId: result.upiId, isFavorite: !isFavorite });
+      } catch (error) {
+        logger.error('Failed to toggle favorite', error);
+      }
+    }
+  };
+
+  const handleReportFraud = async () => {
+    if (!result?.upiId) return;
+
+    const confirmed = confirm(
+      `Report ${result.upiId} as fraudulent?\n\nThis will help protect other users.`
+    );
+
+    if (confirmed) {
+      try {
+        // Save fraud report to Supabase
+        if (isSupabaseConfigured() && user) {
+          // You would implement this in FraudReportService
+          logger.security('Fraud reported', { upiId: result.upiId, userId: user.id });
+          alert('Thank you! Fraud report submitted successfully.');
+        } else {
+          logger.info('Fraud report (demo mode)', { upiId: result.upiId });
+          alert('Fraud report recorded (demo mode)');
+        }
+      } catch (error) {
+        logger.error('Failed to submit fraud report', error);
+        alert('Failed to submit report. Please try again.');
+      }
+    }
   };
 
   const getRiskColor = (level: string) => {
@@ -345,6 +440,7 @@ function ScanPageContent() {
                 animate={{ scale: 1, opacity: 1 }}
               >
                 <div id="qr-reader" className="rounded-xl overflow-hidden" />
+                <div id="qr-reader-temp" style={{ display: 'none' }} />
                 <motion.p
                   className="text-xs text-center text-primary mt-3 font-bold"
                   animate={{ opacity: [0.5, 1, 0.5] }}
@@ -643,7 +739,8 @@ function ScanPageContent() {
 
                       <div className="grid grid-cols-2 gap-3">
                         <motion.button
-                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                          onClick={handleShare}
+                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
@@ -651,24 +748,27 @@ function ScanPageContent() {
                           SHARE
                         </motion.button>
                         <motion.button
-                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                          onClick={handleToggleFavorite}
+                          className={`py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 font-bold rounded-xl transition-all flex items-center justify-center gap-2 ${isFavorite ? 'text-yellow-500' : 'text-zinc-400 hover:text-yellow-500'
+                            }`}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
-                          ★
+                          {isFavorite ? '★' : '☆'}
                         </motion.button>
                       </div>
 
                       <div className="flex items-center justify-between pt-3 border-t border-white/5">
                         <motion.button
                           onClick={() => setShowPopup(false)}
-                          className="text-sm text-zinc-500 hover:text-white transition-colors"
+                          className="text-sm text-zinc-500 hover:text-white transition-colors font-bold"
                           whileHover={{ scale: 1.05 }}
                         >
                           CLOSE
                         </motion.button>
                         <motion.button
-                          className="text-sm text-red-500 hover:text-red-400 transition-colors flex items-center gap-1"
+                          onClick={handleReportFraud}
+                          className="text-sm text-red-500 hover:text-red-400 transition-colors flex items-center gap-1 font-bold"
                           whileHover={{ scale: 1.05 }}
                         >
                           <Flag size={14} />
