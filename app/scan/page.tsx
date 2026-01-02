@@ -8,6 +8,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Scan, Upload, CheckCircle, XCircle, AlertTriangle, Loader2, X, Share2, Flag, Camera, Zap, Info } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
 import { Html5Qrcode } from 'html5-qrcode';
+import { validateUpiId, validateAmount, validateQrContent, sanitizeUpiId, sanitizeAmount } from '@/lib/security/input-validator';
+import { logger } from '@/lib/security/logger';
 
 export default function ScanPage() {
   return (
@@ -41,8 +43,24 @@ function ScanPageContent() {
   }, []);
 
   const analyzeUPI = async (upiToAnalyze: string) => {
+    // Security: Validate UPI ID before processing
     if (!upiToAnalyze) {
       alert('No UPI ID to analyze');
+      return;
+    }
+
+    // Security: Sanitize and validate UPI ID (OWASP A03:2021 – Injection)
+    const sanitized = sanitizeUpiId(upiToAnalyze);
+    if (!validateUpiId(sanitized)) {
+      logger.security('Invalid UPI ID format detected', { upiId: sanitized });
+      alert('Invalid UPI ID format. Please check and try again.');
+      return;
+    }
+
+    // Security: Validate amount if provided
+    if (amount && !validateAmount(amount)) {
+      logger.security('Invalid amount detected', { amount });
+      alert('Invalid amount. Please enter a valid amount (max ₹1,00,000).');
       return;
     }
 
