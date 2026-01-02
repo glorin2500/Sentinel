@@ -190,7 +190,25 @@ function ScanPageContent() {
 
   const handleProceedToPay = () => {
     if (!result?.upiId) return;
-    const upiUrl = `upi://pay?pa=${result.upiId}&pn=Merchant${amount ? `&am=${amount}` : ''}`;
+
+    // Properly encode UPI parameters
+    const params = new URLSearchParams({
+      pa: result.upiId,  // Payee Address (UPI ID)
+      pn: 'Merchant',    // Payee Name
+      cu: 'INR',         // Currency (required)
+    });
+
+    // Add amount if provided
+    if (amount && parseFloat(amount) > 0) {
+      params.append('am', amount);
+    }
+
+    // Create proper UPI URL
+    const upiUrl = `upi://pay?${params.toString()}`;
+
+    console.log('Opening UPI URL:', upiUrl);
+
+    // Try to open UPI app
     window.location.href = upiUrl;
   };
 
