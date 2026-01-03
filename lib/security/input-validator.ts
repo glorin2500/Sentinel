@@ -31,9 +31,9 @@ export function validateUpiId(upiId: string): boolean {
     }
 
     // Format validation: username@bank
-    // Username: alphanumeric, dots, underscores, hyphens (3-64 chars)
+    // Username: alphanumeric, dots, underscores, hyphens (1-64 chars)
     // Bank: alphanumeric, dots (2-64 chars)
-    const upiRegex = /^[a-zA-Z0-9._-]{3,64}@[a-zA-Z0-9.]{2,64}$/;
+    const upiRegex = /^[a-zA-Z0-9._-]{1,64}@[a-zA-Z0-9.]{2,64}$/;
 
     if (!upiRegex.test(upiId)) {
         return false;
@@ -45,9 +45,7 @@ export function validateUpiId(upiId: string): boolean {
         /javascript:/i,
         /on\w+=/i,
         /\.\./,  // Path traversal
-        /[;'"]/, // SQL injection
-        /--/,    // SQL comment
-        /\/\*/,  // SQL comment
+        /[;'"]/,  // SQL injection (quotes and semicolon)
         /\bor\b.*\b=\b/i,  // SQL injection
         /\bunion\b/i,      // SQL injection
         /\bdrop\b/i,       // SQL injection
