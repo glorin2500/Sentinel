@@ -13,7 +13,7 @@ import { ThreatActivity } from "@/components/home/threat-activity";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AlertTriangle, BookOpen, Receipt, Trophy, ChevronRight, Shield, TrendingUp, Activity } from "lucide-react";
+import { AlertTriangle, BookOpen, Receipt, Trophy, ChevronRight, Shield, TrendingUp, Activity, Scan } from "lucide-react";
 import Link from "next/link";
 import { hapticClick, hapticLight } from "@/lib/haptic";
 import { ProtectedRoute } from "@/components/auth/protected-route";
@@ -74,6 +74,49 @@ function HomePage() {
         >
             {/* Hero Section */}
             <HeroSection />
+
+            {/* Quick Actions */}
+            <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.08 }}
+                className="grid grid-cols-2 gap-4"
+            >
+                <Link href="/scan" onClick={() => hapticClick()}>
+                    <motion.div
+                        className="p-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 hover:border-primary/50 transition-all cursor-pointer group"
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center group-hover:bg-primary/30 transition-colors">
+                                <Scan size={24} className="text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black text-white">SCAN NOW</h3>
+                                <p className="text-xs text-zinc-500">Check UPI safety</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </Link>
+                <Link href="/history" onClick={() => hapticClick()}>
+                    <motion.div
+                        className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all cursor-pointer group"
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/15 transition-colors">
+                                <Receipt size={24} className="text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black text-white">HISTORY</h3>
+                                <p className="text-xs text-zinc-500">View past scans</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </Link>
+            </motion.section>
 
             {/* Stats Overview */}
             <motion.section
