@@ -9,6 +9,8 @@ import { GamificationWidget } from "@/components/gamification/gamification-widge
 import { HeroSection } from "@/components/home/hero-section";
 import { StatsOverview } from "@/components/home/stats-overview";
 import { NearbyThreatsCard } from "@/components/home/nearby-threats-card";
+import { RecentActivity } from "@/components/home/recent-activity";
+import { ThreatActivity } from "@/components/home/threat-activity";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -83,11 +85,22 @@ function HomePage() {
                 <StatsOverview />
             </motion.section>
 
-            {/* Nearby Threats Map Preview */}
+            {/* Threat Activity & Recent Activity */}
             <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.12 }}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-4"
+            >
+                <ThreatActivity />
+                <RecentActivity />
+            </motion.section>
+
+            {/* Nearby Threats Map Preview */}
+            <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
             >
                 <NearbyThreatsCard />
             </motion.section>
