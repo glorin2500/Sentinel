@@ -18,15 +18,15 @@ export function ActivityCalendar() {
             }
 
             try {
-                // Get scans from last 90 days
-                const ninetyDaysAgo = new Date();
-                ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+                // Get scans from last 12 weeks (84 days)
+                const weeksAgo = new Date();
+                weeksAgo.setDate(weeksAgo.getDate() - 84);
 
                 const { data: transactions } = await supabase
                     .from('transactions')
                     .select('created_at')
                     .eq('user_id', user.id)
-                    .gte('created_at', ninetyDaysAgo.toISOString());
+                    .gte('created_at', weeksAgo.toISOString());
 
                 if (transactions) {
                     // Group by date
@@ -50,13 +50,42 @@ export function ActivityCalendar() {
         return () => clearInterval(interval);
     }, [user]);
 
-    // Generate last 90 days
-    const days = [];
-    for (let i = 89; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        days.push(d);
+    // Generate last 12 weeks (7 days x 12 weeks = 84 days)
+    const weeks: Date[][] = [];
+    const today = new Date();
+
+    // Start from 12 weeks ago
+    const startDate = new Date(today);
+    startDate.setDate(startDate.getDate() - 83); // 84 days including today
+
+    // Find the Sunday before start date
+    const firstSunday = new Date(startDate);
+    firstSunday.setDate(firstSunday.getDate() - firstSunday.getDay());
+
+    // Generate 12 weeks
+    for (let week = 0; week < 12; week++) {
+        const weekDays: Date[] = [];
+        for (let day = 0; day < 7; day++) {
+            const date = new Date(firstSunday);
+            date.setDate(date.getDate() + (week * 7) + day);
+            weekDays.push(date);
+        }
+        weeks.push(weekDays);
     }
+
+    // Get month labels
+    const months: { label: string; col: number }[] = [];
+    let lastMonth = -1;
+    weeks.forEach((week, weekIndex) => {
+        const month = week[0].getMonth();
+        if (month !== lastMonth) {
+            months.push({
+                label: week[0].toLocaleDateString('en-US', { month: 'short' }),
+                col: weekIndex
+            });
+            lastMonth = month;
+        }
+    });
 
     const maxCount = Math.max(...Object.values(data), 1);
 
@@ -97,31 +126,63 @@ export function ActivityCalendar() {
                 </div>
             </div>
 
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-13 gap-1">
-                {days.map((day, index) => {
-                    const dateStr = day.toISOString().split('T')[0];
-                    const count = data[dateStr] || 0;
+            {/* Month labels */}
+            <div className="relative mb-2 h-4">
+                <div className="flex gap-1">
+                    {months.map((month, index) => (
+                        <div
+                            key={index}
+                            className="text-[10px] text-zinc-500 font-bold absolute"
+                            style={{ left: `${month.col * (100 / 12)}%` }}
+                        >
+                            {month.label}
+                        </div>
+                    ))}
+                </div>
+            </div>
 
-                    return (
-                        <motion.div
-                            key={dateStr}
-                            initial={{ opacity: 0, scale: 0.8 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            transition={{ delay: index * 0.005 }}
-                            className={`w-3 h-3 rounded-sm ${getIntensity(count)} hover:ring-2 hover:ring-primary/50 cursor-pointer transition-all`}
-                            title={`${day.toLocaleDateString()}: ${count} scans`}
-                        />
-                    );
-                })}
+            {/* Calendar Grid - Weeks as columns, Days as rows */}
+            <div className="flex gap-1">
+                {/* Day labels */}
+                <div className="flex flex-col gap-1 mr-2">
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+                        <div key={day} className="h-3 flex items-center">
+                            {index % 2 === 1 && (
+                                <span className="text-[9px] text-zinc-600 font-bold">{day}</span>
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Weeks */}
+                {weeks.map((week, weekIndex) => (
+                    <div key={weekIndex} className="flex flex-col gap-1">
+                        {week.map((day, dayIndex) => {
+                            const dateStr = day.toISOString().split('T')[0];
+                            const count = data[dateStr] || 0;
+                            const isFuture = day > today;
+
+                            return (
+                                <motion.div
+                                    key={dateStr}
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: (weekIndex * 7 + dayIndex) * 0.003 }}
+                                    className={`w-3 h-3 rounded-sm ${isFuture ? 'bg-white/5 opacity-30' : getIntensity(count)} hover:ring-2 hover:ring-primary/50 cursor-pointer transition-all`}
+                                    title={`${day.toLocaleDateString()}: ${count} scans`}
+                                />
+                            );
+                        })}
+                    </div>
+                ))}
             </div>
 
             {/* Summary */}
             <div className="mt-6 pt-4 border-t border-white/10">
                 <div className="grid grid-cols-3 gap-4 text-center">
                     <div>
-                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Total Days</p>
-                        <p className="text-lg font-black text-white">90</p>
+                        <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Last 12 Weeks</p>
+                        <p className="text-lg font-black text-white">84 days</p>
                     </div>
                     <div>
                         <p className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-1">Active Days</p>
