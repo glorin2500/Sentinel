@@ -6,6 +6,8 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { RiskDistributionChart } from "@/components/analytics/risk-distribution-chart";
 import { ScanTrendChart } from "@/components/analytics/scan-trend-chart";
+import { ActivityCalendar } from "@/components/analytics/activity-calendar";
+import { HourlyActivityChart } from "@/components/analytics/hourly-activity-chart";
 import { CalendarHeatmap } from "@/components/analytics/calendar-heatmap";
 import { SpendingChart } from "@/components/analytics/spending-chart";
 import { SafetyTrend } from "@/components/analytics/safety-trend";
@@ -193,10 +195,10 @@ export default function AnalyticsPage() {
                         key="calendar"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
+                        className="space-y-6"
                     >
-                        <div className="p-8 rounded-2xl bg-white/5 border border-white/10 text-center">
-                            <p className="text-zinc-400 text-sm">Calendar heatmap coming soon</p>
-                        </div>
+                        <ActivityCalendar />
+                        <HourlyActivityChart />
                     </motion.div>
                 )}
 
