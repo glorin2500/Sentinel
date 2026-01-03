@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth-context";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { RiskDistributionChart } from "@/components/analytics/risk-distribution-chart";
+import { ScanTrendChart } from "@/components/analytics/scan-trend-chart";
 import { CalendarHeatmap } from "@/components/analytics/calendar-heatmap";
 import { SpendingChart } from "@/components/analytics/spending-chart";
 import { SafetyTrend } from "@/components/analytics/safety-trend";
@@ -179,11 +181,10 @@ export default function AnalyticsPage() {
                         key="overview"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="space-y-6"
+                        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
                     >
-                        <div className="p-8 rounded-2xl bg-white/5 border border-white/10 text-center">
-                            <p className="text-zinc-400 text-sm">Charts coming soon with real-time data</p>
-                        </div>
+                        <RiskDistributionChart />
+                        <ScanTrendChart />
                     </motion.div>
                 )}
 
