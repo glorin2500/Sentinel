@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import { TransactionService } from '@/lib/services/transaction-service';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Scan, Upload, CheckCircle, XCircle, AlertTriangle, Loader2, X, Share2, Flag, Camera, Zap, Info, Star } from 'lucide-react';
+import { Scan, Upload, Camera, CheckCircle, XCircle, AlertTriangle, Info, Share2, Loader2 } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client';
 import { Html5Qrcode } from 'html5-qrcode';
 import { validateUpiId, validateAmount, validateQrContent, sanitizeUpiId, sanitizeAmount } from '@/lib/security/input-validator';
@@ -30,6 +30,9 @@ function ScanPageContent() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [cameraError, setCameraError] = useState('');
+  const [shareLoading, setShareLoading] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [reportLoading, setReportLoading] = useState(false);
   const [scanStep, setScanStep] = useState<'idle' | 'scanning' | 'analyzing' | 'complete'>('idle');
 
   useEffect(() => {
@@ -259,8 +262,9 @@ function ScanPageContent() {
   };
 
   const handleShare = async () => {
-    if (!result) return;
+    if (!result || shareLoading) return;
 
+    setShareLoading(true);
     const shareData = {
       title: 'Sentinel Scan Result',
       text: `UPI ID: ${result.upiId}\nRisk Level: ${result.riskLevel}\nSafety Score: ${result.score}%`,
@@ -277,12 +281,15 @@ function ScanPageContent() {
       }
     } catch (error) {
       console.error('Share failed:', error);
+    } finally {
+      setShareLoading(false);
     }
   };
 
   const handleFavorite = async () => {
-    if (!result || !user) return;
+    if (!result || !user || favoriteLoading) return;
 
+    setFavoriteLoading(true);
     try {
       // Check if already favorited
       const { data: existing } = await supabase
@@ -314,11 +321,13 @@ function ScanPageContent() {
     } catch (error) {
       console.error('Favorite failed:', error);
       alert('Failed to update favorites');
+    } finally {
+      setFavoriteLoading(false);
     }
   };
 
   const handleReportFraud = async () => {
-    if (!result || !user) return;
+    if (!result || !user || reportLoading) return;
 
     const confirmed = confirm(
       `Report ${result.upiId} as fraudulent?\n\nThis will help protect other users.`
@@ -326,6 +335,7 @@ function ScanPageContent() {
 
     if (!confirmed) return;
 
+    setReportLoading(true);
     try {
       await supabase
         .from('fraud_reports')
@@ -343,6 +353,8 @@ function ScanPageContent() {
     } catch (error) {
       console.error('Report failed:', error);
       alert('Failed to submit report. Please try again.');
+    } finally {
+      setReportLoading(false);
     }
   };
 
@@ -760,20 +772,41 @@ function ScanPageContent() {
                       <div className="grid grid-cols-2 gap-3">
                         <motion.button
                           onClick={handleShare}
-                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          disabled={shareLoading}
+                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                          whileHover={{ scale: shareLoading ? 1 : 1.05 }}
+                          whileTap={{ scale: shareLoading ? 1 : 0.95 }}
                         >
-                          <Share2 size={16} />
-                          SHARE
+                          {shareLoading ? (
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            >
+                              <Loader2 size={16} />
+                            </motion.div>
+                          ) : (
+                            <Share2 size={16} />
+                          )}
+                          {shareLoading ? 'SHARING...' : 'SHARE'}
                         </motion.button>
                         <motion.button
                           onClick={handleFavorite}
-                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-yellow-500 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
+                          disabled={favoriteLoading}
+                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-yellow-500 font-bold rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                          whileHover={{ scale: favoriteLoading ? 1 : 1.05 }}
+                          whileTap={{ scale: favoriteLoading ? 1 : 0.95 }}
                         >
-                          ★
+                          {favoriteLoading ? (
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            >
+                              <Loader2 size={16} />
+                            </motion.div>
+                          ) : (
+                            <Star size={16} />
+                          )}
+                          {favoriteLoading ? 'ADDING...' : 'FAVORITE'}
                         </motion.button>
                       </div>
 
@@ -787,11 +820,21 @@ function ScanPageContent() {
                         </motion.button>
                         <motion.button
                           onClick={handleReportFraud}
-                          className="text-sm text-red-500 hover:text-red-400 transition-colors flex items-center gap-1"
-                          whileHover={{ scale: 1.05 }}
+                          disabled={reportLoading}
+                          className="text-sm text-red-500 hover:text-red-400 transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                          whileHover={{ scale: reportLoading ? 1 : 1.05 }}
                         >
-                          <Flag size={14} />
-                          REPORT FRAUD
+                          {reportLoading ? (
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            >
+                              <Loader2 size={14} />
+                            </motion.div>
+                          ) : (
+                            <AlertTriangle size={14} />
+                          )}
+                          {reportLoading ? 'REPORTING...' : 'REPORT FRAUD'}
                         </motion.button>
                       </div>
                     </motion.div>
