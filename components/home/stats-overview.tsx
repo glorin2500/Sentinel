@@ -5,7 +5,7 @@ import { Shield, TrendingUp, Zap, Target } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { hapticClick } from "@/lib/haptic";
 import { useAuth } from "@/lib/auth-context";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { useState, useEffect } from "react";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -28,8 +28,6 @@ export function StatsOverview() {
             }
 
             try {
-                const supabase = createClient();
-
                 // Get total scans
                 const { count: totalScans } = await supabase
                     .from('transactions')

@@ -6,8 +6,7 @@ import { TransactionService } from '@/lib/services/transaction-service';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Scan, Upload, CheckCircle, XCircle, AlertTriangle, Loader2, X, Share2, Flag, Camera, Zap, Info, Star } from 'lucide-react';
-import { isSupabaseConfigured } from '@/lib/supabase/client';
-import { createClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase/client';
 import { Html5Qrcode } from 'html5-qrcode';
 import { validateUpiId, validateAmount, validateQrContent, sanitizeUpiId, sanitizeAmount } from '@/lib/security/input-validator';
 import { logger } from '@/lib/security/logger';
@@ -98,7 +97,6 @@ function ScanPageContent() {
       // Security: Save to database if Supabase is configured (OWASP A04:2021 – Insecure Design)
       if (isSupabaseConfigured() && user) {
         try {
-          const supabase = createClient();
           const { error } = await supabase
             .from('transactions')
             .insert({
