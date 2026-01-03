@@ -4,7 +4,6 @@ import { RiskChart } from "@/components/ui/risk-chart";
 import { SafetyScore } from "@/components/ui/safety-score";
 import { AnalyticsWidget } from "@/components/ui/analytics-widget";
 import { UPIStatusCard } from "@/components/ui/upi-status-card";
-import { RecentScansWidget } from "@/components/ui/recent-scans-widget";
 import { GamificationWidget } from "@/components/gamification/gamification-widget";
 import { HeroSection } from "@/components/home/hero-section";
 import { StatsOverview } from "@/components/home/stats-overview";
@@ -183,19 +182,6 @@ function HomePage() {
                     <h2 className="text-xl font-black text-white">Your Progress</h2>
                 </div>
                 <GamificationWidget />
-            </motion.section>
-
-            {/* Recent Activity Section */}
-            <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
-            >
-                <div className="flex items-center gap-2 mb-4">
-                    <Activity size={20} className="text-primary" />
-                    <h2 className="text-xl font-black text-white">Recent Activity</h2>
-                </div>
-                <RecentScansWidget />
             </motion.section>
         </motion.div>
     );
