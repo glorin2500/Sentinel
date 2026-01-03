@@ -174,8 +174,9 @@ export default function AnalyticsPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="space-y-6"
                     >
-                        <SafetyTrend scans={scans} currentScore={safetyScore} />
-                        <SpendingChart scans={scans} />
+                        <div className="p-8 rounded-2xl bg-white/5 border border-white/10 text-center">
+                            <p className="text-zinc-400 text-sm">Charts coming soon with real-time data</p>
+                        </div>
                     </motion.div>
                 )}
 
@@ -185,12 +186,9 @@ export default function AnalyticsPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                     >
-                        <CalendarHeatmap
-                            scans={scans}
-                            onDayClick={(date, dayScans) => {
-                                console.log('Clicked date:', date, 'Scans:', dayScans);
-                            }}
-                        />
+                        <div className="p-8 rounded-2xl bg-white/5 border border-white/10 text-center">
+                            <p className="text-zinc-400 text-sm">Calendar heatmap coming soon</p>
+                        </div>
                     </motion.div>
                 )}
 
