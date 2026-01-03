@@ -17,6 +17,7 @@ export default function AnalyticsPage() {
         safeScans: 0,
         riskyScans: 0,
         scansWithAmount: 0,
+        safetyScore: 100,
         loading: true,
     });
 
@@ -55,11 +56,17 @@ export default function AnalyticsPage() {
                     .eq('user_id', user.id)
                     .not('amount', 'is', null);
 
+                // Calculate safety score
+                const safetyScore = totalScans && totalScans > 0
+                    ? Math.round(((totalScans - (riskyScans || 0)) / totalScans) * 100)
+                    : 100;
+
                 setStats({
                     totalScans: totalScans || 0,
                     safeScans: safeScans || 0,
                     riskyScans: riskyScans || 0,
                     scansWithAmount: scansWithAmount || 0,
+                    safetyScore,
                     loading: false,
                 });
             } catch (error) {
@@ -207,7 +214,7 @@ export default function AnalyticsPage() {
                             </p>
 
                             <div className="space-y-4">
-                                {safetyScore >= 90 && (
+                                {stats.safetyScore >= 90 && (
                                     <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
                                         <div className="flex items-start gap-3">
                                             <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
@@ -218,14 +225,14 @@ export default function AnalyticsPage() {
                                                     Excellent Safety Record! 🎉
                                                 </h4>
                                                 <p className="text-xs text-zinc-400 leading-relaxed">
-                                                    Your safety score of {safetyScore.toFixed(1)}% is outstanding!
+                                                    Your safety score of {stats.safetyScore}% is outstanding!
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
                                 )}
 
-                                {safetyScore < 70 && riskyScans > 0 && (
+                                {stats.safetyScore < 70 && stats.riskyScans > 0 && (
                                     <div className="p-4 rounded-2xl bg-destructive/5 border border-destructive/20">
                                         <div className="flex items-start gap-3">
                                             <div className="h-8 w-8 rounded-lg bg-destructive/20 flex items-center justify-center flex-shrink-0">
@@ -236,21 +243,17 @@ export default function AnalyticsPage() {
                                                     Security Alert ⚠️
                                                 </h4>
                                                 <p className="text-xs text-zinc-400 leading-relaxed">
-                                                    You've encountered {riskyScans} risky scan{riskyScans > 1 ? 's' : ''}.
+                                                    You've encountered {stats.riskyScans} risky scan{stats.riskyScans > 1 ? 's' : ''}.
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
                                 )}
 
-                                {totalScans < 5 && (
-                                    <div className="p-8 text-center">
-                                        <TrendingUp size={48} className="text-zinc-700 mx-auto mb-4" />
-                                        <p className="text-sm font-bold text-zinc-500 mb-2">
-                                            Not enough data for insights yet
-                                        </p>
-                                        <p className="text-xs text-zinc-600">
-                                            Complete more scans to unlock personalized insights
+                                {stats.totalScans === 0 && (
+                                    <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                        <p className="text-xs text-zinc-400 text-center">
+                                            Start scanning to see personalized insights
                                         </p>
                                     </div>
                                 )}
