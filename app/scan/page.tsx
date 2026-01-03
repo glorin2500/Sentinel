@@ -36,11 +36,18 @@ function ScanPageContent() {
   const [scanStep, setScanStep] = useState<'idle' | 'scanning' | 'analyzing' | 'complete'>('idle');
 
   useEffect(() => {
+    // Log page load
+    console.log('Scan page loaded successfully');
+
     return () => {
       if (scannerRef.current) {
         try {
-          scannerRef.current.stop().catch(() => { });
-        } catch (e) { }
+          scannerRef.current.stop().catch((err) => {
+            console.log('Scanner cleanup error (safe to ignore):', err);
+          });
+        } catch (e) {
+          console.log('Scanner cleanup exception (safe to ignore):', e);
+        }
       }
     };
   }, []);
