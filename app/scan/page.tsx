@@ -5,11 +5,12 @@ import { useAuth } from '@/lib/auth-context';
 import { TransactionService } from '@/lib/services/transaction-service';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scan, Upload, Camera, CheckCircle, XCircle, AlertTriangle, Info, Share2, Loader2, Shield, Zap, X, Star } from 'lucide-react';
+import { Scan, Upload, Camera, CheckCircle, XCircle, AlertTriangle, Info, Share2, Loader2, Shield, Zap, X, Star, MapPin } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client';
 import { Html5Qrcode } from 'html5-qrcode';
 import { validateUpiId, validateAmount, validateQrContent, sanitizeUpiId, sanitizeAmount } from '@/lib/security/input-validator';
 import { logger } from '@/lib/security/logger';
+import { ReportThreatModal } from '@/components/community/report-threat-modal';
 
 export default function ScanPage() {
   return (
@@ -33,6 +34,7 @@ function ScanPageContent() {
   const [shareLoading, setShareLoading] = useState(false);
   const [favoriteLoading, setFavoriteLoading] = useState(false);
   const [reportLoading, setReportLoading] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
   const [scanStep, setScanStep] = useState<'idle' | 'scanning' | 'analyzing' | 'complete'>('idle');
 
   useEffect(() => {
@@ -846,6 +848,14 @@ function ScanPageContent() {
                           )}
                           {reportLoading ? 'REPORTING...' : 'REPORT FRAUD'}
                         </motion.button>
+                        <motion.button
+                          onClick={() => setShowReportModal(true)}
+                          className="text-sm text-orange-500 hover:text-orange-400 transition-colors flex items-center gap-1 min-h-[44px]"
+                          whileHover={{ scale: 1.05 }}
+                        >
+                          <MapPin size={14} />
+                          REPORT THREAT LOCATION
+                        </motion.button>
                       </div>
                     </motion.div>
                   </>
@@ -855,6 +865,15 @@ function ScanPageContent() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Report Threat Modal */}
+      <ReportThreatModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        upiId={result?.upiId}
+        riskLevel={result?.riskLevel}
+        riskScore={result?.score}
+      />
     </div>
   );
 }
