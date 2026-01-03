@@ -258,6 +258,94 @@ function ScanPageContent() {
     window.location.href = upiUrl;
   };
 
+  const handleShare = async () => {
+    if (!result) return;
+
+    const shareData = {
+      title: 'Sentinel Scan Result',
+      text: `UPI ID: ${result.upiId}\nRisk Level: ${result.riskLevel}\nSafety Score: ${result.score}%`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+        alert('Scan result copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Share failed:', error);
+    }
+  };
+
+  const handleFavorite = async () => {
+    if (!result || !user) return;
+
+    try {
+      // Check if already favorited
+      const { data: existing } = await supabase
+        .from('favorites')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('upi_id', result.upiId)
+        .single();
+
+      if (existing) {
+        // Remove from favorites
+        await supabase
+          .from('favorites')
+          .delete()
+          .eq('id', existing.id);
+        alert('Removed from favorites');
+      } else {
+        // Add to favorites
+        await supabase
+          .from('favorites')
+          .insert({
+            user_id: user.id,
+            upi_id: result.upiId,
+            risk_level: result.riskLevel,
+            risk_score: result.score,
+          });
+        alert('Added to favorites!');
+      }
+    } catch (error) {
+      console.error('Favorite failed:', error);
+      alert('Failed to update favorites');
+    }
+  };
+
+  const handleReportFraud = async () => {
+    if (!result || !user) return;
+
+    const confirmed = confirm(
+      `Report ${result.upiId} as fraudulent?\n\nThis will help protect other users.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await supabase
+        .from('fraud_reports')
+        .insert({
+          user_id: user.id,
+          upi_id: result.upiId,
+          risk_level: result.riskLevel,
+          risk_score: result.score,
+          amount: amount ? parseFloat(amount) : null,
+          report_reason: 'User reported as fraudulent',
+        });
+
+      alert('Thank you for reporting! This helps keep our community safe.');
+      setShowPopup(false);
+    } catch (error) {
+      console.error('Report failed:', error);
+      alert('Failed to submit report. Please try again.');
+    }
+  };
+
   const getRiskColor = (level: string) => {
     const colors = {
       safe: { text: 'text-green-500', bg: 'bg-green-500/10', border: 'border-green-500/30', icon: CheckCircle, label: 'SECURE' },
@@ -671,7 +759,8 @@ function ScanPageContent() {
 
                       <div className="grid grid-cols-2 gap-3">
                         <motion.button
-                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                          onClick={handleShare}
+                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
@@ -679,7 +768,8 @@ function ScanPageContent() {
                           SHARE
                         </motion.button>
                         <motion.button
-                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
+                          onClick={handleFavorite}
+                          className="py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-yellow-500 font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
                         >
@@ -696,6 +786,7 @@ function ScanPageContent() {
                           CLOSE
                         </motion.button>
                         <motion.button
+                          onClick={handleReportFraud}
                           className="text-sm text-red-500 hover:text-red-400 transition-colors flex items-center gap-1"
                           whileHover={{ scale: 1.05 }}
                         >
