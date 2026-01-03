@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import { TransactionService } from '@/lib/services/transaction-service';
 import { ProtectedRoute } from '@/components/auth/protected-route';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Scan, Upload, Camera, CheckCircle, XCircle, AlertTriangle, Info, Share2, Loader2, Shield } from 'lucide-react';
+import { Scan, Upload, Camera, CheckCircle, XCircle, AlertTriangle, Info, Share2, Loader2, Shield, Zap } from 'lucide-react';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase/client';
 import { Html5Qrcode } from 'html5-qrcode';
 import { validateUpiId, validateAmount, validateQrContent, sanitizeUpiId, sanitizeAmount } from '@/lib/security/input-validator';
