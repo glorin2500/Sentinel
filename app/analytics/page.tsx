@@ -1,22 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { useSentinelStore } from "@/lib/store";
+import { useAuth } from "@/lib/auth-context";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { CalendarHeatmap } from "@/components/analytics/calendar-heatmap";
 import { SpendingChart } from "@/components/analytics/spending-chart";
 import { SafetyTrend } from "@/components/analytics/safety-trend";
 import { BarChart3, Calendar, TrendingUp, FileText, Shield, Zap } from "lucide-react";
 
 export default function AnalyticsPage() {
-    const { scans, safetyScore } = useSentinelStore();
+    const { user } = useAuth();
     const [activeTab, setActiveTab] = useState<'overview' | 'calendar' | 'insights'>('overview');
+    const [stats, setStats] = useState({
+        totalScans: 0,
+        safeScans: 0,
+        riskyScans: 0,
+        scansWithAmount: 0,
+        loading: true,
+    });
 
-    // Calculate stats
-    const totalScans = scans.length;
-    const safeScans = scans.filter(s => s.status === 'safe').length;
-    const riskyScans = scans.filter(s => s.status === 'risky').length;
-    const scansWithAmount = scans.filter(s => s.amount && s.amount > 0).length;
+    useEffect(() => {
+        const fetchStats = async () => {
+            if (!user || !isSupabaseConfigured()) {
+                setStats(prev => ({ ...prev, loading: false }));
+                return;
+            }
+
+            try {
+                // Get total scans
+                const { count: totalScans } = await supabase
+                    .from('transactions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id);
+
+                // Get safe scans
+                const { count: safeScans } = await supabase
+                    .from('transactions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .eq('risk_level', 'safe');
+
+                // Get risky scans (warning + danger)
+                const { count: riskyScans } = await supabase
+                    .from('transactions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .in('risk_level', ['warning', 'danger']);
+
+                // Get scans with amount
+                const { count: scansWithAmount } = await supabase
+                    .from('transactions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .not('amount', 'is', null);
+
+                setStats({
+                    totalScans: totalScans || 0,
+                    safeScans: safeScans || 0,
+                    riskyScans: riskyScans || 0,
+                    scansWithAmount: scansWithAmount || 0,
+                    loading: false,
+                });
+            } catch (error) {
+                console.error('Failed to fetch analytics stats:', error);
+                setStats(prev => ({ ...prev, loading: false }));
+            }
+        };
+
+        fetchStats();
+
+        // Refresh every 30 seconds
+        const interval = setInterval(fetchStats, 30000);
+        return () => clearInterval(interval);
+    }, [user]);
 
     const tabs = [
         { id: 'overview' as const, label: 'Overview', icon: BarChart3 },
@@ -54,7 +111,7 @@ export default function AnalyticsPage() {
                             Total Scans
                         </span>
                     </div>
-                    <p className="text-2xl font-black text-white">{totalScans}</p>
+                    <p className="text-2xl font-black text-white">{stats.loading ? '...' : stats.totalScans}</p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-primary/5 border border-primary/20">
@@ -64,7 +121,7 @@ export default function AnalyticsPage() {
                             Safe Scans
                         </span>
                     </div>
-                    <p className="text-2xl font-black text-primary">{safeScans}</p>
+                    <p className="text-2xl font-black text-primary">{stats.loading ? '...' : stats.safeScans}</p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-destructive/5 border border-destructive/20">
@@ -74,7 +131,7 @@ export default function AnalyticsPage() {
                             Risky Scans
                         </span>
                     </div>
-                    <p className="text-2xl font-black text-destructive">{riskyScans}</p>
+                    <p className="text-2xl font-black text-destructive">{stats.loading ? '...' : stats.riskyScans}</p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
@@ -84,7 +141,7 @@ export default function AnalyticsPage() {
                             With Amount
                         </span>
                     </div>
-                    <p className="text-2xl font-black text-white">{scansWithAmount}</p>
+                    <p className="text-2xl font-black text-white">{stats.loading ? '...' : stats.scansWithAmount}</p>
                 </div>
             </div>
 
@@ -97,8 +154,8 @@ export default function AnalyticsPage() {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex-1 h-10 rounded-xl font-black uppercase text-[10px] tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === tab.id
-                                    ? 'bg-primary text-background shadow-[0_0_20px_rgba(124,255,178,0.3)]'
-                                    : 'text-zinc-500 hover:text-white hover:bg-white/5'
+                                ? 'bg-primary text-background shadow-[0_0_20px_rgba(124,255,178,0.3)]'
+                                : 'text-zinc-500 hover:text-white hover:bg-white/5'
                                 }`}
                         >
                             <Icon size={14} />
