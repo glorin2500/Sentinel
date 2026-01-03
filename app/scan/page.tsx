@@ -265,13 +265,13 @@ function ScanPageContent() {
     if (!result || shareLoading) return;
 
     setShareLoading(true);
-    const shareData = {
-      title: 'Sentinel Scan Result',
-      text: `UPI ID: ${result.upiId}\nRisk Level: ${result.riskLevel}\nSafety Score: ${result.score}%`,
-      url: window.location.href,
-    };
-
     try {
+      const shareData = {
+        title: 'Sentinel Scan Result',
+        text: `UPI ID: ${result.upiId}\nRisk Level: ${result.riskLevel}\nSafety Score: ${result.score}%`,
+        url: window.location.href,
+      };
+
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
@@ -279,8 +279,11 @@ function ScanPageContent() {
         await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
         alert('Scan result copied to clipboard!');
       }
-    } catch (error) {
-      console.error('Share failed:', error);
+    } catch (error: any) {
+      // Don't show error if user cancelled share dialog
+      if (error.name !== 'AbortError') {
+        console.error('Share failed:', error);
+      }
     } finally {
       setShareLoading(false);
     }
