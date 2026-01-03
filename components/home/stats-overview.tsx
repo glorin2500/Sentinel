@@ -1,32 +1,90 @@
+"use client";
+
 import { motion } from "framer-motion";
-import { useSentinelStore } from "@/lib/store";
 import { Shield, TrendingUp, Zap, Target } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { hapticClick } from "@/lib/haptic";
+import { useAuth } from "@/lib/auth-context";
+import { createClient } from "@/lib/supabase/client";
+import { useState, useEffect } from "react";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function StatsOverview() {
-    const { scans, safetyScore, gamification } = useSentinelStore();
+    const { user } = useAuth();
     const router = useRouter();
+    const [stats, setStats] = useState({
+        totalScans: 0,
+        threatsBlocked: 0,
+        safetyScore: 100,
+        thisMonthScans: 0,
+        loading: true,
+    });
 
-    // Calculate stats
-    const thisMonthScans = scans.filter(scan => {
-        const scanDate = new Date(scan.timestamp);
-        const now = new Date();
-        return scanDate.getMonth() === now.getMonth() &&
-            scanDate.getFullYear() === now.getFullYear();
-    }).length;
+    useEffect(() => {
+        const fetchStats = async () => {
+            if (!user || !isSupabaseConfigured()) {
+                setStats(prev => ({ ...prev, loading: false }));
+                return;
+            }
 
-    const threatsBlocked = scans.filter(s => s.status === 'risky').length;
-    const safeScanPercentage = scans.length > 0
-        ? Math.round((scans.filter(s => s.status === 'safe').length / scans.length) * 100)
-        : 0;
+            try {
+                const supabase = createClient();
 
-    const stats = [
+                // Get total scans
+                const { count: totalScans } = await supabase
+                    .from('transactions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id);
+
+                // Get threats blocked (warning + danger)
+                const { count: threatsBlocked } = await supabase
+                    .from('transactions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .in('risk_level', ['warning', 'danger']);
+
+                // Get this month's scans
+                const startOfMonth = new Date();
+                startOfMonth.setDate(1);
+                startOfMonth.setHours(0, 0, 0, 0);
+
+                const { count: thisMonthScans } = await supabase
+                    .from('transactions')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('user_id', user.id)
+                    .gte('created_at', startOfMonth.toISOString());
+
+                // Calculate safety score
+                const safetyScore = totalScans && totalScans > 0
+                    ? Math.round(((totalScans - (threatsBlocked || 0)) / totalScans) * 100)
+                    : 100;
+
+                setStats({
+                    totalScans: totalScans || 0,
+                    threatsBlocked: threatsBlocked || 0,
+                    safetyScore,
+                    thisMonthScans: thisMonthScans || 0,
+                    loading: false,
+                });
+            } catch (error) {
+                console.error('Failed to fetch stats:', error);
+                setStats(prev => ({ ...prev, loading: false }));
+            }
+        };
+
+        fetchStats();
+
+        // Refresh stats every 30 seconds
+        const interval = setInterval(fetchStats, 30000);
+        return () => clearInterval(interval);
+    }, [user]);
+
+    const statsData = [
         {
             icon: Target,
             label: "Scans This Month",
-            value: thisMonthScans,
-            trend: "+12%",
+            value: stats.loading ? "..." : stats.thisMonthScans,
+            trend: stats.totalScans > 0 ? `${stats.totalScans} total` : "Get started",
             color: "text-blue-500",
             bg: "bg-blue-500/10",
             glow: "shadow-[0_0_20px_rgba(59,130,246,0.15)]",
@@ -35,8 +93,8 @@ export function StatsOverview() {
         {
             icon: Shield,
             label: "Safety Score",
-            value: `${safetyScore}%`,
-            trend: safetyScore >= 80 ? "Excellent" : "Good",
+            value: stats.loading ? "..." : `${stats.safetyScore}%`,
+            trend: stats.safetyScore >= 80 ? "Excellent" : stats.safetyScore >= 60 ? "Good" : "Fair",
             color: "text-primary",
             bg: "bg-primary/10",
             glow: "shadow-[0_0_20px_rgba(124,255,178,0.15)]",
@@ -45,7 +103,7 @@ export function StatsOverview() {
         {
             icon: Zap,
             label: "Threats Blocked",
-            value: threatsBlocked,
+            value: stats.loading ? "..." : stats.threatsBlocked,
             trend: "All time",
             color: "text-destructive",
             bg: "bg-destructive/10",
@@ -54,19 +112,19 @@ export function StatsOverview() {
         },
         {
             icon: TrendingUp,
-            label: "Current Streak",
-            value: `${gamification.currentStreak}d`,
-            trend: `Best: ${gamification.longestStreak}d`,
+            label: "Total Scans",
+            value: stats.loading ? "..." : stats.totalScans,
+            trend: stats.totalScans > 0 ? "Keep it up!" : "Start scanning",
             color: "text-orange-500",
             bg: "bg-orange-500/10",
             glow: "shadow-[0_0_20px_rgba(249,115,22,0.15)]",
-            action: () => router.push('/education')
+            action: () => router.push('/scan')
         }
     ];
 
     return (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {stats.map((stat, index) => (
+            {statsData.map((stat, index) => (
                 <motion.div
                     key={stat.label}
                     initial={{ opacity: 0, y: 20 }}
