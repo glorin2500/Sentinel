@@ -10,6 +10,12 @@ export function BiometricGate() {
     const [isScanning, setIsScanning] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
     const [accessGranted, setAccessGranted] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
+
+    // Only render particles on client side to avoid hydration mismatch
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     const handleStartScan = () => {
         if (!isScanning && !accessGranted) {
@@ -54,28 +60,30 @@ export function BiometricGate() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[9999] bg-gradient-to-br from-black via-zinc-900 to-black flex flex-col items-center justify-center p-6 overflow-hidden"
         >
-            {/* Animated Background Particles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                {[...Array(20)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className="absolute w-1 h-1 bg-primary/30 rounded-full"
-                        initial={{
-                            x: typeof window !== 'undefined' ? Math.random() * window.innerWidth : Math.random() * 1920,
-                            y: typeof window !== 'undefined' ? Math.random() * window.innerHeight : Math.random() * 1080,
-                        }}
-                        animate={{
-                            y: [null, typeof window !== 'undefined' ? Math.random() * window.innerHeight : Math.random() * 1080],
-                            opacity: [0, 1, 0],
-                        }}
-                        transition={{
-                            duration: Math.random() * 3 + 2,
-                            repeat: Infinity,
-                            delay: Math.random() * 2,
-                        }}
-                    />
-                ))}
-            </div>
+            {/* Animated Background Particles - Only render on client */}
+            {isMounted && (
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    {[...Array(20)].map((_, i) => (
+                        <motion.div
+                            key={i}
+                            className="absolute w-1 h-1 bg-primary/30 rounded-full"
+                            initial={{
+                                x: Math.random() * window.innerWidth,
+                                y: Math.random() * window.innerHeight,
+                            }}
+                            animate={{
+                                y: [null, Math.random() * window.innerHeight],
+                                opacity: [0, 1, 0],
+                            }}
+                            transition={{
+                                duration: Math.random() * 3 + 2,
+                                repeat: Infinity,
+                                delay: Math.random() * 2,
+                            }}
+                        />
+                    ))}
+                </div>
+            )}
 
             {/* Main Content */}
             <div className="relative z-10 flex flex-col items-center gap-8 max-w-sm w-full">
