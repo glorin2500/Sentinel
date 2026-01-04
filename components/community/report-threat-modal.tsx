@@ -1,3 +1,4 @@
+// @ts-nocheck - Supabase types not available until DB migrations run
 "use client";
 
 import { useState } from 'react';
