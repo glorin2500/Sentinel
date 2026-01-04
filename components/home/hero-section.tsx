@@ -55,33 +55,36 @@ export function HeroSection() {
                     </p>
                 </motion.div>
 
-                {/* Quick Scan Button */}
-                <motion.button
-                    onClick={() => router.push('/scan')}
-                    className="relative group px-8 py-4 bg-primary text-black font-black rounded-xl hover:opacity-90 transition-all flex items-center gap-3 overflow-hidden"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                {/* Quick Stats Preview */}
+                <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
+                    className="grid grid-cols-3 gap-4 mb-6"
                 >
-                    {/* Shimmer effect */}
-                    <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                        animate={{ x: ['-100%', '100%'] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                    />
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                        <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Today</p>
+                        <p className="text-2xl font-black text-white">0</p>
+                        <p className="text-xs text-zinc-400">Scans</p>
+                    </div>
+                    <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
+                        <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Blocked</p>
+                        <p className="text-2xl font-black text-primary">0</p>
+                        <p className="text-xs text-zinc-400">Threats</p>
+                    </div>
+                    <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                        <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Safety</p>
+                        <p className="text-2xl font-black text-white">100%</p>
+                        <p className="text-xs text-zinc-400">Score</p>
+                    </div>
+                </motion.div>
 
-                    <Zap size={20} className="relative z-10" />
-                    <span className="relative z-10">Scan Now</span>
-                </motion.button>
-
-                {/* Stats */}
+                {/* Status Indicators */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
-                    className="mt-6 flex items-center gap-6"
+                    className="flex items-center gap-6"
                 >
                     <div className="flex items-center gap-2">
                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
