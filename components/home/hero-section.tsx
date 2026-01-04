@@ -1,13 +1,21 @@
+```javascript
 "use client";
 
 import { motion } from "framer-motion";
 import { Shield, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase/client";
 
 export function HeroSection() {
     const router = useRouter();
+    const { user } = useAuth();
     const [greeting, setGreeting] = useState("Good Evening");
+    const [todayScans, setTodayScans] = useState(0);
+    const [threatsBlocked, setThreatsBlocked] = useState(0);
+    const [safetyScore, setSafetyScore] = useState(100);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const hour = new Date().getHours();
@@ -19,6 +27,56 @@ export function HeroSection() {
             setGreeting("Good Evening");
         }
     }, []);
+
+    // Fetch today's stats
+    useEffect(() => {
+        const fetchStats = async () => {
+            if (!user || !isSupabaseConfigured()) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                // Get start of today
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const { data: transactions, error } = await supabase
+                    .from('transactions')
+                    .select('risk_level, risk_score')
+                    .eq('user_id', user.id)
+                    .gte('created_at', today.toISOString());
+
+                if (!error && transactions) {
+                    setTodayScans(transactions.length);
+                    
+                    // Count threats (warning + danger)
+                    const threats = transactions.filter(
+                        t => t.risk_level === 'warning' || t.risk_level === 'danger'
+                    ).length;
+                    setThreatsBlocked(threats);
+
+                    // Calculate safety score (100 - average risk score)
+                    if (transactions.length > 0) {
+                        const avgRisk = transactions.reduce((sum, t) => sum + (t.risk_score || 0), 0) / transactions.length;
+                        setSafetyScore(Math.round(100 - avgRisk));
+                    } else {
+                        setSafetyScore(100);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch stats:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+        
+        // Refresh stats every 30 seconds
+        const interval = setInterval(fetchStats, 30000);
+        return () => clearInterval(interval);
+    }, [user]);
 
     return (
         <motion.section
@@ -55,7 +113,7 @@ export function HeroSection() {
                     </p>
                 </motion.div>
 
-                {/* Quick Stats Preview */}
+                {/* Quick Stats Preview - Now with REAL data */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -64,17 +122,23 @@ export function HeroSection() {
                 >
                     <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                         <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Today</p>
-                        <p className="text-2xl font-black text-white">0</p>
+                        <p className="text-2xl font-black text-white">
+                            {loading ? "..." : todayScans}
+                        </p>
                         <p className="text-xs text-zinc-400">Scans</p>
                     </div>
                     <div className="bg-primary/10 border border-primary/20 rounded-xl p-4">
                         <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Blocked</p>
-                        <p className="text-2xl font-black text-primary">0</p>
+                        <p className="text-2xl font-black text-primary">
+                            {loading ? "..." : threatsBlocked}
+                        </p>
                         <p className="text-xs text-zinc-400">Threats</p>
                     </div>
                     <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                         <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Safety</p>
-                        <p className="text-2xl font-black text-white">100%</p>
+                        <p className="text-2xl font-black text-white">
+                            {loading ? "..." : `${ safetyScore }% `}
+                        </p>
                         <p className="text-xs text-zinc-400">Score</p>
                     </div>
                 </motion.div>

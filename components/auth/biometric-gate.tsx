@@ -35,15 +35,16 @@ export function BiometricGate() {
         if (isScanning && !accessGranted) {
             interval = setInterval(() => {
                 setScanProgress((prev) => {
-                    if (prev >= 100) {
+                    const newProgress = Math.min(prev + 3, 100); // Cap at 100
+                    if (newProgress >= 100) {
                         setAccessGranted(true);
                         setIsScanning(false);
                         setTimeout(() => {
                             setAuthenticated(true);
                         }, 1200);
-                        return 100;
+                        return 100; // Always return exactly 100
                     }
-                    return prev + 3; // Faster scan
+                    return newProgress;
                 });
             }, 20);
         } else {
