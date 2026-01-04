@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Fingerprint, Lock, Unlock, ShieldCheck, Zap } from "lucide-react";
+import { Fingerprint, ShieldCheck, Zap, Sparkles } from "lucide-react";
 import { useSentinelStore } from "@/lib/store";
 
 export function BiometricGate() {
@@ -10,15 +10,10 @@ export function BiometricGate() {
     const [isScanning, setIsScanning] = useState(false);
     const [scanProgress, setScanProgress] = useState(0);
     const [accessGranted, setAccessGranted] = useState(false);
-    const [showHint, setShowHint] = useState(false);
-
-    // Reset auth on mount (optional - for demo purposes we might want to persist session)
-    // But for "app" feel, let's keep it checking state.
 
     const handleStartScan = () => {
         if (!isScanning && !accessGranted) {
             setIsScanning(true);
-            setShowHint(false);
         }
     };
 
@@ -39,10 +34,10 @@ export function BiometricGate() {
                         setIsScanning(false);
                         setTimeout(() => {
                             setAuthenticated(true);
-                        }, 1500); // Wait for success animation
+                        }, 1200);
                         return 100;
                     }
-                    return prev + 2; // Speed of scan
+                    return prev + 3; // Faster scan
                 });
             }, 20);
         } else {
@@ -51,52 +46,72 @@ export function BiometricGate() {
         return () => clearInterval(interval);
     }, [isScanning, accessGranted, setAuthenticated]);
 
-    // Hint timer
-    useEffect(() => {
-        const timer = setTimeout(() => setShowHint(true), 2000);
-        return () => clearTimeout(timer);
-    }, []);
-
     if (isAuthenticated) return null;
 
     return (
         <motion.div
             initial={{ opacity: 1 }}
-            exit={{ opacity: 0, pointerEvents: "none" }}
-            className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center p-6 overflow-hidden"
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[9999] bg-gradient-to-br from-black via-zinc-900 to-black flex flex-col items-center justify-center p-6 overflow-hidden"
         >
-            {/* Background Grid */}
-            <div className="absolute inset-0 opacity-20 pointer-events-none">
-                <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,100,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,100,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
+            {/* Animated Background Particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                {[...Array(20)].map((_, i) => (
+                    <motion.div
+                        key={i}
+                        className="absolute w-1 h-1 bg-primary/30 rounded-full"
+                        initial={{
+                            x: Math.random() * window.innerWidth,
+                            y: Math.random() * window.innerHeight,
+                        }}
+                        animate={{
+                            y: [null, Math.random() * window.innerHeight],
+                            opacity: [0, 1, 0],
+                        }}
+                        transition={{
+                            duration: Math.random() * 3 + 2,
+                            repeat: Infinity,
+                            delay: Math.random() * 2,
+                        }}
+                    />
+                ))}
             </div>
 
-            {/* Central Scanner */}
-            <div className="relative z-10 flex flex-col items-center gap-12 max-w-sm w-full">
+            {/* Main Content */}
+            <div className="relative z-10 flex flex-col items-center gap-8 max-w-sm w-full">
 
-                {/* Header Text */}
-                <div className="text-center space-y-2">
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex items-center justify-center gap-2 mb-2"
-                    >
-                        <Lock size={14} className="text-zinc-500" />
-                        <span className="text-[10px] font-black tracking-[0.3em] uppercase text-zinc-500">
-                            System Locked
-                        </span>
-                    </motion.div>
-                    <motion.h1
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.2 }}
-                        className="text-3xl font-black text-white tracking-widest uppercase"
-                    >
-                        Sentinel
-                    </motion.h1>
-                </div>
-
-                {/* Fingerprint Sensor */}
+                {/* Logo & Title */}
                 <motion.div
+                    initial={{ opacity: 0, y: -30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="text-center space-y-3"
+                >
+                    <motion.div
+                        className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 mb-2"
+                        animate={{
+                            boxShadow: [
+                                "0 0 20px rgba(124,255,178,0.2)",
+                                "0 0 40px rgba(124,255,178,0.4)",
+                                "0 0 20px rgba(124,255,178,0.2)",
+                            ],
+                        }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                    >
+                        <ShieldCheck size={32} className="text-primary" />
+                    </motion.div>
+
+                    <h1 className="text-4xl font-black text-white tracking-tight">
+                        Sentinel
+                    </h1>
+                    <p className="text-sm text-zinc-400">Fraud Detection Shield</p>
+                </motion.div>
+
+                {/* Fingerprint Scanner */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
                     className="relative group cursor-pointer"
                     onMouseDown={handleStartScan}
                     onMouseUp={handleEndScan}
@@ -104,116 +119,193 @@ export function BiometricGate() {
                     onTouchEnd={handleEndScan}
                     whileTap={{ scale: 0.95 }}
                 >
-                    {/* Ripple Effects when scanning */}
-                    {isScanning && (
-                        <>
-                            <motion.div
-                                initial={{ opacity: 0, scale: 1 }}
-                                animate={{ opacity: 0, scale: 2 }}
-                                transition={{ repeat: Infinity, duration: 1 }}
-                                className="absolute inset-0 rounded-full bg-primary/20"
-                            />
-                            <motion.div
-                                initial={{ opacity: 0, scale: 1 }}
-                                animate={{ opacity: 0, scale: 2.5 }}
-                                transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}
-                                className="absolute inset-0 rounded-full bg-primary/10"
-                            />
-                        </>
-                    )}
+                    {/* Outer Glow Rings */}
+                    <AnimatePresence>
+                        {isScanning && (
+                            <>
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 1 }}
+                                    animate={{ opacity: [0, 0.5, 0], scale: [1, 1.5, 1.8] }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ repeat: Infinity, duration: 1.5 }}
+                                    className="absolute inset-0 rounded-full bg-primary/20 blur-xl"
+                                />
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 1 }}
+                                    animate={{ opacity: [0, 0.3, 0], scale: [1, 1.8, 2.2] }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ repeat: Infinity, duration: 1.5, delay: 0.3 }}
+                                    className="absolute inset-0 rounded-full bg-primary/10 blur-2xl"
+                                />
+                            </>
+                        )}
+                    </AnimatePresence>
 
-                    {/* Scanner Container */}
-                    <div className={`relative w-28 h-28 sm:w-32 sm:h-32 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${accessGranted
-                            ? "bg-primary/20 border-primary shadow-[0_0_50px_rgba(124,255,178,0.5)]"
-                            : isScanning
-                                ? "bg-white/10 border-primary/50 shadow-[0_0_30px_rgba(124,255,178,0.2)]"
-                                : "bg-white/5 border-white/10 hover:border-white/30"
-                        }`}>
-                        {/* Fingerprint Icon with Mask effect for scanning progress */}
-                        <div className="relative w-16 h-16 sm:w-20 sm:h-20 text-white/20">
-                            <Fingerprint className="w-full h-full" strokeWidth={1} />
+                    {/* Main Scanner Circle */}
+                    <div
+                        className={`relative w-40 h-40 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${accessGranted
+                                ? "bg-gradient-to-br from-primary/30 to-primary/10 border-primary shadow-[0_0_60px_rgba(124,255,178,0.6)]"
+                                : isScanning
+                                    ? "bg-gradient-to-br from-white/10 to-white/5 border-primary/60 shadow-[0_0_40px_rgba(124,255,178,0.3)]"
+                                    : "bg-gradient-to-br from-white/5 to-transparent border-white/20 hover:border-primary/40 hover:shadow-[0_0_30px_rgba(124,255,178,0.2)]"
+                            }`}
+                    >
+                        {/* Progress Ring */}
+                        <svg className="absolute inset-0 w-full h-full -rotate-90">
+                            <circle
+                                cx="80"
+                                cy="80"
+                                r="76"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                fill="none"
+                                className="text-primary/20"
+                            />
+                            <motion.circle
+                                cx="80"
+                                cy="80"
+                                r="76"
+                                stroke="currentColor"
+                                strokeWidth="3"
+                                fill="none"
+                                strokeDasharray={2 * Math.PI * 76}
+                                strokeDashoffset={2 * Math.PI * 76 * (1 - scanProgress / 100)}
+                                className="text-primary"
+                                style={{ transition: "stroke-dashoffset 0.1s linear" }}
+                            />
+                        </svg>
 
-                            {/* Color Overlay based on progress */}
-                            <div
-                                className="absolute inset-0 overflow-hidden text-primary transition-all duration-75"
-                                style={{ height: `${scanProgress}%` }}
+                        {/* Fingerprint Icon */}
+                        <div className="relative z-10">
+                            <motion.div
+                                animate={
+                                    isScanning
+                                        ? { scale: [1, 1.05, 1], rotate: [0, 2, -2, 0] }
+                                        : {}
+                                }
+                                transition={{ duration: 0.5, repeat: isScanning ? Infinity : 0 }}
                             >
-                                <Fingerprint className="w-full h-full" strokeWidth={1.5} />
-                            </div>
+                                <Fingerprint
+                                    size={64}
+                                    className={`transition-colors duration-300 ${accessGranted
+                                            ? "text-primary"
+                                            : isScanning
+                                                ? "text-primary/80"
+                                                : "text-white/40"
+                                        }`}
+                                    strokeWidth={1.5}
+                                />
+                            </motion.div>
                         </div>
 
-                        {/* Scanner Beam */}
+                        {/* Scanning Beam */}
                         {isScanning && !accessGranted && (
                             <motion.div
-                                className="absolute left-0 right-0 h-[2px] bg-primary shadow-[0_0_10px_#7cffb2]"
-                                initial={{ top: "0%" }}
-                                animate={{ top: "100%" }}
-                                transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
+                                className="absolute left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_15px_rgba(124,255,178,0.8)]"
+                                initial={{ top: "20%" }}
+                                animate={{ top: ["20%", "80%", "20%"] }}
+                                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
                             />
                         )}
 
-                        {/* Success Icon */}
+                        {/* Success Overlay */}
                         <AnimatePresence>
                             {accessGranted && (
                                 <motion.div
                                     initial={{ scale: 0, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
-                                    className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full backdrop-blur-sm"
+                                    className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full backdrop-blur-sm"
                                 >
-                                    <ShieldCheck size={40} className="text-primary" />
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: [0, 1.2, 1] }}
+                                        transition={{ duration: 0.5 }}
+                                    >
+                                        <ShieldCheck size={48} className="text-primary" />
+                                    </motion.div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
                     </div>
                 </motion.div>
 
-                {/* Status / Instruction */}
-                <div className="h-12 flex flex-col items-center justify-center">
+                {/* Status Text */}
+                <div className="h-16 flex flex-col items-center justify-center gap-2">
                     <AnimatePresence mode="wait">
                         {accessGranted ? (
                             <motion.div
                                 key="granted"
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="flex items-center gap-2 text-primary"
+                                exit={{ opacity: 0, y: -10 }}
+                                className="flex flex-col items-center gap-2"
                             >
-                                <Unlock size={16} />
-                                <span className="text-sm font-black uppercase tracking-widest">Access Granted</span>
+                                <div className="flex items-center gap-2 text-primary">
+                                    <Sparkles size={16} />
+                                    <span className="text-base font-black uppercase tracking-wider">
+                                        Access Granted
+                                    </span>
+                                    <Sparkles size={16} />
+                                </div>
+                                <p className="text-xs text-zinc-500">Welcome back!</p>
                             </motion.div>
                         ) : isScanning ? (
                             <motion.div
                                 key="scanning"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="text-primary text-xs font-bold uppercase tracking-widest animate-pulse"
+                                exit={{ opacity: 0 }}
+                                className="flex flex-col items-center gap-1"
                             >
-                                Verifying Biometrics... {scanProgress}%
+                                <div className="flex items-center gap-2 text-primary">
+                                    <Zap size={14} className="animate-pulse" />
+                                    <span className="text-sm font-bold uppercase tracking-wider">
+                                        Verifying
+                                    </span>
+                                </div>
+                                <p className="text-xs text-zinc-500">{scanProgress}% Complete</p>
                             </motion.div>
                         ) : (
                             <motion.div
                                 key="idle"
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="text-zinc-500 text-xs font-bold uppercase tracking-widest"
+                                exit={{ opacity: 0 }}
+                                className="flex flex-col items-center gap-1"
                             >
-                                Hold to Unlock
+                                <span className="text-sm font-bold text-zinc-400 uppercase tracking-wider">
+                                    Tap & Hold
+                                </span>
+                                <p className="text-xs text-zinc-600">to unlock</p>
                             </motion.div>
                         )}
                     </AnimatePresence>
                 </div>
+
+                {/* Hint */}
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 2 }}
+                    className="text-xs text-zinc-700 text-center max-w-xs"
+                >
+                    Secure biometric authentication • End-to-end encrypted
+                </motion.p>
             </div>
 
-            {/* Bottom Tech Decors */}
-            <div className="absolute bottom-10 left-0 right-0 px-10 flex justify-between items-end opacity-50">
-                <div className="flex flex-col gap-1">
-                    <div className="w-20 h-[2px] bg-zinc-800" />
-                    <div className="w-10 h-[2px] bg-zinc-800 align-left" />
+            {/* Bottom Branding */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1 }}
+                className="absolute bottom-8 left-0 right-0 flex justify-center"
+            >
+                <div className="text-[10px] font-mono text-zinc-800 text-center">
+                    SENTINEL SECURITY SYSTEM v3.0
+                    <br />
+                    BIOMETRIC AUTHENTICATION ACTIVE
                 </div>
-                <div className="text-[8px] font-mono text-zinc-700 text-right">
-                    SECURE CONNECTION RA-9<br />
-                    BIOMETRIC GATE v2.4
-                </div>
-            </div>
+            </motion.div>
         </motion.div>
     );
 }
