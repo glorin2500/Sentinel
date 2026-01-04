@@ -311,7 +311,7 @@ function ScanPageContent() {
         .eq('upi_id', result.upiId)
         .single();
 
-      if (existing) {
+      if (existing?.id) {
         // Remove from favorites
         await supabase
           .from('favorites')
@@ -327,7 +327,7 @@ function ScanPageContent() {
             upi_id: result.upiId,
             risk_level: result.riskLevel,
             risk_score: result.score,
-          });
+          } as any);
         alert('Added to favorites!');
       }
     } catch (error) {
