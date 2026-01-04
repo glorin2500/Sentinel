@@ -118,7 +118,7 @@ function ScanPageContent() {
               risk_level: mockLevel,
               risk_score: Math.round(mockScore),
               scan_method: showCamera ? 'camera' : (fileInputRef.current?.files?.[0] ? 'file' : 'manual'),
-            });
+            } as any); // Type assertion needed until DB migrations are run
 
           if (error) {
             logger.error('Failed to save transaction to database', error);
