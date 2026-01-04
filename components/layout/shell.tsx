@@ -1,11 +1,13 @@
 "use client";
 
 import { FloatingDock } from "@/components/ui/floating-dock";
+import { IntroSplash } from "@/components/ui/intro-splash";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { X, User, Shield, Bell, LogOut, Lock, Key, Smartphone, Wifi, Eye, EyeOff, Check, Sun, Moon, AlertTriangle } from "lucide-react";
 import { useSentinelStore } from "@/lib/store";
+import { BiometricGate } from "@/components/auth/biometric-gate";
 import { useAuth } from "@/lib/auth-context";
 
 export default function Shell({
@@ -17,7 +19,7 @@ export default function Shell({
     const [isSecurityOpen, setIsSecurityOpen] = useState(false);
     const [isPreferencesOpen, setIsPreferencesOpen] = useState(false);
     const router = useRouter();
-    const { userProfile } = useSentinelStore();
+    const { userProfile, isAuthenticated, setAuthenticated, isSplashComplete, setSplashComplete } = useSentinelStore();
     const { user, signOut } = useAuth();
 
     // Security settings state
@@ -38,6 +40,7 @@ export default function Shell({
         if (confirm("Are you sure you want to log out?")) {
             await signOut();
             setIsAccountOpen(false);
+            setAuthenticated(false);
             router.push('/auth');
         }
     };
@@ -52,8 +55,25 @@ export default function Shell({
         setIsPreferencesOpen(true);
     };
 
-    // CRITICAL FIX: Shell ONLY provides UI chrome, NOT authentication gates
-    // Authentication logic is handled per-route via <ProtectedRoute> wrapper
+    // 1. Biometric Gate
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-black text-white font-sans selection:bg-primary/30">
+                <BiometricGate />
+            </div>
+        );
+    }
+
+    // 2. Intro Splash
+    if (!isSplashComplete) {
+        return (
+            <div className="min-h-screen bg-black text-white font-sans selection:bg-primary/30">
+                <IntroSplash onComplete={() => setSplashComplete(true)} />
+            </div>
+        );
+    }
+
+    // 3. Main Dashboard - render children
     return (
         <div className="min-h-screen bg-background text-foreground font-sans relative overflow-x-hidden pb-32">
             <motion.div
