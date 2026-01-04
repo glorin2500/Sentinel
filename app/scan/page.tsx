@@ -312,11 +312,11 @@ function ScanPageContent() {
         .single();
 
       if (existing?.id) {
-        // Remove from favorites
+        // Remove from favorites - non-null assertion safe here
         await supabase
           .from('favorites')
           .delete()
-          .eq('id', existing.id);
+          .eq('id', existing.id!); // Non-null assertion since we checked existing?.id
         alert('Removed from favorites');
       } else {
         // Add to favorites
