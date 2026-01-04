@@ -63,18 +63,28 @@ export class TransactionService {
         limit: number = 50
     ): Promise<Transaction[]> {
         if (!isSupabaseConfigured()) {
+            console.warn('Supabase not configured, returning empty transactions');
             return [];
         }
 
-        const { data, error } = await supabase
-            .from('transactions')
-            .select('*')
-            .eq('user_id', userId)
-            .order('timestamp', { ascending: false })
-            .limit(limit);
+        try {
+            const { data, error } = await supabase
+                .from('transactions')
+                .select('*')
+                .eq('user_id', userId)
+                .order('timestamp', { ascending: false })
+                .limit(limit);
 
-        if (error) throw error;
-        return data || [];
+            if (error) {
+                console.error('Error fetching transactions:', error);
+                throw error;
+            }
+
+            return data || [];
+        } catch (error) {
+            console.error('Failed to get user transactions:', error);
+            throw error;
+        }
     }
 
     /**

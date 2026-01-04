@@ -49,9 +49,24 @@ export function ReportThreatModal({ isOpen, onClose, upiId = '', riskLevel = '',
                 setLocationLoading(false);
             },
             (error) => {
-                setError('Failed to get location. Please enable location services.');
+                let errorMessage = 'Failed to get location. ';
+
+                switch (error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage += 'Please enable location permissions in your browser.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage += 'Location information is unavailable.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage += 'Location request timed out. Please try again.';
+                        break;
+                    default:
+                        errorMessage += 'Please enable location services.';
+                }
+
+                setError(errorMessage);
                 setLocationLoading(false);
-                console.error('Geolocation error:', error);
             },
             { enableHighAccuracy: true, timeout: 10000 }
         );

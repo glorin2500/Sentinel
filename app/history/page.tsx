@@ -20,14 +20,22 @@ function HistoryPageContent() {
     const { user } = useAuth();
     const [transactions, setTransactions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'safe' | 'caution' | 'warning' | 'danger'>('all');
 
     useEffect(() => {
         if (!user) return;
 
         setLoading(true);
+        setError(null);
+
         TransactionService.getUserTransactions(user.id, 50)
             .then(setTransactions)
+            .catch((err) => {
+                console.error('Failed to load transactions:', err);
+                setError('Failed to load transaction history. Please try again.');
+                setTransactions([]);
+            })
             .finally(() => setLoading(false));
     }, [user]);
 
@@ -91,8 +99,8 @@ function HistoryPageContent() {
                             key={f}
                             onClick={() => setFilter(f as any)}
                             className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all ${filter === f
-                                    ? 'bg-primary text-black'
-                                    : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-white/10'
+                                ? 'bg-primary text-black'
+                                : 'bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-white/10'
                                 }`}
                         >
                             {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -100,6 +108,19 @@ function HistoryPageContent() {
                         </button>
                     ))}
                 </div>
+
+                {/* Error State */}
+                {error && (
+                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+                        <div className="flex items-center gap-3">
+                            <AlertTriangle size={20} className="text-red-500" />
+                            <div>
+                                <p className="text-sm font-bold text-red-500">Error Loading History</p>
+                                <p className="text-xs text-red-400 mt-1">{error}</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Empty State */}
                 {filteredTransactions.length === 0 && (
