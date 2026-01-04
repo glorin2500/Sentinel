@@ -68,7 +68,7 @@ export function ReportThreatModal({ isOpen, onClose, upiId = '', riskLevel = '',
                 setError(errorMessage);
                 setLocationLoading(false);
             },
-            { enableHighAccuracy: true, timeout: 10000 }
+            { enableHighAccuracy: true, timeout: 30000, maximumAge: 10000 }
         );
     };
 
