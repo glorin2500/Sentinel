@@ -1,4 +1,4 @@
-```javascript
+// @ts-nocheck - Supabase types not available until DB migrations run
 "use client";
 
 import { motion } from "framer-motion";
@@ -49,7 +49,7 @@ export function HeroSection() {
 
                 if (!error && transactions) {
                     setTodayScans(transactions.length);
-                    
+
                     // Count threats (warning + danger)
                     const threats = transactions.filter(
                         t => t.risk_level === 'warning' || t.risk_level === 'danger'
@@ -72,7 +72,7 @@ export function HeroSection() {
         };
 
         fetchStats();
-        
+
         // Refresh stats every 30 seconds
         const interval = setInterval(fetchStats, 30000);
         return () => clearInterval(interval);
@@ -137,7 +137,7 @@ export function HeroSection() {
                     <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                         <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Safety</p>
                         <p className="text-2xl font-black text-white">
-                            {loading ? "..." : `${ safetyScore }% `}
+                            {loading ? "..." : `${safetyScore}% `}
                         </p>
                         <p className="text-xs text-zinc-400">Score</p>
                     </div>
