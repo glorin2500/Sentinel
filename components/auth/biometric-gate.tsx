@@ -144,10 +144,10 @@ export function BiometricGate() {
                     {/* Main Scanner Circle */}
                     <div
                         className={`relative w-40 h-40 rounded-full flex items-center justify-center border-2 transition-all duration-500 ${accessGranted
-                                ? "bg-gradient-to-br from-primary/30 to-primary/10 border-primary shadow-[0_0_60px_rgba(124,255,178,0.6)]"
-                                : isScanning
-                                    ? "bg-gradient-to-br from-white/10 to-white/5 border-primary/60 shadow-[0_0_40px_rgba(124,255,178,0.3)]"
-                                    : "bg-gradient-to-br from-white/5 to-transparent border-white/20 hover:border-primary/40 hover:shadow-[0_0_30px_rgba(124,255,178,0.2)]"
+                            ? "bg-gradient-to-br from-primary/30 to-primary/10 border-primary shadow-[0_0_60px_rgba(124,255,178,0.6)]"
+                            : isScanning
+                                ? "bg-gradient-to-br from-white/10 to-white/5 border-primary/60 shadow-[0_0_40px_rgba(124,255,178,0.3)]"
+                                : "bg-gradient-to-br from-white/5 to-transparent border-white/20 hover:border-primary/40 hover:shadow-[0_0_30px_rgba(124,255,178,0.2)]"
                             }`}
                     >
                         {/* Progress Ring */}
@@ -188,10 +188,10 @@ export function BiometricGate() {
                                 <Fingerprint
                                     size={64}
                                     className={`transition-colors duration-300 ${accessGranted
-                                            ? "text-primary"
-                                            : isScanning
-                                                ? "text-primary/80"
-                                                : "text-white/40"
+                                        ? "text-primary"
+                                        : isScanning
+                                            ? "text-primary/80"
+                                            : "text-white/40"
                                         }`}
                                     strokeWidth={1.5}
                                 />
@@ -207,25 +207,6 @@ export function BiometricGate() {
                                 transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
                             />
                         )}
-
-                        {/* Success Overlay */}
-                        <AnimatePresence>
-                            {accessGranted && (
-                                <motion.div
-                                    initial={{ scale: 0, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full backdrop-blur-sm"
-                                >
-                                    <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: [0, 1.2, 1] }}
-                                        transition={{ duration: 0.5 }}
-                                    >
-                                        <ShieldCheck size={48} className="text-primary" />
-                                    </motion.div>
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
                     </div>
                 </motion.div>
 
