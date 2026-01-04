@@ -31,17 +31,6 @@ function HomePage() {
 
     const quickAccessCards = [
         {
-            icon: AlertTriangle,
-            title: "Emergency",
-            description: "Quick fraud response",
-            href: "/emergency",
-            gradient: "from-red-500/20 via-red-500/10 to-transparent",
-            iconBg: "bg-destructive/10",
-            iconColor: "text-destructive",
-            borderColor: "border-destructive/20",
-            glowColor: "shadow-[0_0_30px_rgba(255,107,107,0.15)]"
-        },
-        {
             icon: BookOpen,
             title: "Education",
             description: "Learn security tips",
@@ -53,15 +42,15 @@ function HomePage() {
             glowColor: "shadow-[0_0_30px_rgba(124,255,178,0.15)]"
         },
         {
-            icon: Receipt,
-            title: "Receipts",
-            description: "Transaction history",
-            href: "/receipts",
-            gradient: "from-blue-500/20 via-blue-500/10 to-transparent",
-            iconBg: "bg-blue-500/10",
-            iconColor: "text-blue-500",
-            borderColor: "border-blue-500/20",
-            glowColor: "shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+            icon: Trophy,
+            title: "Progress",
+            description: "Track achievements",
+            href: "/profile",
+            gradient: "from-yellow-500/20 via-yellow-500/10 to-transparent",
+            iconBg: "bg-yellow-500/10",
+            iconColor: "text-yellow-500",
+            borderColor: "border-yellow-500/20",
+            glowColor: "shadow-[0_0_30px_rgba(234,179,8,0.15)]"
         }
     ];
 
@@ -75,13 +64,14 @@ function HomePage() {
             {/* Hero Section */}
             <HeroSection />
 
-            {/* Quick Actions */}
+            {/* Quick Actions - 2x2 Grid */}
             <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08 }}
                 className="grid grid-cols-2 gap-4"
             >
+                {/* Scan Now - Primary Action */}
                 <Link href="/scan" onClick={() => hapticClick()}>
                     <motion.div
                         className="p-4 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/30 hover:border-primary/50 transition-all cursor-pointer group"
@@ -99,6 +89,8 @@ function HomePage() {
                         </div>
                     </motion.div>
                 </Link>
+
+                {/* History */}
                 <Link href="/history" onClick={() => hapticClick()}>
                     <motion.div
                         className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-white/20 transition-all cursor-pointer group"
@@ -112,6 +104,44 @@ function HomePage() {
                             <div>
                                 <h3 className="text-sm font-black text-white">HISTORY</h3>
                                 <p className="text-xs text-zinc-500">View past scans</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </Link>
+
+                {/* Emergency */}
+                <Link href="/emergency" onClick={() => hapticClick()}>
+                    <motion.div
+                        className="p-4 rounded-2xl bg-gradient-to-br from-red-500/20 to-red-500/5 border border-red-500/30 hover:border-red-500/50 transition-all cursor-pointer group"
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center group-hover:bg-red-500/30 transition-colors">
+                                <AlertTriangle size={24} className="text-red-500" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black text-white">EMERGENCY</h3>
+                                <p className="text-xs text-zinc-500">Quick response</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                </Link>
+
+                {/* Analytics */}
+                <Link href="/analytics" onClick={() => hapticClick()}>
+                    <motion.div
+                        className="p-4 rounded-2xl bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/30 hover:border-blue-500/50 transition-all cursor-pointer group"
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.98 }}
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
+                                <TrendingUp size={24} className="text-blue-500" />
+                            </div>
+                            <div>
+                                <h3 className="text-sm font-black text-white">ANALYTICS</h3>
+                                <p className="text-xs text-zinc-500">View insights</p>
                             </div>
                         </div>
                     </motion.div>
