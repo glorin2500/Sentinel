@@ -137,7 +137,7 @@ export function HeroSection() {
                     <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                         <p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Safety</p>
                         <p className="text-2xl font-black text-white">
-                            {loading ? "..." : `${safetyScore}% `}
+                            {loading ? "..." : `${safetyScore}`}
                         </p>
                         <p className="text-xs text-zinc-400">Score</p>
                     </div>
@@ -163,3 +163,4 @@ export function HeroSection() {
         </motion.section>
     );
 }
+
